@@ -1,0 +1,123 @@
+This file describes the format of the SQLite databases that libfakedbfs 
+creates, maintains, and uses.
+
+RESERVED SYSTEM TABLES:
+
+1.0 ENUM table list
+	The ENUM table list table contains all of the defined enumerations.
+Routines that declare new enumerations must check here for duplicated names
+before adding them to the system. This is the creation command:
+
+CREATE TABLE enum_list (id INTEGER PRIMARY KEY, name TEXT, defined_in_table TEXT,
+defined_in_specfile TEXT, lastupdated INTEGER);
+
+Fields:
+id - primary key
+
+name - name of the enumeration as it appeared in the specfile
+
+defined_in_table - table in which the enum resides. This is in the form of
+endef_<name>.
+
+defined_in_specfile - the basename of the file in which this enumeration was
+most recently defined or updated.
+
+last_updated - the most recent update of this enum definition, in time(3) format.
+(Unix epoch).
+--
+1.1 Catalogue table list
+	This is analogous to the ENUM table list, but it is a list of catalogue
+tables (where all data is stored). This is the creation command:
+
+CREATE TABLE cat_list (id INTEGER PRIMARY KEY, name TEXT, alias TEXT, defined_in_table TEXT,
+field_desc_table TEXT, defined_in_specfile TEXT, lastupdated INTEGER);
+
+Fields:
+id - primary key
+
+name - name of this catalogue, as it appeares in the specfile.
+
+alias - the formatted alias of this catalogue, if any.
+
+defined_in_table - table in which this catalogue resides. This is in the form of
+c_<name>.
+
+field_desc_table - the table containing field descriptions, such as ENUM types.
+The name is in the format of cft_<name>.
+
+defined_in_specfile - the basename of the specfile in which this enumeration was
+most recently defined/updated.
+
+last_updated - the most recent update of this catalogue's *definition*, in
+time(3) format.
+--
+
+FORMAT OF USER-DEFINED TABLES:
+
+2.0 Catalogue table format
+	The catalogue tables created using this command:
+
+CREATE TABLE c_<catname> (id INTEGER PRIMARY KEY, file TEXT, lastupdate INTEGER, ...);
+
+Fields:
+id - primary key
+
+file - full pathname to the file
+
+lastupdate - the last time the file entry was updated, either during an index or
+manual edit.
+
+... - any user-defined fields.
+--
+
+2.1 Field description table format
+	These tables contain information about fields of a catalogue table, such
+as ENUM names. They are created with the following command:
+
+CREATE TABLE cft_<catname> (id INTEGER PRIMARY KEY, fieldname TEXT, alias TEXT, datatype
+INTEGER, enumname TEXT);
+
+Fields:
+id - primary key
+
+fieldname - name of field as specified in the specfile.
+
+alias - alias as specified in the specfile. Notice that this includes any
+processing, such as that done with the <fc> attribute.
+
+datatype - the datatype of the field, cast to the enum DataType as defined in
+dbspecdata.h. If it is oenumsub, then it is a subelement; there must be one other oenum field for sub to work.
+
+enumname - the name of the enum.
+
+--
+
+2.2 Enum description table format
+	These tables define enums. This includes values and symbolic names. They
+are created with this command:
+
+CREATE TABLE endef_<enumname> (id INTEGER PRIMARY KEY, name TEXT, fmtname TEXT,
+value INTEGER, other INTEGER, subelements TEXT);
+
+Fields:
+id - primary key
+
+name - symbolic name given to this element (analogous to the EnumElem->name
+parameter).
+
+fmtname - formatted name given to this element as specified in the specfile
+(analogous to the EnumElem->fmtname parameter).
+
+value - the numeric value for this element.
+
+other - if the field is an "other" field, and what kind if so. Cast it to enum DataType (dbspecdata.h). If this is oenum, then it's a regular element. If not, then it is that type.
+
+subelements - the subelements. Each name-value pair is separated by an ASCII RS
+(Record Separator) character (0x1E hex, 036 octal, 30 decimal). The names and
+values are further separated by an ASCII US (Unit Separator) character (0x1F
+hex, 037 octal, 31 decimal). The values are expressed as integers in ASCII
+notation (do NOT binary code!) in decimal. If the value is only one character and
+consists simply of a DC1 (Device Control 1) character (0x11 hex, 021 octal, 17
+decimal), it means "substitute for self," self being the father element's name.
+--
+

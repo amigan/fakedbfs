@@ -1,0 +1,42 @@
+/* music/sound collection definition file
+	(C)2005, Dan Ponte */
+
+ENUM genre_type ALLSUB(<self>) {
+	"Rock" {"Southern Rock", "Bluesy Rock", "Progressive Rock", "Space Rock", "Early Metal", "Hard Rock", "Rockabilly"},
+	"Classic Rock" {<sameas rock>},
+	"New Rock" {<sameas classic_rock>, "Punk", "Johnny Two-Chord", "Screemo", "Emo"},
+	"Blues" {"Delta Blues"},
+	"Jazz" {"Easy Jazz", "Organ Jazz", "Blues-Jazz", "Jazz-Rock"},
+	"Book On Tape",
+	"Other" as string
+};
+
+ENUM medium_type ALLSUB(<self>) {
+	"Phono" {"LP 33rpm", "Single/45rpm", "78rpm", "EP"},
+	"CD",
+	"Cassette Tape",
+	"Reel",
+	"DAT",
+	other as string
+};
+
+ENUM music_type ALLSUB(<self>, "Normal", "Instrumental") {
+	"Album",
+	"Concept Album",
+	"Single"
+};
+
+CATALOGUE_TYPE music = <fc> {
+	"artist" = <fc> as string,
+	"title" = <fc> as string,
+	"album" = <fc> as string,
+	"year" = <fc> as number,
+	"label" = "Record Label" as string,
+	"genre" = <fc> as ENUM genre_type,
+	"type" = <fc> as ENUM music_type,
+	"subtype" = <fc> as ENUM music_type.sub,
+	"subgenre" = <fc> as ENUM genre_type.sub,
+	"origmedium" = "Original Medium" as ENUM medium_type,
+	"albumcover" = "Album Cover" as image,
+	"compilation" = <fc> as boolean
+};
