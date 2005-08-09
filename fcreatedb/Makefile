@@ -13,4 +13,4 @@ fcreatedb: $(OBJS)
 %.o: %.c
 	$(CC) $(CFLAGS) -c ${.SOURCE}
 clean:
-	rm -f *.core *.o *~ fcreatedb
+	rm -f *.core *.o *~ .depend fcreatedb

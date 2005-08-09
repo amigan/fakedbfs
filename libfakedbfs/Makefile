@@ -22,4 +22,4 @@ libfakedbfs.so: $(OBJS)
 lint:
 	lint -s $(CPPFLAGS) $(SRCS)
 clean:
-	rm -f *.core *.o *~ dbspec.c dbspec.h dbspec.out libfakedbfs.so lex.yy.c
+	rm -f *.core *.o *~ .depend dbspec.c dbspec.h dbspec.out libfakedbfs.so lex.yy.c
