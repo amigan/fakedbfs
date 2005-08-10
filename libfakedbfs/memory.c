@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.3 2005/08/10 00:30:05 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -41,7 +41,7 @@
 #include <fakedbfs.h>
 #include <lexdefines.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.3 2005/08/10 00:30:05 dcp1990 Exp $")
 
 
 void* allocz(size)
@@ -183,5 +183,7 @@ void free_head_members(hd) /* only the heads contained within, not the structure
 void estr_free(e)
 	error_t *e;
 {
+	if(e->emsg == NULL) return;
 	if(e->freeit) free(e->emsg);
+	e->emsg = NULL;
 }
