@@ -27,6 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -42,6 +43,9 @@
 /* dbspec stuff */
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
+
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $")
+
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
 extern FILE *yyin; /* XXX: do not use; not thread safe */

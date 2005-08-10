@@ -1,4 +1,4 @@
-# interim makefile
+# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.3 2005/08/10 00:13:42 dcp1990 Exp $
 CC=cc
 LDFLAGS=-L/usr/local/lib
 CPPFLAGS=-I../include -I/usr/local/include -DYY_NO_UNPUT

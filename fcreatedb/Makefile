@@ -1,3 +1,4 @@
+# $Amigan: fakedbfs/fcreatedb/Makefile,v 1.3 2005/08/10 00:13:42 dcp1990 Exp $
 include ../globals.mk
 LDFLAGS+=-L../libfakedbfs
 LIBS=-lfakedbfs

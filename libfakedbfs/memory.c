@@ -27,6 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,6 +40,8 @@
 #include <dbspecdata.h>
 #include <fakedbfs.h>
 #include <lexdefines.h>
+
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $")
 
 
 void* allocz(size)

@@ -27,6 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfsapps.h,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $ */
 #ifndef HAVE_FAKEDBFSAPPS_H
 #define HAVE_FAKEDBFSAPPS_H 1
 

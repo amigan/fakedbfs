@@ -1,9 +1,11 @@
 %{
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $ */
 #include <stdio.h>
 #include <string.h>
 #include <fakedbfs.h>
 #include "dbspec.h"
 #include <lexdefines.h>
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $")
 int chrcnt = 0, lincnt = 1; /* not thread-safe, I know */
 %}
 %%
