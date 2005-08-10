@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.3 2005/08/10 03:28:00 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.3 2005/08/10 03:28:00 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 }
 %token_type {Toke}
@@ -53,22 +53,13 @@ catname(A) ::= uqstring(B). {
 			heads->lastcath = heads->curcath;
 		}
 	}
-enumblock ::= ENUM typename(A) arguments headdoer OBRACE enumelements CBRACE. {
-		heads->curenumh->headelem = heads->enumelemhead;
-		heads->curenumh->allsubs = heads->allsubelhead;
-		heads->curenumh->name = A.str;
-		heads->enumelemhead = NULL;
-		heads->lastenumel = NULL;
-		heads->curenumel = NULL;
-		heads->allsubelhead = NULL;
-		heads->lastevalue = heads->lastallsubval = 0;
-	}
 headdoer ::= . {
 		heads->curenumh->allsubs = heads->allsubelhead;
 	}
 typename(A) ::= uqstring(B). {
 		A.str = B.str;
-		if(find_enumhead_by_name(heads->db_enumh, B.str) != NULL || find_enumhead_by_name(heads->enumhead, B.str) != NULL) {
+		if((heads->db_enumh != NULL && find_enumhead_by_name(heads->db_enumh, B.str) != NULL) ||
+				(heads->enumhead != NULL && find_enumhead_by_name(heads->enumhead, B.str) != NULL)) {
 			fdbfs_t *in = (fdbfs_t *)heads->instance;
 			ferr(in, die, "Error! enum already exists with name %s. ", B.str);
 			break;
@@ -216,7 +207,7 @@ datatype(A) ::= IMAGEDT. {
 datatype(A) ::= BINARYDT. {
 		A.num = (enum DataType)binary;
 	}
-string(A) ::= QUOTE STRING(B) QUOTE. {
+string(A) ::= STRING(B). {
 		A.str = B.str;
 	}
 uqstring(A) ::= UQSTRING(B). {
@@ -253,7 +244,7 @@ catelem(A) ::= string(B) aliasdef(C) AS catdatatype(D). {
 catdatatype(A) ::= datatype(B). {
 		A.num = B.num;
 	}
-catdatatype(A) ::= ENUM ENUMNAME(B). {
+catdatatype(A) ::= EN ENUMNAME(B). {
 		A.num = (enum DataType)oenum;
 		A.ehead = find_enumhead_by_name(heads->enumhead, B.str);
 		if(A.ehead == NULL) {
@@ -262,7 +253,7 @@ catdatatype(A) ::= ENUM ENUMNAME(B). {
 			break;
 		}
 	}
-catdatatype(A) ::= ENUM ENUMNAME(B) DOTSUB. {
+catdatatype(A) ::= EN ENUMNAME(B) DOTSUB. {
 		A.num = (enum DataType)oenumsub;
 		A.ehead = find_enumhead_by_name(heads->enumhead, B.str);
 		if(A.ehead == NULL) {
@@ -284,3 +275,14 @@ aliasbd ::= LTHAN abd GTHAN.
 abd(A) ::= FC. { /* first letter uppercase */
 		A.num = 2;
 	}
+enumblock ::= ENUM typename(A) arguments headdoer OBRACE enumelements CBRACE. {
+		heads->curenumh->headelem = heads->enumelemhead;
+		heads->curenumh->allsubs = heads->allsubelhead;
+		heads->curenumh->name = A.str;
+		heads->enumelemhead = NULL;
+		heads->lastenumel = NULL;
+		heads->curenumel = NULL;
+		heads->allsubelhead = NULL;
+		heads->lastevalue = heads->lastallsubval = 0;
+	}
+

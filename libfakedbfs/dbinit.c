@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.3 2005/08/10 03:28:00 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.3 2005/08/10 03:28:00 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -102,7 +102,7 @@ int parse_definition(f, filename)
 			tz.num = yylval.number;
 			tz.str = yylval.string;
 			Parse(parser, rc, tz, &h);
-			if(h.err) {
+			if(h.err || f->error.emsg != NULL) {
 				CERR(die, "parse_definition(f, \"%s\"): error after Parse(). ", filename);
 				fclose(tf);
 				return 0;
@@ -114,7 +114,7 @@ int parse_definition(f, filename)
 	free_enum_head_list(h.db_enumh);
 	free_cat_head_list(h.db_cath);
 	fclose(tf);
-	return 1;
+	return make_tables_from_spec(f, filename, &h);
 }
 
 struct EnumElem* find_elem_by_name(h, name)
@@ -176,9 +176,13 @@ struct EnumHead* find_enumhead_by_name(h, name)
 	char *name;
 {
 	struct EnumHead *c;
+	if(h == NULL) return NULL;
+	if(name == NULL)
+		return NULL;
 	for(c = h; c != NULL; c = c->next) {
-		if(strcasecmp(name, c->name) == 0)
-			return c;
+		if(c->name != NULL)
+			if(strcasecmp(name, c->name) == 0)
+				return c;
 	}
 	return NULL;
 }
@@ -383,10 +387,11 @@ int start_db(f)
 	fdbfs_t *f;
 {
 	if(!table_exists(f, "cat_list")) {
-		if(f->error.emsg != NULL)
+		if(f->error.emsg == NULL) {
 			return init_db_tables(f);
-		else
+		} else {
 			return 0;
+		}
 	}
 	return 1;
 }

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.3 2005/08/10 00:30:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.4 2005/08/10 03:28:00 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -135,6 +135,7 @@ struct EnumElem* enumelems_from_dbtab(fdbfs_t *f, char *table);
 struct EnumHead* enums_from_db(fdbfs_t *f);
 struct CatElem* catelems_from_dbtab(fdbfs_t *f, char *table, struct EnumHead *enumhead);
 struct CatalogueHead* cats_from_db(fdbfs_t *f, struct EnumHead *enumhead);
+int make_tables_from_spec(fdbfs_t *f, char *sfile, Heads *h);
 
 /* application interfaces */
 int parse_definition(fdbfs_t *f, char *filename);
