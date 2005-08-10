@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.3 2005/08/10 00:30:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.4 2005/08/10 00:31:04 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -41,11 +41,11 @@
 #define ARGSPEC "vhad:"
 #define FCREATEVER "0.1"
 
-RCSID("$Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.3 2005/08/10 00:30:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.4 2005/08/10 00:31:04 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int append = 0;
-char *dbfi, *specf;
+char *dbf, *specf;
 fdbfs_t *f;
 
 void version(void)
