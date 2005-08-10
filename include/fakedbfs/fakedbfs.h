@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.3 2005/08/10 00:30:12 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -126,7 +126,6 @@ int add_enum_elem(fdbfs_t *f, char *tname, char *name, char *fmtname, unsigned i
 		enum DataType dtype, char *subelements);
 int ferr(fdbfs_t *f, enum ErrorAction severity, char *fmt, ...);
 int cferr(fdbfs_t *f, enum ErrorAction severity, char *fmt, ...);
-void estr_free(error_t *e);
 int bind_field(fdbfs_t *f, int *count, enum DataType type, void *value, size_t len, sqlite3_stmt *stmt);
 int table_exists(fdbfs_t *f, char *tname);
 int open_db(fdbfs_t *f);
@@ -142,3 +141,4 @@ int parse_definition(fdbfs_t *f, char *filename);
 int start_db(fdbfs_t *f);
 fdbfs_t *new_fdbfs(char *dbfile, char **error);
 int destroy_fdbfs(fdbfs_t *f);
+void estr_free(error_t *e);

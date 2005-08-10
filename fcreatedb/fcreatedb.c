@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.3 2005/08/10 00:30:12 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -41,11 +41,11 @@
 #define ARGSPEC "vhad:"
 #define FCREATEVER "0.1"
 
-RCSID("$Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.3 2005/08/10 00:30:12 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int append = 0;
-char *dbf;
+char *dbfi, *specf;
 fdbfs_t *f;
 
 void version(void)
@@ -104,6 +104,8 @@ int main(argc, argv)
 		return -1;
 	}
 	
+	specf = strdup(argv[1]);
+	
 	free(pname);
 	
 	if(!dbfu) {
@@ -130,8 +132,20 @@ int main(argc, argv)
 			return -1;
 		}
 
+	fprintf(stderr, "Reading specfile %s...\n", specf);
+
+	if(!parse_definition(f, specf)) {
+		fprintf(stderr, "Error parsing: %s\n", f->error.emsg);
+		if(f->error.freeit) estr_free(&f->error);
+		destroy_fdbfs(f);
+		free(dbf);
+		free(specf);
+		return -1;
+	}
+
 	destroy_fdbfs(f);
 	free(dbf);
+	free(specf);
 
 	return 0;
 }
