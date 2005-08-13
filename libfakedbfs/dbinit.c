@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.10 2005/08/13 06:48:48 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.11 2005/08/13 17:50:52 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,11 +44,11 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.10 2005/08/13 06:48:48 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.11 2005/08/13 17:50:52 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
-extern FILE *yyin; /* XXX: do not use; not thread safe */
+extern FILE *yyin;
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 int yylex(void);
 YY_BUFFER_STATE yy_scan_string(const char *);
@@ -76,7 +76,6 @@ int parse_definition(f, filename)
 	fdbfs_t *f;
 	char *filename;
 {
-	char buffer[MAXLINE];
 	Toke tz;
 	int rc;
 	FILE *tf;
@@ -96,24 +95,23 @@ int parse_definition(f, filename)
 	if(!tf)
 		return ERR(die, "parse_definition: opening %s: %s", filename, strerror(errno));
 	parser = ParseAlloc(malloc);
+	yyin = tf;
 #ifdef PARSERDEBUG
 	ParseTrace(stderr, "PARSER: ");
 #endif
-	while(!feof(tf)) {
-		fgets(buffer, MAXLINE - 1, tf);
-		yy_scan_string(buffer);
-		while((rc = yylex()) != 0) {
-			tz.num = yylval.number;
-			tz.str = yylval.string;
+	while((rc = yylex()) != 0) {
+		tz.num = yylval.number;
+		tz.str = yylval.string;
 #ifdef PARSERDEBUG
-			fprintf(stderr, "rc == %d\n", rc);
+		fprintf(stderr, "rc == %d\n", rc);
 #endif
-			Parse(parser, rc, tz, &h);
-			if(h.err || f->error.emsg != NULL) {
-				CERR(die, "parse_definition(f, \"%s\"): error after Parse(). ", filename);
-				fclose(tf);
-				return 0;
-			}
+		Parse(parser, rc, tz, &h);
+		if(h.err || f->error.emsg != NULL) {
+			ParseFree(parser, free);
+			free_head_members(&h);
+			CERR(die, "parse_definition(f, \"%s\"): error after Parse(). ", filename);
+			fclose(tf);
+			return 0;
 		}
 	}
 	Parse(parser, 0, tz, &h);

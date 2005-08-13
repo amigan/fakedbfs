@@ -1,24 +1,27 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.13 2005/08/13 06:48:48 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.14 2005/08/13 17:50:52 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.13 2005/08/13 06:48:48 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.14 2005/08/13 17:50:52 dcp1990 Exp $")
 extern int chrcnt, lincnt;
+extern char *yytext;
 }
 %token_type {Toke}
 %extra_argument {Heads *heads}
-specdef ::= sblocks.
-sblocks ::= sblocks eblock.
-sblocks ::= eblock.
-blockx ::= block.
-eblock ::= SCOLON.
-eblock ::= blockx SCOLON.
+%syntax_error {
+	fdbfs_t *in = (fdbfs_t *)heads->instance;
+	ferr(in, die, "Syntax error at line %d, char %d (near %s)!", lincnt, chrcnt, yytext);
+	return;
+}
+specdef ::= blocks.
+blocks ::= blocks block SCOLON.
+blocks ::= .
 block ::= enumblock.
 block ::= catalogueblock.
 catalogueblock ::= CATALOGUE_TYPE catname(A) aliasdef(B) OBRACE catelems CBRACE. {
