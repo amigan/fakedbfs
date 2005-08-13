@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.3 2005/08/10 03:28:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.4 2005/08/13 00:21:00 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.3 2005/08/10 03:28:00 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.4 2005/08/13 00:21:00 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -54,6 +54,7 @@ int yylex(void);
 YY_BUFFER_STATE yy_scan_string(const char *);
 void yy_delete_buffer(YY_BUFFER_STATE);
 void Parse(void *yyp, int yymajor, ParseTOKENTYPE yyminor ParseARG_PDECL);
+void ParseTrace(FILE *TraceFILE, char *zTracePrompt);
 
 char* normalise(s)
 	char *s;
@@ -95,14 +96,21 @@ int parse_definition(f, filename)
 	if(!tf)
 		return ERR(die, "parse_definition: opening %s: %s", filename, strerror(errno));
 	parser = ParseAlloc(malloc);
+#ifdef PARSERDEBUG
+	ParseTrace(stderr, "PARSER: ");
+#endif
 	while(!feof(tf)) {
 		fgets(buffer, MAXLINE - 1, tf);
 		yy_scan_string(buffer);
 		while((rc = yylex()) != 0) {
 			tz.num = yylval.number;
 			tz.str = yylval.string;
+#ifdef PARSERDEBUG
+			fprintf(stderr, "rc == %d\n", rc);
+#endif
 			Parse(parser, rc, tz, &h);
 			if(h.err || f->error.emsg != NULL) {
+				dump_head_members(&h);
 				CERR(die, "parse_definition(f, \"%s\"): error after Parse(). ", filename);
 				fclose(tf);
 				return 0;
@@ -122,9 +130,13 @@ struct EnumElem* find_elem_by_name(h, name)
 	char *name;
 {
 	struct EnumElem *c;
+	if(h == NULL) return NULL;
+	if(name == NULL)
+		return NULL;
 	for(c = h; c != NULL; c = c->next) {
-		if(strcasecmp(name, c->name) == 0)
-			return c;
+		if(c->name != NULL)
+			if(strcasecmp(name, c->name) == 0)
+				return c;
 	}
 	return NULL;
 }
@@ -134,9 +146,29 @@ struct CatalogueHead* find_cathead_by_name(h, name)
 	char *name;
 {
 	struct CatalogueHead *c;
+	if(h == NULL) return NULL;
+	if(name == NULL)
+		return NULL;
 	for(c = h; c != NULL; c = c->next) {
-		if(strcasecmp(name, c->name) == 0)
-			return c;
+		if(c->name != NULL)
+			if(strcasecmp(name, c->name) == 0)
+				return c;
+	}
+	return NULL;
+}
+
+struct EnumHead* find_enumhead_by_name(h, name)
+	struct EnumHead *h;
+	char *name;
+{
+	struct EnumHead *c;
+	if(h == NULL) return NULL;
+	if(name == NULL)
+		return NULL;
+	for(c = h; c != NULL; c = c->next) {
+		if(c->name != NULL)
+			if(strcasecmp(name, c->name) == 0)
+				return c;
 	}
 	return NULL;
 }
@@ -171,21 +203,7 @@ struct EnumSubElem* copy_sub_list(from, to, fajah, lastval)
 	return tc;
 }
 
-struct EnumHead* find_enumhead_by_name(h, name)
-	struct EnumHead *h;
-	char *name;
-{
-	struct EnumHead *c;
-	if(h == NULL) return NULL;
-	if(name == NULL)
-		return NULL;
-	for(c = h; c != NULL; c = c->next) {
-		if(c->name != NULL)
-			if(strcasecmp(name, c->name) == 0)
-				return c;
-	}
-	return NULL;
-}
+
 
 #define BUFFERSIZE 4096
 

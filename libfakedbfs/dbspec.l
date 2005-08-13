@@ -1,11 +1,11 @@
 %{
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.3 2005/08/10 03:28:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.4 2005/08/13 00:21:00 dcp1990 Exp $ */
 #include <stdio.h>
 #include <string.h>
 #include <fakedbfs.h>
 #include "dbspec.h"
 #include <lexdefines.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.3 2005/08/10 03:28:00 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.4 2005/08/13 00:21:00 dcp1990 Exp $")
 int chrcnt = 0, lincnt = 1; /* not thread-safe, I know */
 %}
 %s comment
@@ -35,9 +35,14 @@ fc			return FC;
 \(			return OPAR;
 \)			return CPAR;
 \,			return COMMA;
-\"[^\n\"]+\"	yylval.string = strdup(yytext); return STRING;
-[A-Za-z0-9_.-]+		yylval.string = strdup(yytext); return UQSTRING;
-[A-Za-z0-9_-]+		yylval.string = strdup(yytext); return UQSTRING;
+\"[^"]*\"		yylval.string = strdupq(yytext); return STRING;
+<INITIAL>[A-Za-z0-9_.-]+		{
+				yylval.string = strdup(yytext);
+#ifdef PARSERDEBUG
+				fprintf(stderr, "sameas %s\n", yylval.string);
+#endif
+				return UQSTRING;
+}
 ;			return SCOLON;
 \n			chrcnt = 0; ++lincnt;/* DONOTHING */
 [\t ]			/* DONOTHING */

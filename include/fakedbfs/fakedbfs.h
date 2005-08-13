@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.4 2005/08/10 03:28:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.5 2005/08/13 00:21:00 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -136,6 +136,19 @@ struct EnumHead* enums_from_db(fdbfs_t *f);
 struct CatElem* catelems_from_dbtab(fdbfs_t *f, char *table, struct EnumHead *enumhead);
 struct CatalogueHead* cats_from_db(fdbfs_t *f, struct EnumHead *enumhead);
 int make_tables_from_spec(fdbfs_t *f, char *sfile, Heads *h);
+struct EnumSubElem* dump_enum_sub_elem(struct EnumSubElem *e, short int allsub); /* returns next */
+void dump_enum_sub_elem_list(struct EnumSubElem *head, short int allsub);
+struct EnumElem* dump_enum_elem(struct EnumElem *e);
+void dump_enum_elem_list(struct EnumElem *head);
+struct EnumHead* dump_enum_head(struct EnumHead *e);
+void dump_enum_head_list(struct EnumHead *head);
+struct CatElem* dump_cat_elem(struct CatElem *e);
+void dump_cat_elem_list(struct CatElem *head);
+struct CatalogueHead* dump_cat_head(struct CatalogueHead *e);
+void dump_cat_head_list(struct CatalogueHead *head);
+void dump_head_members(Heads *hd);
+char* strdupq(char *s);
+
 
 /* application interfaces */
 int parse_definition(fdbfs_t *f, char *filename);

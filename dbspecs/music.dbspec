@@ -1,9 +1,9 @@
 /* music/sound collection definition file
 	(C)2005, Dan Ponte */
-/* $Amigan: fakedbfs/dbspecs/music.dbspec,v 1.3 2005/08/10 03:28:21 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/dbspecs/music.dbspec,v 1.4 2005/08/13 00:21:00 dcp1990 Exp $ */
 
 ENUM genre_type ALLSUB(<self>) {
-	"Rock" {"Southern Rock", "Bluesy Rock", "Progressive Rock", "Space Rock", "Early Metal", "Hard Rock", "Rockabilly"},
+	"Rock" { "Southern Rock", "Bluesy Rock", "Progressive Rock", "Space Rock", "Early Metal", "Hard Rock", "Rockabilly" },
 	"Classic Rock" {<sameas rock>},
 	"New Rock" {<sameas classic_rock>, "Punk", "Johnny Two-Chord", "Screemo", "Emo"},
 	"Blues" {"Delta Blues"},

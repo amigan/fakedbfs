@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.3 2005/08/10 03:28:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.4 2005/08/13 00:21:00 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.3 2005/08/10 03:28:00 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.4 2005/08/13 00:21:00 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 }
 %token_type {Toke}
@@ -72,12 +72,27 @@ typename(A) ::= uqstring(B). {
 			heads->lastenumh->next = heads->curenumh;
 			heads->lastenumh = heads->curenumh;
 		}
+		heads->curenumh->name = B.str;
 	}
 arguments ::= ALLSUB OPAR allsubelements CPAR.
 arguments ::= NOSUB OPAR CPAR.
 arguments ::= .
 enumelements ::= enumelements COMMA enumelement.
 enumelements ::= enumelement.
+enumelement(A) ::= string(B). {
+		A.enumelem = allocz(sizeof(struct EnumElem));
+		A.enumelem->fmtname = B.str;
+		A.enumelem->name = normalise(B.str);
+		fprintf(stderr, "name %s\n", A.enumelem->name);
+		A.enumelem->value = heads->lastevalue++;
+		if(heads->enumelemhead == NULL) {
+			heads->enumelemhead = A.enumelem;
+			heads->lastenumel = A.enumelem;
+		} else {
+			heads->lastenumel->next = A.enumelem;
+			heads->lastenumel = A.enumelem;
+		}
+	}
 enumelement(A) ::= string(B) OBRACE subelements(C) CBRACE. {
 		A.enumelem = allocz(sizeof(struct EnumElem));
 		A.enumelem->fmtname = B.str;
@@ -94,19 +109,7 @@ enumelement(A) ::= string(B) OBRACE subelements(C) CBRACE. {
 		heads->lastsubval = 0;
 		heads->subelhead = heads->lastsubel = NULL;
 	}
-enumelement(A) ::= string(B). {
-		A.enumelem = allocz(sizeof(struct EnumElem));
-		A.enumelem->fmtname = B.str;
-		A.enumelem->name = normalise(B.str);
-		A.enumelem->value = heads->lastevalue++;
-		if(heads->enumelemhead == NULL) {
-			heads->enumelemhead = A.enumelem;
-			heads->lastenumel = A.enumelem;
-		} else {
-			heads->lastenumel->next = A.enumelem;
-			heads->lastenumel = A.enumelem;
-		}
-	}
+
 enumelement(A) ::= string(B) AS datatype(C). {
 		A.enumelem = allocz(sizeof(struct EnumElem));
 		A.enumelem->fmtname = B.str;
@@ -124,7 +127,7 @@ enumelement(A) ::= string(B) AS datatype(C). {
 	}
 allsubelements ::= allsubelements COMMA allsubelement.
 allsubelements ::= allsubelement.
-allsubelements(A) ::= . {A.subelem = NULL;}
+//allsubelements ::= . {A.subelem = NULL;}
 allsubelement(A) ::= subelem(B). {
 		if(heads->lastallsubval < ALLSUBSTART)
 			heads->lastallsubval = ALLSUBSTART;
@@ -149,7 +152,7 @@ allsubelement(A) ::= subelem(B). {
 	}
 subelements ::= subelements COMMA subelement.
 subelements ::= subelement.
-subelements(A) ::= . {A.subelem = NULL;}
+//subelements(A) ::= . {A.subelem = NULL;}
 subelement(A) ::= subelem(B). {
 		A.subelem = allocz(sizeof(struct EnumSubElem));
 		A.subelem->name = (B.num == 0 ? B.str : NULL);
@@ -165,7 +168,7 @@ subelement(A) ::= subelem(B). {
 			if(from == NULL) {
 				free(A.subelem);
 				heads->err = 1;
-				ferr(in, die, "parser: ERROR line %d, char %d: cannot find element %s", lincnt, chrcnt, B.str);
+				ferr(in, die, "parser: ERROR line %%d, char %%d: cannot find element %s", lincnt, chrcnt, (B.str == NULL ? "(null)" : B.str));
 				break;
 			}
 			heads->lastsubval--; /* undo what we just did */
@@ -189,9 +192,9 @@ subelement(A) ::= subelem(B). {
 		A.subelem->next = heads->curenumh->allsubs; /* this should be null if
 								none defined */
 	}
-subelem(A) ::= sedirective(B). {A.num = B.num;}
-subelem(A) ::= string(B). {A.num = 0; A.str = B.str;}
-sedirective(A) ::= LTHAN sedir(B) GTHAN.
+subelem(A) ::= sedirective(B). {A.num = B.num; A.str = B.str;}
+subelem(A) ::= STRING(B). {A.num = 0; A.str = B.str;}
+sedirective(A) ::= LTHAN sedir(B) GTHAN. {A.num = B.num; A.str = B.str;}
 sedir(A) ::= SELF. {A.num = 1;}
 sedir(A) ::= SAMEAS uqstring(B). {
 		A.num = 2; A.str = B.str; }
@@ -278,7 +281,7 @@ abd(A) ::= FC. { /* first letter uppercase */
 enumblock ::= ENUM typename(A) arguments headdoer OBRACE enumelements CBRACE. {
 		heads->curenumh->headelem = heads->enumelemhead;
 		heads->curenumh->allsubs = heads->allsubelhead;
-		heads->curenumh->name = A.str;
+		/* heads->curenumh->name = A.str; */
 		heads->enumelemhead = NULL;
 		heads->lastenumel = NULL;
 		heads->curenumel = NULL;

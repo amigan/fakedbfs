@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.3 2005/08/10 03:28:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.4 2005/08/13 00:21:00 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.3 2005/08/10 03:28:00 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.4 2005/08/13 00:21:00 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -264,7 +264,7 @@ int add_enum_elem(f, tname, name, fmtname, value, dtype, subelements)
 	char *sql, *emsg;
 	int rc;
 	sql = sqlite3_mprintf("INSERT OR REPLACE INTO %s "
-		 "(name, fmtname, value, other, subelements) (%q, %q, %d, %d, %q);",
+		 "(name, fmtname, value, other, subelements) ('%q', '%q', %d, %d, '%q');",
 		 tname, name, fmtname, value, (int)dtype, subelements == NULL ? "" : subelements);
 	rc = sqlite3_exec(f->db, sql, NULL, NULL, &emsg);
 	sqlite3_free(sql);

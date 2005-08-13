@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2005, Dan Ponte
  *
- * memory.c - allocation and free functions
+ * debug.c - debugging stuff (list dumps, etc)
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.4 2005/08/13 00:21:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/debug.c,v 1.1 2005/08/13 00:21:00 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,169 +39,117 @@
 /* us */
 #include <dbspecdata.h>
 #include <fakedbfs.h>
-#include <lexdefines.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.4 2005/08/13 00:21:00 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/debug.c,v 1.1 2005/08/13 00:21:00 dcp1990 Exp $")
 
-
-void* allocz(size)
-	size_t size;
-{
-	void *p = malloc(size);
-	memset(p, 0, size);
-	return p;
-}
-
-struct EnumSubElem* free_enum_sub_elem(e, allsub) /* returns next */
+struct EnumSubElem* dump_enum_sub_elem(e, allsub) /* returns next */
 	struct EnumSubElem *e;
 	short int allsub; /* are we intentionally freeing allsubs? */
 {
 	struct EnumSubElem *nx;
-	if((e->flags & SUBE_IS_ALLSUB) && !allsub) return NULL;
-	if(!(e->flags & SUBE_IS_SAMEAS) && e->name != NULL) {
-		free(e->name);
-	}
 	nx = e->next;
-	free(e);
+	printf("subelem '%s'. value == %d. father == %p. flags == %x.%s\n", e->name,
+			e->value, e->father, e->flags, allsub ? " allsub." : "");
 	return nx;
 }
 
-void free_enum_sub_elem_list(head, allsub)
+void dump_enum_sub_elem_list(head, allsub)
 	struct EnumSubElem *head;
 	short int allsub;
 {
 	struct EnumSubElem *c, *next;
 	for(c = head; c != NULL; c = next) {
-		next = free_enum_sub_elem(c, allsub);
+		next = dump_enum_sub_elem(c, allsub);
 	}
 }
 
-struct EnumElem* free_enum_elem(e)
+struct EnumElem* dump_enum_elem(e)
 	struct EnumElem *e;
 {
 	struct EnumElem *nx;
-	/* if(e->name == e->fmtname) {
-		free(e->name);
-	} else { */
-		free(e->name);
-		free(e->fmtname);
-	/* } */
 	nx = e->next;
-	free_enum_sub_elem_list(e->subhead, 0);
-	free(e);
+	printf("enumelem '%s'. fmtname '%s'. value == %d. other == %d. otype == %d.\n",
+			e->name, e->fmtname, e->value, e->other, e->othertype);
+	dump_enum_sub_elem_list(e->subhead, 0);
 	return nx;
 }
 
-void free_enum_elem_list(head)
+void dump_enum_elem_list(head)
 	struct EnumElem *head;
 {
 	struct EnumElem *c, *next;
 	for(c = head; c != NULL; c = next) {
-		next = free_enum_elem(c);
+		next = dump_enum_elem(c);
 	}
 }
 
-struct EnumHead* free_enum_head(e)
+struct EnumHead* dump_enum_head(e)
 	struct EnumHead *e;
 {
 	struct EnumHead *nx;
-	free(e->name);
-	free_enum_sub_elem_list(e->allsubs, 1);
-	free_enum_elem_list(e->headelem);
+	printf("enumhead '%s'. flags == %x. allsubs == %p.\n",
+			e->name, e->flags, e->allsubs);
+	dump_enum_sub_elem_list(e->allsubs, 1);
+	dump_enum_elem_list(e->headelem);
 	nx = e->next;
-	free(e);
 	return nx;
 }
 
-void free_enum_head_list(head)
+void dump_enum_head_list(head)
 	struct EnumHead *head;
 {
 	struct EnumHead *c, *next;
 	for(c = head; c != NULL; c = next) {
-		next = free_enum_head(c);
+		next = dump_enum_head(c);
 	}
 }
 
 /* catalogues */
 
-struct CatElem* free_cat_elem(e)
+struct CatElem* dump_cat_elem(e)
 	struct CatElem *e;
 {
 	struct CatElem *nx;
-	if(e->name == e->alias) {
-		free(e->name);
-	} else {
-		free(e->name);
-		free(e->alias);
-	}
+	printf("catelem '%s'. alias '%s'. type == %d. ehead == %p. flags = %d. n %c= al.\n",
+			e->name, e->alias, e->type, e->enumptr, e->flags,
+			e->name == e->alias ? '=' : '!');
 	nx = e->next;
-	free(e);
 	return nx;
 }
 
-void free_cat_elem_list(head)
+void dump_cat_elem_list(head)
 	struct CatElem *head;
 {
 	struct CatElem *c, *next;
 	for(c = head; c != NULL; c = next) {
-		next = free_cat_elem(c);
+		next = dump_cat_elem(c);
 	}
 }
 
-struct CatalogueHead* free_cat_head(e)
+struct CatalogueHead* dump_cat_head(e)
 	struct CatalogueHead *e;
 {
 	struct CatalogueHead *nx;
-	if(e->name == e->fmtname) {
-		free(e->name);
-	} else {
-		free(e->name);
-		free(e->fmtname);
-	}
-	free_cat_elem_list(e->headelem);
+	printf("cathead '%s'. fmtname '%s'. flags == %x. headel == %p. n %c= fmtn.\n",
+			e->name, e->fmtname, e->flags, e->headelem, e->name == e->fmtname ?
+			'=' : '!');
+	dump_cat_elem_list(e->headelem);
 	nx = e->next;
-	free(e);
 	return nx;
 }
 
-void free_cat_head_list(head)
+void dump_cat_head_list(head)
 	struct CatalogueHead *head;
 {
 	struct CatalogueHead *c, *next;
 	for(c = head; c != NULL; c = next) {
-		next = free_cat_head(c);
+		next = dump_cat_head(c);
 	}
 }
 
-void free_head_members(hd) /* only the heads contained within, not the structure itself */
+void dump_head_members(hd) /* only the heads contained within, not the structure itself */
 	Heads *hd;
 {
-	free_cat_head_list(hd->cathead);
-	free_enum_head_list(hd->enumhead);
-}
-
-void estr_free(e)
-	error_t *e;
-{
-	if(e->emsg == NULL) return;
-	if(e->freeit) free(e->emsg);
-	e->emsg = NULL;
-}
-
-char* strdupq(s)
-	char *s;
-{
-	/* I am indebted to FreeBSD's /usr/src/lib/libc/string/strdup.c */
-        size_t len;
-        char *copy;
-	char *str = s;
-
-	if(*str == '"')
-		str++;
-
-        len = strlen(str) + (str[strlen(str) - 1] == '"' ? 0 : 1);
-        if ((copy = malloc(len)) == NULL)
-                return (NULL);
-        memcpy(copy, str, len);
-        return (copy); 
+	dump_cat_head_list(hd->cathead);
+	dump_enum_head_list(hd->enumhead);
 }
