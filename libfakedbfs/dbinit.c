@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.14 2005/08/13 19:56:36 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.15 2005/08/13 20:00:44 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.14 2005/08/13 19:56:36 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.15 2005/08/13 20:00:44 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -387,7 +387,7 @@ int new_catalog(f, specfile, h)
 		snprintf(ilbuffer, sizeof(ilbuffer), ",%s%s", c->name, gettype(c->type));
 		strlcat(tdesc, ilbuffer, tds);
 		if(c->flags & CATE_USES_FC)
-			*c->name = toupper(*c->name); /* XXX: is this safe? */
+			*c->name = toupper(*c->name); /* XXX: is this safe?  just make sure that this field stays dynamic*/
 
 		if(c->type == oenum)
 			ptname = c->enumptr->name;

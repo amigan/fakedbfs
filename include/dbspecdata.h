@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/dbspecdata.h,v 1.3 2005/08/13 19:56:36 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/dbspecdata.h,v 1.4 2005/08/13 20:01:03 dcp1990 Exp $ */
 #ifndef HAVE_DBSPECDATA_H
 #define HAVE_DBSPECDATA_H 1
 #define MAXLINE 2048
@@ -92,6 +92,10 @@ struct EnumSubHead {
 	short int hasSelf;
 };
 #endif
+
+/* NB: *ALL* name/alias-type fields (basically anything not a const char*) *MUST* be allocated dynamically (or at the very least located
+ * in writeable memory, but this will fuck up free_() functions), or strange segfaults will result.
+ */
 #define SUBE_IS_SELF 0x1
 #define SUBE_IS_SAMEAS 0x2
 #define SUBE_IS_ALLSUB 0x4
