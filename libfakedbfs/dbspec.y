@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.8 2005/08/13 02:48:14 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.9 2005/08/13 03:02:45 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.8 2005/08/13 02:48:14 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.9 2005/08/13 03:02:45 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 }
 %token_type {Toke}
@@ -252,9 +252,10 @@ catelem(A) ::= string(B) aliasdef(C) AS catdatatype(D). {
 		A.catelem->type = (enum DataType)D.num;
 	}
 catdatatype(A) ::= datatype(B). {
+		A.ehead = NULL;
 		A.num = B.num;
 	}
-catdatatype(A) ::= EN ENUMNAME(B). {
+catdatatype(A) ::= EN uqstring(B). {
 		A.num = (enum DataType)oenum;
 		A.ehead = find_enumhead_by_name(heads->enumhead, B.str);
 		if(A.ehead == NULL) {
@@ -263,7 +264,7 @@ catdatatype(A) ::= EN ENUMNAME(B). {
 			break;
 		}
 	}
-catdatatype(A) ::= EN ENUMNAME(B) DOTSUB. {
+catdatatype(A) ::= EN uqstring(B) DOTSUB. {
 		A.num = (enum DataType)oenumsub;
 		A.ehead = find_enumhead_by_name(heads->enumhead, B.str);
 		if(A.ehead == NULL) {

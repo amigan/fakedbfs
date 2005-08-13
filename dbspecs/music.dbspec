@@ -1,6 +1,6 @@
 /* music/sound collection definition file
 	(C)2005, Dan Ponte */
-/* $Amigan: fakedbfs/dbspecs/music.dbspec,v 1.4 2005/08/13 00:21:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/dbspecs/music.dbspec,v 1.5 2005/08/13 03:02:45 dcp1990 Exp $ */
 
 ENUM genre_type ALLSUB(<self>) {
 	"Rock" { "Southern Rock", "Bluesy Rock", "Progressive Rock", "Space Rock", "Early Metal", "Hard Rock", "Rockabilly" },
@@ -27,7 +27,7 @@ ENUM music_type ALLSUB(<self>, "Normal", "Instrumental") {
 	"Single"
 };
 
-CATALOGUE_TYPE music = <fc> {
+CATALOGUE music = <fc> {
 	"artist" = <fc> as string,
 	"title" = <fc> as string,
 	"album" = <fc> as string,
