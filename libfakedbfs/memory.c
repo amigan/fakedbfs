@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.5 2005/08/13 00:35:35 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.6 2005/08/13 02:52:53 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -41,7 +41,7 @@
 #include <fakedbfs.h>
 #include <lexdefines.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.5 2005/08/13 00:35:35 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.6 2005/08/13 02:52:53 dcp1990 Exp $")
 
 
 void* allocz(size)
@@ -201,9 +201,6 @@ char* strdupq(s)
 		str++;
 
 	c = strrchr(str, '"');
-#ifdef PARSERDEBUG
-	fprintf(stderr, "c = %p (%c)\n", c, c != NULL ? *c : '^');
-#endif
         len = strlen(str) + (c != NULL ? 0 : 1);
         if ((copy = malloc(len)) == NULL)
                 return (NULL);
