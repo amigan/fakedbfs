@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.12 2005/08/13 06:48:04 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.13 2005/08/13 06:48:48 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.12 2005/08/13 06:48:04 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.13 2005/08/13 06:48:48 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 }
 %token_type {Toke}
@@ -171,7 +171,6 @@ subelement(A) ::= subelem(B). {
 			fdbfs_t *in = (fdbfs_t*)heads->instance;
 			from = find_elem_by_name(heads->enumelemhead, B.str);
 			if(from == NULL) {
-				dump_enum_elem_list(heads->enumelemhead);
 				free(A.subelem);
 				heads->err = 1;
 				ferr(in, die, "parser: ERROR line %%d, char %%d: cannot find element %s", lincnt, chrcnt, (B.str == NULL ? "(null)" : B.str));
