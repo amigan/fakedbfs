@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.12 2005/08/13 17:52:05 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.13 2005/08/13 19:28:37 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.12 2005/08/13 17:52:05 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.13 2005/08/13 19:28:37 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -138,11 +138,41 @@ struct EnumElem* find_elem_by_name(h, name)
 	return NULL;
 }
 
+struct CatElem* find_catelem_enum(h, en)
+	struct CatElem *h;
+	struct EnumHead *en;
+{
+	struct CatElem *c;
+
+	for(c = h; c != NULL; c = c->next) {
+		if(c->enumptr == en && c->type == oenum)
+			return c;
+	}
+
+	return NULL;
+}
+
 struct CatalogueHead* find_cathead_by_name(h, name)
 	struct CatalogueHead *h;
 	char *name;
 {
 	struct CatalogueHead *c;
+	if(h == NULL) return NULL;
+	if(name == NULL)
+		return NULL;
+	for(c = h; c != NULL; c = c->next) {
+		if(c->name != NULL)
+			if(strcasecmp(name, c->name) == 0)
+				return c;
+	}
+	return NULL;
+}
+
+struct CatElem* find_catelem_by_name(h, name)
+	struct CatElem *h;
+	char *name;
+{
+	struct CatElem *c;
 	if(h == NULL) return NULL;
 	if(name == NULL)
 		return NULL;

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.5 2005/08/13 00:21:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.6 2005/08/13 19:28:36 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -68,6 +68,7 @@ typedef struct fdbfs_instance {
 	char *dbname;
 	sqlite3 *db;
 	error_t error;
+	int synec, lino, chro;
 } fdbfs_t;
 typedef enum coltype {
 	text,
@@ -98,6 +99,7 @@ char* normalise(char *s);
 struct EnumElem* find_elem_by_name(struct EnumElem *h, char *name);
 struct EnumHead* find_enumhead_by_name(struct EnumHead *h, char *name);
 struct CatalogueHead* find_cathead_by_name(struct CatalogueHead *h, char *name);
+struct CatElem* find_catelem_by_name(struct CatElem *h, char *name);
 struct EnumSubElem* copy_sub_list(
 		struct EnumSubElem *from, 
 		struct EnumSubElem *to,
@@ -148,6 +150,7 @@ struct CatalogueHead* dump_cat_head(struct CatalogueHead *e);
 void dump_cat_head_list(struct CatalogueHead *head);
 void dump_head_members(Heads *hd);
 char* strdupq(char *s);
+struct CatElem* find_catelem_enum(struct CatElem *h, struct EnumHead *en);
 
 
 /* application interfaces */

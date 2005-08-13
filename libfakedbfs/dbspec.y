@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.14 2005/08/13 17:50:52 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.15 2005/08/13 19:28:37 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.14 2005/08/13 17:50:52 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.15 2005/08/13 19:28:37 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 extern char *yytext;
 }
@@ -225,7 +225,7 @@ uqstring(A) ::= UQSTRING(B). {
 	}
 catelems ::= catelems COMMA catelem.
 catelems ::= catelem.
-catelem(A) ::= string(B) aliasdef(C) AS catdatatype(D). {
+catelem(A) ::= uqstring(B) aliasdef(C) AS catdatatype(D). {
 		A.catelem = allocz(sizeof(*A.catelem));
 		A.catelem->name = B.str;
 		switch(C.num) {
@@ -274,13 +274,13 @@ catdatatype(A) ::= EN uqstring(B). {
 	}
 catdatatype(A) ::= EN uqstring(B) DOTSUB. {
 		A.num = (enum DataType)oenumsub;
-		A.ehead = find_enumhead_by_name(heads->enumhead, B.str);
-		if(A.ehead == NULL) {
+		A.catelem = find_catelem_by_name(heads->catelemhead, B.str);
+		if(A.catelem == NULL || A.catelem->type != oenum) {
 			fdbfs_t *in = (fdbfs_t*)heads->instance;
-			ferr(in, die, "Can't find enum named %s. ", B.str);
+			ferr(in, die, "Can't find previous element named %s with type enum. ", B.str);
 			break;
 		}
-
+		A.ehead = A.catelem->enumptr;
 	}
 aliasdef(A) ::= EQUALS aliasbd(B). {
 		A.num = B.num;
