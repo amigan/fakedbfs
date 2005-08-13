@@ -1,8 +1,8 @@
 # BSD make makefile for the fakedbfs distribution
 # (C)2005, Dan Ponte
-# $Amigan: fakedbfs/Makefile,v 1.1 2005/08/13 21:49:51 dcp1990 Exp $
+# $Amigan: fakedbfs/Makefile,v 1.2 2005/08/13 21:50:59 dcp1990 Exp $
 include globals.mk
-COMPONENTS=libfakedbfs fcreatedb
+COMPONENTS=buildtools libfakedbfs fcreatedb
 COMPSUF=${COMPONENTS:S/$/_cmp/}
 CMPSCLEAN=${COMPONENTS:S/$/_cl/}
 CLEANFILES=.config
