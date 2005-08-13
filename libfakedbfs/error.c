@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/error.c,v 1.3 2005/08/13 00:20:01 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/error.c,v 1.4 2005/08/13 06:25:35 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -38,9 +38,9 @@
 #include <stdarg.h> /* this may not be portable...just rewrite these routines that use it if needed. */
 /* us */
 #include <fakedbfs.h>
-#define BUFSIZE 256
+#define BUFSIZE 512
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/error.c,v 1.3 2005/08/13 00:20:01 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/error.c,v 1.4 2005/08/13 06:25:35 dcp1990 Exp $")
 
 int ferr(fdbfs_t *f, enum ErrorAction severity, char *fmt, ...)
 {
