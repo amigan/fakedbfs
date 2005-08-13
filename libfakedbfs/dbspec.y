@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.9 2005/08/13 03:02:45 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.10 2005/08/13 03:11:14 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.9 2005/08/13 03:02:45 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.10 2005/08/13 03:11:14 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 }
 %token_type {Toke}
@@ -143,7 +143,6 @@ allsubelement(A) ::= subelem(B). {
 		A.subelem->flags |= SUBE_IS_ALLSUB;
 		if(B.num == 1) {
 			A.subelem->flags |= SUBE_IS_SELF;
-			A.subelem->name = "!SELF!";
 		} else if(B.num == 2) { /* same as */
 			A.subelem->flags |= SUBE_IS_SELF; /*for lack of a better way */
 			free(B.str); /* must do when done */
@@ -166,7 +165,6 @@ subelement(A) ::= subelem(B). {
 		A.subelem->father = heads->lastenumel;
 		if(B.num == 1) {
 			A.subelem->flags |= SUBE_IS_SELF;
-			A.subelem->name = "!RSELF!";
 		} else if(B.num == 2) { /* same as */
 			struct EnumElem *from;
 			struct EnumSubElem *las;
