@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.5 2005/08/13 00:25:13 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.6 2005/08/13 00:50:20 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.5 2005/08/13 00:25:13 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.6 2005/08/13 00:50:20 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 }
 %token_type {Toke}
@@ -83,7 +83,6 @@ enumelement(A) ::= string(B). {
 		A.enumelem = allocz(sizeof(struct EnumElem));
 		A.enumelem->fmtname = B.str;
 		A.enumelem->name = normalise(B.str);
-		fprintf(stderr, "name %s\n", A.enumelem->name);
 		A.enumelem->value = heads->lastevalue++;
 		if(heads->enumelemhead == NULL) {
 			heads->enumelemhead = A.enumelem;
@@ -93,12 +92,8 @@ enumelement(A) ::= string(B). {
 			heads->lastenumel = A.enumelem;
 		}
 	}
-enumelement(A) ::= string(B) OBRACE subelements(C) CBRACE. {
+allocer(A) ::= . {
 		A.enumelem = allocz(sizeof(struct EnumElem));
-		A.enumelem->fmtname = B.str;
-		A.enumelem->name = normalise(B.str);
-		A.enumelem->subhead = C.subelem;
-		A.enumelem->value = heads->lastevalue++;
 		if(heads->enumelemhead == NULL) {
 			heads->enumelemhead = A.enumelem;
 			heads->lastenumel = A.enumelem;
@@ -108,6 +103,13 @@ enumelement(A) ::= string(B) OBRACE subelements(C) CBRACE. {
 		}
 		heads->lastsubval = 0;
 		heads->subelhead = heads->lastsubel = NULL;
+	}
+enumelement(A) ::= string(B) allocer(X) OBRACE subelements(C) CBRACE. {
+		X.enumelem->fmtname = B.str;
+		X.enumelem->name = normalise(B.str);
+		X.enumelem->subhead = C.subelem;
+		X.enumelem->value = heads->lastevalue++;
+		A.enumelem = X.enumelem;
 	}
 
 enumelement(A) ::= string(B) AS datatype(C). {
@@ -175,11 +177,9 @@ subelement(A) ::= subelem(B). {
 			heads->lastsubval--; /* undo what we just did */
 			las = copy_sub_list(from->subhead, A.subelem,
 				heads->lastenumel, &heads->lastsubval);
-			if(las != NULL) {
-				if(heads->lastsubel != NULL)
-					heads->lastsubel->next = A.subelem;
-				heads->lastsubel = las;
-			}
+			if(heads->lastsubel != NULL)
+				heads->lastsubel->next = A.subelem;
+			heads->lastsubel = las;
 			free(B.str); /* must do when done */
 		}
 		if(heads->subelhead == NULL) {
@@ -187,7 +187,8 @@ subelement(A) ::= subelem(B). {
 			if(B.num != 2)
 				heads->lastsubel = A.subelem;
 		} else if(B.num != 2) {
-			heads->lastsubel->next = A.subelem;
+			if(heads->lastsubel != NULL)
+				heads->lastsubel->next = A.subelem;
 			heads->lastsubel = A.subelem;
 		}
 		A.subelem->next = heads->curenumh->allsubs; /* this should be null if
