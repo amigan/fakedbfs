@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.7 2005/08/13 02:41:03 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.8 2005/08/13 02:48:14 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.7 2005/08/13 02:41:03 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.8 2005/08/13 02:48:14 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 }
 %token_type {Toke}
@@ -74,7 +74,10 @@ typename(A) ::= uqstring(B). {
 		}
 		heads->curenumh->name = B.str;
 	}
-arguments ::= ALLSUB OPAR allsubelements CPAR.
+clearallsub ::= . {
+		heads->allsubelhead = heads->lastallsubel = NULL;
+	}
+arguments ::= ALLSUB clearallsub OPAR allsubelements CPAR.
 arguments ::= NOSUB OPAR CPAR.
 arguments ::= .
 enumelements ::= enumelements COMMA enumelement.
@@ -101,7 +104,7 @@ allocer(A) ::= . {
 			heads->lastenumel->next = A.enumelem;
 			heads->lastenumel = A.enumelem;
 		}
-		heads->lastsubval = 0;
+		heads->lastsubval = heads->lastallsubval = 0;
 		heads->subelhead = heads->lastsubel = NULL;
 	}
 enumelement(A) ::= string(B) allocer(X) OBRACE subelements(C) CBRACE. {
@@ -148,7 +151,7 @@ allsubelement(A) ::= subelem(B). {
 		if(heads->allsubelhead == NULL) {
 			heads->allsubelhead = A.subelem;
 			heads->lastallsubel = A.subelem;
-		} else if(B.num != 2) {
+		} else {
 			heads->lastallsubel->next = A.subelem;
 			heads->lastallsubel = A.subelem;
 		}
