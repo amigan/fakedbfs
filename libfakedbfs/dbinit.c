@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.15 2005/08/13 20:00:44 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.16 2005/08/13 21:49:51 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.15 2005/08/13 20:00:44 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.16 2005/08/13 21:49:51 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -91,7 +91,10 @@ int parse_definition(f, filename)
 	h.db_cath = cats_from_db(f, h.db_enumh);
 	if(h.db_cath == NULL && f->error.emsg != NULL)
 		return CERR(die, "parse_definition: catalogue importation failed. ", NULL);
-	tf = fopen(filename, "r");
+	if(strcmp(filename, "-") == 0)
+		tf = stdin;
+	else
+		tf = fopen(filename, "r");
 	if(!tf)
 		return ERR(die, "parse_definition: opening %s: %s", filename, strerror(errno));
 	parser = ParseAlloc(malloc);
