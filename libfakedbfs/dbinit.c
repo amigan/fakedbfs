@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.6 2005/08/13 01:05:49 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.7 2005/08/13 02:41:03 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.6 2005/08/13 01:05:49 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.7 2005/08/13 02:41:03 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -424,6 +424,9 @@ struct EnumSubElem* subelements_from_field(f, fajah, subs)
 	char *dsp, *op;
 	struct EnumSubElem *c = NULL, *n, *h = NULL;
 
+	if(subs == NULL)
+		return NULL;
+
 	while((p = strsep(&cs, "\x1E" /* record sep */)) != NULL) {
 		dsp = p;
 		op = strsep(&dsp, "\x1F");
@@ -478,7 +481,8 @@ struct EnumElem* enumelems_from_dbtab(f, table)
 		cefmt = strdup(sqlite3_column_text(cst, 2));
 		cval = sqlite3_column_int(cst, 3);
 		oth = sqlite3_column_int(cst, 4);
-		subs = strdup(sqlite3_column_text(cst, 5));
+		subs = (char*)sqlite3_column_text(cst, 5);
+		subs = (subs == NULL ? NULL : strdup(subs));
 		n = allocz(sizeof(*n));
 		n->name = cename;
 		n->fmtname = cefmt;
@@ -486,7 +490,8 @@ struct EnumElem* enumelems_from_dbtab(f, table)
 		n->other = (oth == oenum ? 0 : 1);
 		n->othertype = oth;
 		n->subhead = subelements_from_field(f, n, subs);
-		free(subs);
+		if(subs != NULL)
+			free(subs);
 		
 		if(h == NULL) {
 			h = c = n;
@@ -495,7 +500,7 @@ struct EnumElem* enumelems_from_dbtab(f, table)
 			c = c->next;
 		}
 		
-		if(n->subhead == NULL) {
+		if(n->subhead == NULL && f->error.emsg != NULL) {
 			free_enum_elem_list(h);
 			sqlite3_finalize(cst);
 			CERR(die, "enumelems_from_dbtab: subelements. ", NULL);
@@ -504,6 +509,7 @@ struct EnumElem* enumelems_from_dbtab(f, table)
 	}
 
 	sqlite3_finalize(cst);
+
 
 	return h;
 }
@@ -543,7 +549,7 @@ struct EnumHead* enums_from_db(f)
 			c = c->next;
 		}
 
-		if(n->headelem == NULL) {
+		if(n->headelem == NULL && f->error.emsg != NULL) {
 			free_enum_head_list(h);
 			sqlite3_finalize(cst);
 			CERR(die, "enums_from_db: from dbtab error. ", NULL);
@@ -556,6 +562,7 @@ struct EnumHead* enums_from_db(f)
 		CERR(die, "enums_from_db: error pulling existing enums: %s", sqlite3_errmsg(f->db));
 		return NULL;
 	}
+
 
 	sqlite3_finalize(cst);
 
