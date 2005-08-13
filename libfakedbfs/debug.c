@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/debug.c,v 1.1 2005/08/13 00:21:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/debug.c,v 1.2 2005/08/13 02:40:53 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -40,7 +40,7 @@
 #include <dbspecdata.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/debug.c,v 1.1 2005/08/13 00:21:00 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/debug.c,v 1.2 2005/08/13 02:40:53 dcp1990 Exp $")
 
 struct EnumSubElem* dump_enum_sub_elem(e, allsub) /* returns next */
 	struct EnumSubElem *e;
@@ -48,7 +48,7 @@ struct EnumSubElem* dump_enum_sub_elem(e, allsub) /* returns next */
 {
 	struct EnumSubElem *nx;
 	nx = e->next;
-	printf("subelem '%s'. value == %d. father == %p. flags == %x.%s\n", e->name,
+	printf("subelem %p '%s'. value == %d. father == %p. flags == %x.%s\n", e, e->name,
 			e->value, e->father, e->flags, allsub ? " allsub." : "");
 	return nx;
 }
