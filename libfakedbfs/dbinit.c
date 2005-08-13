@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.5 2005/08/13 00:50:20 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.6 2005/08/13 01:05:49 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.5 2005/08/13 00:50:20 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.6 2005/08/13 01:05:49 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -110,7 +110,6 @@ int parse_definition(f, filename)
 #endif
 			Parse(parser, rc, tz, &h);
 			if(h.err || f->error.emsg != NULL) {
-				dump_head_members(&h);
 				CERR(die, "parse_definition(f, \"%s\"): error after Parse(). ", filename);
 				fclose(tf);
 				return 0;
@@ -121,6 +120,7 @@ int parse_definition(f, filename)
 	ParseFree(parser, free);
 	free_enum_head_list(h.db_enumh);
 	free_cat_head_list(h.db_cath);
+	dump_head_members(&h);
 	fclose(tf);
 	return make_tables_from_spec(f, filename, &h);
 }

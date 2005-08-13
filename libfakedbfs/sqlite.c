@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.4 2005/08/13 00:21:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.5 2005/08/13 01:05:49 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.4 2005/08/13 00:21:00 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.5 2005/08/13 01:05:49 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -261,18 +261,34 @@ int add_enum_elem(f, tname, name, fmtname, value, dtype, subelements)
 	enum DataType dtype; /* XXX: check if enum values (the C type) are constant */
 	char *subelements;
 {
-	char *sql, *emsg;
+	char *sql;
 	int rc;
+	const char *tail;
+	sqlite3_stmt *cst;
+
 	sql = sqlite3_mprintf("INSERT OR REPLACE INTO %s "
-		 "(name, fmtname, value, other, subelements) ('%q', '%q', %d, %d, '%q');",
-		 tname, name, fmtname, value, (int)dtype, subelements == NULL ? "" : subelements);
-	rc = sqlite3_exec(f->db, sql, NULL, NULL, &emsg);
+		 "(name, fmtname, value, other, subelements) VALUES('%q', '%q', %d, %d, ?)",
+		 tname, name, fmtname, value, (int)dtype);
+	rc = sqlite3_prepare(f->db, sql, strlen(sql), &cst, &tail);
 	sqlite3_free(sql);
 	if(rc != SQLITE_OK) {
-		ERR(die, "add_enum_elem(f, \"%s\", \"%s\", \"%s\", %u, %d, \"%s\"): SQLite error after exec: %s", tname, name, fmtname, value, (int)dtype, subelements, emsg);
-		sqlite3_free(emsg);
+		ERR(die, "add_enum_elem(f, \"%s\", \"%s\", \"%s\", %u, %d, \"%s\"): SQLite error after prepare: %s", tname, name, fmtname, value, (int)dtype, subelements,
+				sqlite3_errmsg(f->db));
 		return 0;
 	}
+	
+	if(subelements == NULL)
+		sqlite3_bind_null(cst, 1);
+	else
+		sqlite3_bind_text(cst, 1, subelements, strlen(subelements), SQLITE_STATIC);
+	
+	rc = sqlite3_step(cst);
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
+		ERR(die, "add_enum_elem(f, \"%s\", \"%s\", \"%s\", %u, %d, \"%s\"): SQLite error after step: %s", tname, name, fmtname, value, (int)dtype, subelements,
+				sqlite3_errmsg(f->db));
+		return 0;
+	}
+
 	return 1;
 }
 
