@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.8 2005/08/13 06:26:48 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.9 2005/08/13 06:48:04 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.8 2005/08/13 06:26:48 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.9 2005/08/13 06:48:04 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -438,6 +438,8 @@ struct EnumSubElem* subelements_from_field(f, fajah, subs)
 		dsp = p;
 		op = strsep(&dsp, "\x1F");
 		/* op is the name, dsp is the value */
+		if(dsp == NULL)
+			continue;
 		n = allocz(sizeof(*n));
 		if(*op == '\x11' /* DC1 */) {
 			n->name = NULL;
@@ -603,7 +605,9 @@ struct CatElem* catelems_from_dbtab(f, table, enumhead)
 		ccname = strdup(sqlite3_column_text(cst, 1));
 		ccfmt = strdup(sqlite3_column_text(cst, 2));
 		cctype = sqlite3_column_int(cst, 3);
-		cenumname = strdup(sqlite3_column_text(cst, 4));
+		cenumname = (char*)sqlite3_column_text(cst, 4);
+		if(cenumname != NULL)
+			cenumname = strdup(cenumname);
 		n = allocz(sizeof(*n));
 		n->name = ccname;
 		n->alias = ccfmt;

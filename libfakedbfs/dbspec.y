@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.11 2005/08/13 06:24:16 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.12 2005/08/13 06:48:04 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.11 2005/08/13 06:24:16 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.12 2005/08/13 06:48:04 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 }
 %token_type {Toke}
@@ -107,10 +107,10 @@ allocer(A) ::= . {
 		heads->lastsubval = heads->lastallsubval = 0;
 		heads->subelhead = heads->lastsubel = NULL;
 	}
-enumelement(A) ::= string(B) allocer(X) OBRACE subelements(C) CBRACE. {
+enumelement(A) ::= string(B) allocer(X) OBRACE subelements CBRACE. {
 		X.enumelem->fmtname = B.str;
 		X.enumelem->name = normalise(B.str);
-		X.enumelem->subhead = C.subelem;
+		X.enumelem->subhead = heads->subelhead;
 		X.enumelem->value = heads->lastevalue++;
 		A.enumelem = X.enumelem;
 	}
@@ -299,7 +299,8 @@ enumblock ::= ENUM typename(A) arguments headdoer OBRACE enumelements CBRACE. {
 		heads->enumelemhead = NULL;
 		heads->lastenumel = NULL;
 		heads->curenumel = NULL;
-		heads->allsubelhead = NULL;
+		heads->allsubelhead = heads->lastallsubel = NULL;
+		heads->subelhead = heads->lastsubel = NULL;
 		heads->lastevalue = heads->lastallsubval = 0;
 	}
 
