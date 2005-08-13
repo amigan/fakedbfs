@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.5 2005/08/10 03:28:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.6 2005/08/13 20:10:19 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -41,7 +41,7 @@
 #define ARGSPEC "vhad:"
 #define FCREATEVER "0.1"
 
-RCSID("$Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.5 2005/08/10 03:28:00 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.6 2005/08/13 20:10:19 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int append = 0;
@@ -132,7 +132,7 @@ int main(argc, argv)
 			return -1;
 		}
 
-	fprintf(stderr, "Reading specfile %s...\n", specf);
+	printf("Reading specfile %s...\n", specf);
 
 	if(!parse_definition(f, specf)) {
 		fprintf(stderr, "Error parsing: %s\n", f->error.emsg);
@@ -142,6 +142,8 @@ int main(argc, argv)
 		free(specf);
 		return -1;
 	}
+
+	printf("Database updated.\n");
 
 	destroy_fdbfs(f);
 	free(dbf);
