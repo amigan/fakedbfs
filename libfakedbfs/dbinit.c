@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.13 2005/08/13 19:28:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.14 2005/08/13 19:56:36 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.13 2005/08/13 19:28:37 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.14 2005/08/13 19:56:36 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -349,6 +349,7 @@ int new_catalog(f, specfile, h)
 	size_t tds = 1;
 	const size_t tln = sizeof(char) * (strlen(h->name) + strlen(tnamepre) + 3);
 	const size_t fln = sizeof(char) * (strlen(h->name) + strlen(fieldpre) + 3);
+	char *ptname;
 	
 	tablename = malloc(tln);
 	fieldtable = malloc(fln);
@@ -387,7 +388,15 @@ int new_catalog(f, specfile, h)
 		strlcat(tdesc, ilbuffer, tds);
 		if(c->flags & CATE_USES_FC)
 			*c->name = toupper(*c->name); /* XXX: is this safe? */
-		if(!add_to_field_desc(f, fieldtable, c->name, c->alias, c->type, ((c->type == oenum || c->type == oenumsub) && c->enumptr != NULL ? c->enumptr->name : NULL))) {
+
+		if(c->type == oenum)
+			ptname = c->enumptr->name;
+		else if(c->type == oenumsub)
+			ptname = c->subcatel->name;
+		else
+			ptname = NULL;
+
+		if(!add_to_field_desc(f, fieldtable, c->name, c->alias, c->type, ptname)) {
 			CERR(die, "new_catalog(f, \"%s\", h): error adding to cat field desc. ", specfile);
 			free(tablename);
 			free(fieldtable);
@@ -638,14 +647,20 @@ struct CatElem* catelems_from_dbtab(f, table, enumhead)
 		n->name = ccname;
 		n->alias = ccfmt;
 		n->type = cctype;
-		/* XXX: we don't check that an oenum element exists before allowing an 
-		 * oenumsub. This may not be a big deal, but if anyone is bored and
-		 * wants to fix it, feel free :-P
-		 */
-		if(cctype == oenum || cctype == oenumsub) {
+
+		if(cctype == oenum) {
 			n->enumptr = find_enumhead_by_name(enumhead, cenumname);
 			if(n->enumptr == NULL) {
 				CERR(die, "Cannot find enum named %s! ", cenumname);
+				free(cenumname);
+				free_cat_elem_list(h != NULL ? h : n);
+				sqlite3_finalize(cst);
+				return NULL;
+			}
+		} else if(cctype == oenumsub) {
+			n->subcatel = find_catelem_by_name(h, cenumname);
+			if(n->subcatel == NULL) {
+				CERR(die, "Cannot find cat elem for sub named %s! ", cenumname);
 				free(cenumname);
 				free_cat_elem_list(h != NULL ? h : n);
 				sqlite3_finalize(cst);

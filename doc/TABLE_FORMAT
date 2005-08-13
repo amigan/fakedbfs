@@ -88,7 +88,8 @@ processing, such as that done with the <fc> attribute.
 datatype - the datatype of the field, cast to the enum DataType as defined in
 dbspecdata.h. If it is oenumsub, then it is a subelement; there must be one other oenum field for sub to work.
 
-enumname - the name of the enum.
+enumname - the name of the enum, or if it is a subenum field, the name of the field containing the real enum.
+The name is a tad misleading, but is kept for historical reasons.
 
 --
 

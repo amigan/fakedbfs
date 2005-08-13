@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/dbspecdata.h,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/dbspecdata.h,v 1.3 2005/08/13 19:56:36 dcp1990 Exp $ */
 #ifndef HAVE_DBSPECDATA_H
 #define HAVE_DBSPECDATA_H 1
 #define MAXLINE 2048
@@ -130,6 +130,7 @@ struct CatElem {
 	char *alias; /* analogous to fmtname... */
 	enum DataType type;
 	struct EnumHead *enumptr;
+	struct CatElem *subcatel; /* only set if type == oenumsub */
 	int flags; /* bit 1 is "uses <fc> param" */
 	struct CatElem *next;
 };
