@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.7 2005/08/13 02:41:03 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.8 2005/08/13 06:26:48 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.7 2005/08/13 02:41:03 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.8 2005/08/13 06:26:48 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -316,7 +316,7 @@ int new_catalog(f, specfile, h)
 	char *tdesc;
 	char *tablename, *fieldtable;
 	char ilbuffer[512];
-	const char *tdescpref = "id INTEGER PRIMARY KEY, file TEXT, lastupdate INTEGER, ";
+	const char *tdescpref = "id INTEGER PRIMARY KEY, file TEXT, lastupdate INTEGER";
 	const char *tnamepre = CAT_TABLE_PREFIX;
 	const char *fieldpre = CAT_FIELD_TABLE_PREFIX;
 	size_t tds = 1;
@@ -331,7 +331,7 @@ int new_catalog(f, specfile, h)
 	strlcpy(fieldtable, fieldpre, fln);
 	strlcat(fieldtable, h->name, fln);
 
-	if(!create_table(f, fieldtable, "id INTEGER PRIMARY KEY, fieldname TEXT, alias TEXT" "datatype INTEGER, enumname")) {
+	if(!create_table(f, fieldtable, "id INTEGER PRIMARY KEY, fieldname TEXT, alias TEXT, datatype INTEGER, enumname")) {
 		CERR(die, "new_catalog(f, \"%s\", h): error creating field table %s. ", specfile, fieldtable);
 		free(tablename);
 		free(fieldtable);
@@ -368,10 +368,17 @@ int new_catalog(f, specfile, h)
 			return 0;
 		}
 	}
-	create_table(f, tablename, tdesc);
+	if(!create_table(f, tablename, tdesc)) {
+		CERR(die, "new_catalog(f, \"%s\", h): error creating field table %s. ", specfile, fieldtable);
+		free(tablename);
+		free(tdesc);
+		free(fieldtable);
+		return 0;
+	}
 	free(tdesc);
 	free(tablename);
 	free(fieldtable);
+	fprintf(stderr, "catalogue should be made...\n");
 	return 1;
 }
 
