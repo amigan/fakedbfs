@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/error.c,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/error.c,v 1.3 2005/08/13 00:20:01 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -40,12 +40,13 @@
 #include <fakedbfs.h>
 #define BUFSIZE 256
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/error.c,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/error.c,v 1.3 2005/08/13 00:20:01 dcp1990 Exp $")
 
 int ferr(fdbfs_t *f, enum ErrorAction severity, char *fmt, ...)
 {
 	va_list ap;
 	char *p;
+	if(fmt == NULL) return 0;
 	p = malloc(sizeof(char) * BUFSIZE);
 	f->error.freeit = 1;
 	va_start(ap, fmt);
@@ -62,6 +63,7 @@ int cferr(fdbfs_t *f, enum ErrorAction severity, char *fmt, ...)  /* cascade err
 	char *p;
 	size_t bs;
 
+	if(fmt == NULL) return 0;
 	bs = BUFSIZE + (f->error.emsg != NULL ? strlen(f->error.emsg) : 0) + 3;
 	p = malloc(bs * sizeof(char));
 	va_start(ap, fmt);
