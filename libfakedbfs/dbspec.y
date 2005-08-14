@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.16 2005/08/13 19:56:36 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.17 2005/08/14 03:41:50 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.16 2005/08/13 19:56:36 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.17 2005/08/14 03:41:50 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 extern char *yytext;
 }
@@ -215,6 +215,9 @@ datatype(A) ::= IMAGEDT. {
 	}
 datatype(A) ::= BINARYDT. {
 		A.num = (enum DataType)binary;
+	}
+datatype(A) ::= REALDT. {
+		A.num = (enum DataType)fp;
 	}
 string(A) ::= STRING(B). {
 		A.str = B.str;

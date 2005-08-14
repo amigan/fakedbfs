@@ -1,11 +1,11 @@
 %{
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.8 2005/08/13 19:16:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.9 2005/08/14 03:41:50 dcp1990 Exp $ */
 #include <stdio.h>
 #include <string.h>
 #include <fakedbfs.h>
 #include "dbspec.h"
 #include <lexdefines.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.8 2005/08/13 19:16:51 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.9 2005/08/14 03:41:50 dcp1990 Exp $")
 int chrcnt = 0, lincnt = 1; /* not thread-safe, I know */
 %}
 %s comment
@@ -25,6 +25,7 @@ number			return NUMBERDT;
 image			return IMAGEDT;
 binary			return BINARYDT;
 boolean			return NUMBERDT; /* have to */
+real			return REALDT;
 fc			return FC;
 \.sub			return DOTSUB;
 "/*"			BEGIN(comment);
