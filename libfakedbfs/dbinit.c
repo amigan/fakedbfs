@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.16 2005/08/13 21:49:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.17 2005/08/14 08:07:49 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.16 2005/08/13 21:49:51 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.17 2005/08/14 08:07:49 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -380,6 +380,9 @@ int new_catalog(f, specfile, h)
 	for(c = h->headelem; c != NULL; c = c->next) {
 		tds += strlen(c->name) + 1 /* comma */
 		       	+ strlen(gettype(c->type) /* gettype includes the space */);
+		if(c->type == oenum)
+			tds += strlen(c->name) + strlen(OTHER_ELEM_PREFIX) + 1 + strlen(c->enumptr->otherelem != NULL ?
+					gettype(c->enumptr->otherelem->othertype) : " BLOB" /*universal */);
 	}
 	tds += strlen(tdescpref);
 	tdesc = malloc(tds);
@@ -389,6 +392,11 @@ int new_catalog(f, specfile, h)
 	for(c = h->headelem; c != NULL; c = c->next) {
 		snprintf(ilbuffer, sizeof(ilbuffer), ",%s%s", c->name, gettype(c->type));
 		strlcat(tdesc, ilbuffer, tds);
+		if(c->type == oenum) {
+			snprintf(ilbuffer, sizeof(ilbuffer), ",%s%s%s", OTHER_ELEM_PREFIX, c->name, c->enumptr->otherelem != NULL ?
+				gettype(c->enumptr->otherelem->othertype) : " BLOB");
+			strlcat(tdesc, ilbuffer, tds);
+		}
 		if(c->flags & CATE_USES_FC)
 			*c->name = toupper(*c->name); /* XXX: is this safe?  just make sure that this field stays dynamic*/
 
@@ -499,9 +507,10 @@ struct EnumSubElem* subelements_from_field(f, fajah, subs)
 }
 
 
-struct EnumElem* enumelems_from_dbtab(f, table)
+struct EnumElem* enumelems_from_dbtab(f, table, e)
 	fdbfs_t *f;
 	char *table;
+	struct EnumHead *e;
 {
 	char *sql;
 	int rc;
@@ -537,6 +546,8 @@ struct EnumElem* enumelems_from_dbtab(f, table)
 		n->other = (oth == oenum ? 0 : 1);
 		n->othertype = oth;
 		n->subhead = subelements_from_field(f, n, subs);
+		if(oth != oenum)
+			e->otherelem = n;
 		if(subs != NULL)
 			free(subs);
 		
@@ -585,7 +596,7 @@ struct EnumHead* enums_from_db(f)
 		tabledef = strdup(sqlite3_column_text(cst, 2));
 		n = allocz(sizeof(*n));
 		n->name = enumname;
-		n->headelem = enumelems_from_dbtab(f, tabledef);
+		n->headelem = enumelems_from_dbtab(f, tabledef, n);
 		n->flags |= ENUMH_FROM_DB;
 		free(tabledef);
 

@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.17 2005/08/14 03:41:50 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.18 2005/08/14 08:07:49 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.17 2005/08/14 03:41:50 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.18 2005/08/14 08:07:49 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 extern char *yytext;
 }
@@ -125,6 +125,7 @@ enumelement(A) ::= string(B) AS datatype(C). {
 		A.enumelem->other = 1;
 		A.enumelem->othertype = C.num;
 		A.enumelem->value = heads->lastevalue++;
+		heads->curenumh->otherelem = A.enumelem;
 		if(heads->enumelemhead == NULL) {
 			heads->enumelemhead = A.enumelem;
 			heads->lastenumel = A.enumelem;

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.5 2005/08/13 01:05:49 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.6 2005/08/14 08:07:49 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.5 2005/08/13 01:05:49 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.6 2005/08/14 08:07:49 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -236,19 +236,30 @@ int add_to_field_desc(f, tablename, name, alias, type, typen)
 	enum DataType type;
 	char *typen;
 {
-	char *sql, *emsg;
+	char *sql, *emsg, *othna;
 	int rc;
+	if(type == oenum) {
+		size_t len = strlen(name) + strlen(OTHER_ELEM_PREFIX) + 1;
+		othna = malloc(sizeof(char) * len);
+		strlcpy(othna, OTHER_ELEM_PREFIX, len);
+		strlcat(othna, name, len);
+	} else
+		othna = "NULL";
 	sql = sqlite3_mprintf("INSERT OR REPLACE INTO %s (fieldname, alias, datatype,"
-			" enumname) VALUES('%q', '%q', %d, %s%q%s);", tablename, name,
-			alias, type, typen != NULL ? "'" : "",
-			typen != NULL ? typen : "NULL", typen != NULL ? "'" : "");
+			" enumname, otherfield) VALUES('%q', '%q', %d, %s%q%s, %s);",
+			tablename, name, alias, type, typen != NULL ? "'" : "",
+			typen != NULL ? typen : "NULL", typen != NULL ? "'" : "", othna);
 	rc = sqlite3_exec(f->db, sql, NULL, NULL, &emsg);
 	sqlite3_free(sql);
 	if(rc != SQLITE_OK) {
 		ERR(die, "add_to_field_desc(f, \"%s\", \"%s\", \"%s\", \"%s\", \"%s\"): SQLite error after exec: %s", tablename, name, alias, (int)type, typen, emsg);
+		if(type == oenum)
+			free(othna);
 		sqlite3_free(emsg);
 		return 0;
 	}
+	if(type == oenum)
+		free(othna);
 	return 1;
 }
 

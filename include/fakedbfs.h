@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.6 2005/08/13 19:28:36 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.7 2005/08/14 08:07:49 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -80,6 +80,7 @@ typedef struct Field {
 	char *fieldname;
 	enum DataType type;
 	void *val;
+	void *otherval;
 	size_t len;
 	struct Field *next;
 } fields_t;
@@ -133,7 +134,7 @@ int table_exists(fdbfs_t *f, char *tname);
 int open_db(fdbfs_t *f);
 int close_db(fdbfs_t *f);
 struct EnumSubElem* subelements_from_field(fdbfs_t *f, struct EnumElem *fajah, char *subs);
-struct EnumElem* enumelems_from_dbtab(fdbfs_t *f, char *table);
+struct EnumElem* enumelems_from_dbtab(fdbfs_t *f, char *table, struct EnumHead *e);
 struct EnumHead* enums_from_db(fdbfs_t *f);
 struct CatElem* catelems_from_dbtab(fdbfs_t *f, char *table, struct EnumHead *enumhead);
 struct CatalogueHead* cats_from_db(fdbfs_t *f, struct EnumHead *enumhead);

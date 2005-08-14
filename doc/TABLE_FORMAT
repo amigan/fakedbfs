@@ -75,7 +75,7 @@ manual edit.
 as ENUM names. They are created with the following command:
 
 CREATE TABLE cft_<catname> (id INTEGER PRIMARY KEY, fieldname TEXT, alias TEXT, datatype
-INTEGER, enumname TEXT);
+INTEGER, enumname TEXT, otherfield TEXT);
 
 Fields:
 id - primary key
@@ -90,6 +90,8 @@ dbspecdata.h. If it is oenumsub, then it is a subelement; there must be one othe
 
 enumname - the name of the enum, or if it is a subenum field, the name of the field containing the real enum.
 The name is a tad misleading, but is kept for historical reasons.
+
+otherfield - the name of the SQL column containing enum "other" data
 
 --
 

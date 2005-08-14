@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/dbspecdata.h,v 1.4 2005/08/13 20:01:03 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/dbspecdata.h,v 1.5 2005/08/14 08:07:49 dcp1990 Exp $ */
 #ifndef HAVE_DBSPECDATA_H
 #define HAVE_DBSPECDATA_H 1
 #define MAXLINE 2048
@@ -124,6 +124,7 @@ struct EnumHead {
 	int flags;
 	struct EnumSubElem *allsubs;
 	struct EnumElem *headelem;
+	struct EnumElem *otherelem;
 	struct EnumHead *next;
 };
 
@@ -151,4 +152,5 @@ struct CatalogueHead {
 #define CAT_TABLE_PREFIX "c_"
 #define CAT_FIELD_TABLE_PREFIX "cft_"
 #define ENUM_TABLE_PREFIX "endef_"
+#define OTHER_ELEM_PREFIX "oth_" /* do not prefix anything else with this */
 #endif
