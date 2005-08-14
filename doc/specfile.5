@@ -1,0 +1,155 @@
+.\" El manpage-o for the specfile format
+.\" (C)2005, Dan Ponte
+.\" $Amigan: fakedbfs/doc/specfile.5,v 1.1 2005/08/14 03:39:31 dcp1990 Exp $
+.Dd August 13, 2005
+.Dt SPECFILE 5
+.Os
+.Sh NAME
+.Nm specfile
+.Nd the specfile format understood by
+.Xr libfakedbfs 3 .
+.Sh SYNOPSIS
+#include <dbspecdata.h>
+
+int parse_definition(fdbfs_t *f, char *filename);
+.Sh DESCRIPTION
+.Nm
+is the term used to describe the files that libfakedbfs accepts for database
+creation. A specfile consists primarily of a C-like syntax. There are currently
+two main types of object defined in a specfile: catalogues and enums
+(enumerations, like in C). A
+.Em catalogue
+is a collection of fields used to describe a certain class of files. An
+.Em enumeration
+is a special datatype, stored internally as an integer, that can be
+any of a number of values, expressed as strings.
+.Sh ENUM DECLARATION FORMAT
+Enumerations are declared as follows:
+.Bd -literal
+ENUM <enum_name> [arguments] {
+	"enum element" [{"sub", "elements"}],
+	"element two" [{"subelement"}],
+	...,
+	["other" as <datatype>]
+};
+.Ed
+.Pp
+.Ar enum_name
+is the name of the enumeration.
+.Ar arguments
+is currently limited to ALLSUB(), which is described below.
+.Ss Enum Elements
+.Em Elements
+are defined simply as quoted strings inside the enum block. Optionally, they can
+have
+.Em subelements ,
+which are described below. Also available are
+.Dq other
+elements, which can be of an arbitrary datatype.
+.Ss Subelements
+.Em Subelements ,
+which can be used inside ALLSUB() blocks as well, are subsets of an element.
+They are simply an enum within an enum element, and they only apply when their
+parent enum (the
+.Dq father
+element) is selected. ALLSUB() blocks simply define elements that will apply to
+all enum elements.
+.Pp
+Subelements can either be simple quoted strings, or they can include special
+directives inside
+.Em <>
+blocks. The directives recognised are as follows:
+.Bl -tag -width indent
+.It <self>
+When this subelement is selected, give it the same name as the father.
+.It <sameas othername>
+Copy the elements from the other parent element named
+.Ar othername .
+Note that the name in this case is not the same as the one in quoted strings.
+Reference names are simply the same as the quoted strings with all lowercase
+identifiers and underscores (
+.Dq _ )
+instead of spaces. For example, if another element was defined as
+.Dq Tuna\ Sandwich ,
+it would be referred to as
+.Dq tuna_sandwich .
+.Pp
+Note that
+.Em sameas
+is not available for ALLSUB() blocks.
+.Sh CATALOGUE DECLARATION FORMAT
+Catalogues are the lifeblood of the fakedbfs system. They store all information
+about the class of files, and allow the user to add to them (via the
+.Xr findex 1
+command or other apps), query them (via
+.Xr fquery 1 )
+, and perform a myriad of other operations on them. They are defined as follows:
+.Bd -literal
+CATALOGUE <catalogue_name> {
+	catalogue_element [= aliasdef] AS <datatype>,
+	element2 [= aliasdef] AS <datatype>,
+	...
+};
+.Ed
+.Pp
+.Ar catalogue_name
+is an arbitrary string describing the catalogue. Element names are also
+arbitrary strings, but note that they cannot be any of the following:
+.Bl -tag -width 4n -offset indent -compact
+.It id
+.It file
+.It lastupdate
+.El
+.Pp
+These are reserved for use by the database and library.
+.Ss Aliases
+The
+.Ar aliasdef
+is optional and can either be a simple, quoted string, or a directive.
+Currently, the only supported such directive is
+.Em <fc> ,
+which instructs the library to simply take the name of the element and
+capitalise the first letter using the
+.Xr toupper 3
+routine. The alias is used for human-friendly display of fields.
+.Sh DATATYPES
+The library supports a number of datatypes. Currently, they include
+.Bl -tag -width 4n offset indent -compact
+.It Sy string
+simple character string
+.It Sy number
+an integer
+.It Sy image
+an image (in png, jpeg, gif, and other image formats)
+.It Sy real
+a real floating point number
+.It Sy binary
+arbitrary binary data
+.It Sy boolean
+a simple Boolean value (true or false)
+.El
+.Pp
+Additionally, catalogue elements support the
+.Em en
+(enumeration) type, which is defined as
+.Dq en\ enum_name .
+.Pp
+Catalogues can use subelements by defining a master enum element as previously
+described, and then defining another element as follows:
+.Bd -literal
+en master_elem.sub
+.Ed
+.Pp
+.Ar master_elem
+is the name of the previously-defined catalogue element that referred to an
+enumeration.
+.Sh SEE ALSO
+.Xr libfakedbfs 3 ,
+.Xr fcreatedb 5 , 
+.Xr findex 1 ,
+.Xr fedit 1 ,
+.Xr fquery 1
+.Sh AUTHOR
+Dan Ponte <dcp1990@neptune.atopia.net>
+.Pp
+Web: http://www.theamigan.net/fakedbfs/
