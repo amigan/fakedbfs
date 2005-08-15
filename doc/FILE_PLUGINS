@@ -1,0 +1,110 @@
+$Amigan: fakedbfs/doc/FILE_PLUGINS,v 1.1 2005/08/15 06:16:03 dcp1990 Exp $
+
+How to write file plugins
+	By Dan Ponte
+
+File plugins are designed to extract metadata from a file during indexing. This
+is in contrast to manual metadata entry. Usually, a combination of both will be
+employed. A file plugin must contain the following functions and globals:
+
+
+struct PluginInfo plugin_inf;
+
+int plugin_init(char **errmsg);
+
+int plugin_shutdown(char **errmsg);
+
+int check_file(char *filename, char **errmsg);
+
+fields_t* extract_from_file(char *filename, char **errmsg);
+********************************************************************************
+struct PluginInfo plugin_inf;
+
+This structure gives basic info about the plugin. It is declared as follows (see
+include/fakedbfs.h for the latest):
+
+struct PluginInfo {
+	const char *extensions; /* a list of file extensions, not including dots, that
+				this plugin handles. Each extension is separated
+				by a pipe (``|'') character. Note that this
+				isn't required, but if a file's extension is in
+				the list, the plugin will be given priority,
+				thereby speeding up searches (check_file() is
+				always called, however).
+			  */
+	const char *pluginname; /* the name of the plugin; self-explanatory */
+	const char *version; /* the version of the plugin */
+	const char *author; /* author (usually name and email address) */
+	const char *website; /* website of plugin */
+	const int majapi; /* major API version; this changes when incompatible changes
+			are made to the API. This should always be set to the
+			define MAJOR_API_VERSION.
+		    */
+	const int minapi; /* minor API version; this changes for backwards-compatible
+			changes. This should be set to MINOR_API_VERSION.
+		    */
+}; 	/*
+	note that this structure will stay fairly consistent, at least for the
+	first elements listed here. Another words: plugin_inf.majapi should
+	always refer to the same object, even across major API changes.
+	*/
+
+--
+
+int plugin_init(char **errmsg);
+
+This function is called when the plugin is first loaded. If an error occurs,
+return 0 and set *errmsg to a _dynamically-allocated_ string. Otherwise, return 1
+and set *errmsg to NULL.
+
+--
+
+int plugin_shutdown(char **errmsg);
+
+This is called right before the plugin is unloaded. If an error occurs,
+return 0 and set *errmsg to a _dynamically-allocated_ string. Otherwise, return 1
+and set *errmsg to NULL.
+
+--
+
+int check_file(char *filename, char **errmsg);
+
+This is called in order to check if the file named filename can be read/handled
+by this plugin. This is always called, even if a file matches something in
+plugin_inf.extensions. Return 1 if the file matches, 0 if it doesn't. For both
+of these cases, set *errmsg to NULL. If an error occurs, return -1 and set
+*errmsg to a _dynamically-allocated_ string.
+
+--
+
+fields_t* extract_from_file(char *filename, char **errmsg);
+
+This function is called to extract metadata from the file named filename. Return
+a linked-list of dynamically-allocated fields (the fields_t structure).
+fields_t looks like this (defined in include/fakedbfs.h):
+
+typedef struct Field {
+	char *fieldname; /* the name of the field; this is why plugins and
+			    specfiles must stay in sync! */
+	enum DataType type; /* the datatype of the field; see above */
+	enum DataType othtype; /* if type == oenum, the datatype of the "other"
+				element */
+	void *val; /* a pointer to a *dynamically allocated* object that is the
+			value of the field. Yes Virginia, that means you must do
+			a malloc(sizeof(int)); when necessary */
+	void *otherval; /* if type == oenum and *val is the "other" element,
+			   this a pointer to the object that is "other" */
+	size_t len; /* if type refers to an object that uses the SQLite "blob"
+			type (any type of binary data), the length of the data in
+			question */
+	size_t othlen; /* see above; this applies to otherval */
+	struct Field *next; /* a pointer to the next element in the list */
+} fields_t;
+
+If no information can be extracted, return NULL and set *errmsg to NULL. If an
+error occurs, return NULL and set *errmsg to a _dynamically-allocated_ string
+describing the error.
+
+------
+
+That should be all. Happy plugin writing!
