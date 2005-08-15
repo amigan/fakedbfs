@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.7 2005/08/14 08:07:49 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.8 2005/08/15 20:28:03 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -38,6 +38,9 @@
 #define CERR(act, fmt, ...) cferr(f, act, fmt, __VA_ARGS__)
 #define _unused       __attribute__((__unused__))
 
+#define MAJOR_API_VERSION 1
+#define MINOR_API_VERSION 0
+
 #define FAKEDBFSVER "1.0"
 
 #ifndef lint
@@ -45,6 +48,9 @@
 #else
 #define RCSID(str) ;
 #endif
+
+#define DELIMCHAR "|"
+#define FDBFSDIR ".fdbfs"
 
 #ifdef lint
 /* LINTLIBRARY */
@@ -64,12 +70,6 @@ typedef struct {
 	enum ErrorAction action;
 } error_t;
 
-typedef struct fdbfs_instance {
-	char *dbname;
-	sqlite3 *db;
-	error_t error;
-	int synec, lino, chro;
-} fdbfs_t;
 typedef enum coltype {
 	text,
 	real,
@@ -79,9 +79,11 @@ typedef enum coltype {
 typedef struct Field {
 	char *fieldname;
 	enum DataType type;
+	enum DataType othtype;
 	void *val;
 	void *otherval;
 	size_t len;
+	size_t othlen;
 	struct Field *next;
 } fields_t;
 typedef struct tok {
@@ -93,7 +95,59 @@ typedef struct tok {
 	struct EnumSubElem *subelem;
 	struct EnumHead *ehead;
 } Toke;
+typedef struct FConfig {
+	char *pluginpath; /* search path, delimited by pipes (``|'') */
+} config_t;
 
+
+struct PluginInfo {
+	const char *extensions; /* a list of file extensions, not including dots, that
+				this plugin handles. Each extension is separated
+				by a pipe (``|'') character. Note that this
+				isn't required, but if a file's extension is in
+				the list, the plugin will be given priority,
+				thereby speeding up searches (check_file() is
+				always called, however).
+			  */
+	const char *pluginname; /* the name of the plugin; self-explanatory */
+	const char *version; /* the version of the plugin */
+	const char *author; /* author (usually name and email address) */
+	const char *website; /* website of plugin */
+	const int majapi; /* major API version; this changes when incompatible changes
+			are made to the API. This should always be set to the
+			define MAJOR_API_VERSION.
+		    */
+	const int minapi; /* minor API version; this changes for backwards-compatible
+			changes. This should be set to MINOR_API_VERSION.
+		    */
+}; 	/*
+	note that this structure will stay fairly consistent, at least for the
+	first elements listed here. Another words: plugin_inf.majapi should
+	always refer to the same object, even across major API changes.
+	*/
+
+struct Plugin {
+	struct PluginInfo *info;
+	
+	int (*init)(char **errmsg);
+	int (*shutdown)(char **errmsg);
+	int (*check_file)(char *filename, char **errmsg);
+	fields_t* (*extract_from_file)(char *filename, char **errmsg);
+
+	void *libhandle;
+	struct Plugin *next;
+};
+
+#define DEBUGFUNC_STDERR ((void(*)(char*, enum ErrorAction))0)
+
+typedef struct {
+	char *dbname;
+	sqlite3 *db;
+	error_t error;
+	config_t conf;
+	struct Plugin *plugins;
+	void (*debugfunc)(char*, enum ErrorAction);
+} fdbfs_t;
 
 void* allocz(size_t size);
 char* normalise(char *s);
@@ -152,11 +206,17 @@ void dump_cat_head_list(struct CatalogueHead *head);
 void dump_head_members(Heads *hd);
 char* strdupq(char *s);
 struct CatElem* find_catelem_enum(struct CatElem *h, struct EnumHead *en);
+int debug_info(fdbfs_t *f, enum ErrorAction sev, char *fmt, ...);
+
+/* plugin shiite */
+struct Plugin* probe_plugin(fdbfs_t *f, char *dirpath, char *filename, struct Plugin *last);
+struct Plugin* search_plugs(fdbfs_t *f, struct Plugin *plugins, char *path);
+int init_plugins(fdbfs_t *f);
 
 
 /* application interfaces */
 int parse_definition(fdbfs_t *f, char *filename);
 int start_db(fdbfs_t *f);
-fdbfs_t *new_fdbfs(char *dbfile, char **error);
+fdbfs_t *new_fdbfs(char *dbfile, char **error, void (*debugf)(char*, enum ErrorAction));
 int destroy_fdbfs(fdbfs_t *f);
 void estr_free(error_t *e);

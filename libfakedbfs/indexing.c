@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.3 2005/08/15 20:28:03 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -38,7 +38,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.2 2005/08/10 00:13:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.3 2005/08/15 20:28:03 dcp1990 Exp $")
 
 int index_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -119,3 +119,14 @@ int index_file(f, file, catalogue, fields)
 	return 1;
 }
 
+fields_t* fill_in_fields(f, filename)
+	fdbfs_t *f;
+	char *filename;
+{
+	struct Plugin *h = f->plugins, *c = NULL;
+	struct fields_t *fh = NULL, *fc = NULL, *fn = NULL;
+	char *errmsg;
+
+	/* do stuff */
+	return fh;
+}

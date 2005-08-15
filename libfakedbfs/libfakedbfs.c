@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.7 2005/08/10 00:18:44 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.8 2005/08/15 20:28:03 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -38,22 +38,24 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.7 2005/08/10 00:18:44 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.8 2005/08/15 20:28:03 dcp1990 Exp $")
 
 #ifndef lint
 const char const *fakedbfsver _unused = FAKEDBFSVER;
 const char const *fakedbfscopyright _unused = "libfakedbfs (C)2005, Dan Ponte. Under the BSD license.";
 #endif
 
-fdbfs_t *new_fdbfs(dbfile, error)
+fdbfs_t *new_fdbfs(dbfile, error, debugf)
 	char *dbfile;
 	char **error; /* if we return NULL, this must be freed */
+	void (*debugf)(char*, enum ErrorAction);
 {
 	fdbfs_t *f;
 	int rc;
 	f = malloc(sizeof(*f));
 	memset(f, 0, sizeof(*f));
 	f->dbname = dbfile;
+	f->debugfunc = debugf;
 	rc = open_db(f);
 	if(!rc) {
 		*error = strdup(f->error.emsg);
