@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.18 2005/08/14 08:24:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.19 2005/08/16 06:44:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.18 2005/08/14 08:24:22 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.19 2005/08/16 06:44:26 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -346,7 +346,7 @@ int new_catalog(f, specfile, h)
 	char *tdesc;
 	char *tablename, *fieldtable;
 	char ilbuffer[512];
-	const char *tdescpref = "id INTEGER PRIMARY KEY, file TEXT, lastupdate INTEGER";
+	const char *tdescpref = "id INTEGER PRIMARY KEY, file TEXT UNIQUE, lastupdate INTEGER";
 	const char *tnamepre = CAT_TABLE_PREFIX;
 	const char *fieldpre = CAT_FIELD_TABLE_PREFIX;
 	size_t tds = 1;

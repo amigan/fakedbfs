@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.10 2005/08/16 03:17:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.11 2005/08/16 06:44:26 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -207,6 +207,11 @@ void dump_head_members(Heads *hd);
 char* strdupq(char *s);
 struct CatElem* find_catelem_enum(struct CatElem *h, struct EnumHead *en);
 int debug_info(fdbfs_t *f, enum ErrorAction sev, char *fmt, ...);
+int add_file(fdbfs_t *f, char *file, char *catalogue, fields_t *fields);
+fields_t* fill_in_fields(fdbfs_t *f, char *filename);
+int index_file(fdbfs_t *f, char *filename, char *cat, int batch, int useplugs, fields_t *fields);
+fields_t* free_field(fields_t *e);
+void free_field_list(fields_t *h);
 
 /* plugin shiite */
 struct Plugin* probe_plugin(fdbfs_t *f, char *dirpath, char *filename, struct Plugin *last);

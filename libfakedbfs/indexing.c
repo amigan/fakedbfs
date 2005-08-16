@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.4 2005/08/16 03:17:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.5 2005/08/16 06:44:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -38,9 +38,9 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.4 2005/08/16 03:17:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.5 2005/08/16 06:44:26 dcp1990 Exp $")
 
-int index_file(f, file, catalogue, fields)
+int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
 	char *file;
 	char *catalogue;
@@ -185,4 +185,52 @@ fields_t* fill_in_fields(f, filename)
 	}
 
 	return fh;
+}
+
+int index_file(f, filename, cat, batch, useplugs, fields)
+	fdbfs_t *f;
+	char *filename;
+	char *cat;
+	int batch;
+	int useplugs;
+	fields_t *fields;
+{
+	int rc;
+	fields_t *c = NULL, *h = NULL;
+
+	if(useplugs) {
+		h = fill_in_fields(f, filename);
+		if(h == NULL && f->error.emsg != NULL) {
+			return 0;
+		}
+	}
+
+	if(fields != NULL) {
+		if(h != NULL) {
+			for(c = fields; c != NULL; c = c->next);
+			c->next = h;
+			h = fields;
+		}
+	}
+
+	rc = add_file(f, filename, cat, h);
+	if(!rc) {
+		CERR(die, "error indexing file %s. ", filename);
+		free_field_list(h);
+		return 0;
+	}
+	
+	free_field_list(h);
+
+	return 1;
+}
+
+int index_dir(f, dir, cat, useplugs, batch)
+	fdbfs_t *f;
+	char *dir;
+	char *cat;
+	int useplugs;
+	int batch;
+{
+	return 1;
 }

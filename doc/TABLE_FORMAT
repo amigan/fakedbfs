@@ -57,12 +57,12 @@ FORMAT OF USER-DEFINED TABLES:
 2.0 Catalogue table format
 	The catalogue tables created using this command:
 
-CREATE TABLE c_<catname> (id INTEGER PRIMARY KEY, file TEXT, lastupdate INTEGER, ...);
+CREATE TABLE c_<catname> (id INTEGER PRIMARY KEY, file TEXT UNIQUE, lastupdate INTEGER, ...);
 
 Fields:
 id - primary key
 
-file - full pathname to the file
+file - full pathname to the file. There is a unique constraint for easy updating.
 
 lastupdate - the last time the file entry was updated, either during an index or
 manual edit.
