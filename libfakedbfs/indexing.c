@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.5 2005/08/16 06:44:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.6 2005/08/16 21:30:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -38,7 +38,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.5 2005/08/16 06:44:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.6 2005/08/16 21:30:26 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -225,12 +225,101 @@ int index_file(f, filename, cat, batch, useplugs, fields)
 	return 1;
 }
 
-int index_dir(f, dir, cat, useplugs, batch)
+int file_has_changed(f, cat, filename)
+	fdbfs_t *f;
+	char *cat;
+	char *filename;
+{
+#if defined(UNIX)
+	struct stat s;
+	time_t upd; /* time_t must be signed!!!!! */
+	
+	upd = (time_t)get_lastupdate(f, cat, filename);
+
+	if(upd
+int index_dir(f, dir, cat, useplugs, batch, nocase, re)
 	fdbfs_t *f;
 	char *dir;
 	char *cat;
 	int useplugs;
 	int batch;
+	int nocase;
+	char *re;
 {
+#if defined(UNIX)
+	DIR *d;
+	struct dirent *cfile;
+	int rc;
+	char *emsg;
+	char *fullpath;
+	size_t fplen;
+	regex_t tre;
+
+	if(re != NULL) {
+		rc = regcomp(&tre, re, REG_EXTENDED | REG_NOSUB | (nocase ? REG_ICASE : 0));
+		if(!rc) {
+			emsg = malloc(128);
+			regerror(rc, &tre, emsg, 127);
+			ERR(die, "index_dir: error compiling regex '%s': %s", re, emsg);
+			free(emsg);
+			return 0;
+		}
+	}
+
+	d = opendir(dir);
+
+	if(d == NULL) {
+		ERR(die, "index_dir: cannot open directory '%s'", dir);
+		regfree(&tre);
+		return 0;
+	}
+
+	while((cd = readdir(d)) != NULL) {
+		if(re != NULL) {
+			rc = regexec(&tre, cd->d_name, 0, NULL, 0);
+			if(rc == REG_NOMATCH)
+				continue;
+			else if(rc != 0) {
+				emsg = malloc(128);
+				regerror(rc, &tre, emsg, 127);
+				ERR(die, "index_dir: error executing regex: %s", emsg);
+				free(emsg);
+				regfree(&tre);
+				return 0;
+			}
+
+			fplen = cd->d_namlen + 1 /* slash */ + strlen(dir) + 1 /* NULL */;
+			fpth = malloc(sizeof(char) * fplen);
+			snprintf(fpth, fplen, "%s/%s", dir, cd->d_name);
+
+			index_file(f, fpth, cat, batch, useplugs, NULL);
+
+			free(fpth);
+		} else {
+			fplen = cd->d_namlen + 1 /* slash */ + strlen(dir) + 1 /* NULL */;
+			fpth = malloc(sizeof(char) * fplen);
+			snprintf(fpth, fplen, "%s/%s", dir, cd->d_name);
+
+			rc = file_has_changed(f, cat, fpth);
+			if(rc == 0) {
+				free(fpth);
+				continue;
+			} else if(rc == 1) {
+				index_file(f, fpth, cat, batch, useplugs, NULL);
+				free(fpth);
+			} else if(rc == -1) { /* hack alert */
+				debug_info(warn, "error checking if %s changed: %s", fpth, f->error.emsg);
+				estr_free(&f->error);
+				free(fpth);
+			}
+		}
+	}
+
+	closedir(d);
+	if(re != NULL)
+		regfree(&tre);
+#endif
 	return 1;
 }
+
+/* int index_file(f, filename, cat, batch, useplugs, fields) */

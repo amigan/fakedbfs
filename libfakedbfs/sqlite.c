@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.8 2005/08/14 08:24:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.9 2005/08/16 21:30:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.8 2005/08/14 08:24:22 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.9 2005/08/16 21:30:26 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -85,6 +85,7 @@ int table_exists(f, tname)
 	}
 	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
 		ERR(die, "table_exists(f, \"%s\"): SQLite error after step: %s", tname, sqlite3_errmsg(f->db));
+		sqlite3_finalize(cst);
 		return 0;
 	}
 	sqlite3_finalize(cst);
@@ -297,8 +298,11 @@ int add_enum_elem(f, tname, name, fmtname, value, dtype, subelements)
 	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
 		ERR(die, "add_enum_elem(f, \"%s\", \"%s\", \"%s\", %u, %d, \"%s\"): SQLite error after step: %s", tname, name, fmtname, value, (int)dtype, subelements,
 				sqlite3_errmsg(f->db));
+		sqlite3_finalize(cst);
 		return 0;
 	}
+
+	sqlite3_finalize(cst);
 
 	return 1;
 }
@@ -327,3 +331,44 @@ int bind_field(f, count, type, value, len, stmt)
 	}
 	return 1;
 }
+
+int get_lastupdate(f, cat, filename)
+	fdbfs_t *f;
+	char *cat;
+	char *filename;
+{
+	sqlite3_stmt *cst;
+	int rc;
+	char *sql, *tail;
+	int lu;
+	/* CAT_TABLE_PREFIX */
+
+	sql = sqlite3_mprintf("SELECT lastupdate FROM " CAT_TABLE_PREFIX "%s WHERE file == '%q'", cat, filename);
+	if((rc = sqlite3_prepare(f->db, sql, strlen(sql), &cst, &tail)) != SQLITE_OK) {
+		ERR(die, "get_lastupdate: SQLite error after prepare %s", sqlite3_errmsg(f->db));
+		sqlite3_free(sql);
+		return -1;
+	}
+	sqlite3_free(sql);
+	rc = sqlite3_step(cst);
+	switch(rc) {
+		case SQLITE_ROW:
+		case SQLITE_OK:
+			break;
+		case SQLITE_DONE:
+			sqlite3_finalize(cst);
+			return -2;
+			break;
+		default:
+			ERR(die, "get_lastupdate: SQLite error after prepare %s", sqlite3_errmsg(f->db));
+			sqlite3_finalize(cst);
+			return -1;
+	}
+
+	lu = sqlite3_column_int(cst, 0);
+
+	sqlite3_finalize(cst);
+
+	return lu;
+}
+
