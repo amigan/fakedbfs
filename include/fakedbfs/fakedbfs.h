@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.8 2005/08/15 20:28:03 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.9 2005/08/16 02:22:31 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -103,8 +103,8 @@ typedef struct FConfig {
 struct PluginInfo {
 	const char *extensions; /* a list of file extensions, not including dots, that
 				this plugin handles. Each extension is separated
-				by a pipe (``|'') character. Note that this
-				isn't required, but if a file's extension is in
+				by a slash character. (since it cannot occur in a filename)
+				Note that this isn't required, but if a file's extension is in
 				the list, the plugin will be given priority,
 				thereby speeding up searches (check_file() is
 				always called, however).

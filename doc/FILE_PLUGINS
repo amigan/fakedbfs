@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/doc/FILE_PLUGINS,v 1.1 2005/08/15 06:16:03 dcp1990 Exp $
+$Amigan: fakedbfs/doc/FILE_PLUGINS,v 1.2 2005/08/16 02:22:31 dcp1990 Exp $
 
 How to write file plugins
 	By Dan Ponte
@@ -26,11 +26,13 @@ include/fakedbfs.h for the latest):
 struct PluginInfo {
 	const char *extensions; /* a list of file extensions, not including dots, that
 				this plugin handles. Each extension is separated
-				by a pipe (``|'') character. Note that this
-				isn't required, but if a file's extension is in
-				the list, the plugin will be given priority,
+				by a slash character. (since it cannot occur in a filename)
+				Note that this isn't required, but if a file's extension
+				is in the list, the plugin will be given priority,
 				thereby speeding up searches (check_file() is
 				always called, however).
+			  */
+
 			  */
 	const char *pluginname; /* the name of the plugin; self-explanatory */
 	const char *version; /* the version of the plugin */
