@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.3 2005/08/15 20:28:03 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.4 2005/08/16 03:17:12 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -38,7 +38,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.3 2005/08/15 20:28:03 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.4 2005/08/16 03:17:12 dcp1990 Exp $")
 
 int index_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -123,10 +123,66 @@ fields_t* fill_in_fields(f, filename)
 	fdbfs_t *f;
 	char *filename;
 {
-	struct Plugin *h = f->plugins, *c = NULL;
-	struct fields_t *fh = NULL, *fc = NULL, *fn = NULL;
-	char *errmsg;
+	struct Plugin *h = f->plugins, *c = NULL, *tpl = NULL;
+	fields_t *fh = NULL;
+	char *errmsg = NULL;
+	char *extension;
+	short int found = 0;
+	int rc;
 
-	/* do stuff */
+#if defined(UNIX) || defined(AMIGA) || defined(WIN32)
+	extension = strrchr(filename, '/');
+	extension = strrchr(extension == NULL ? filename : extension + 1, '.');
+#endif
+
+	if(extension != NULL) {
+		++extension;
+		if(strlen(extension) > 7 /* reasonable enough */ || strlen(extension) == 0) {
+			extension = NULL;
+		}
+	}
+
+	if(extension != NULL)
+		for(c = h; c != NULL; c = c->next) {
+			if(strstr(c->info->extensions, extension) != NULL) {
+				rc = c->check_file(filename, &errmsg);
+				if(rc == 1) {
+					tpl = c;
+					found = 1;
+					break;
+				} else if(rc == -1 || errmsg != NULL) {
+					CERR(die, "check_file for plugin %s said: %s", c->info->pluginname, errmsg);
+					free(errmsg);
+					return NULL;
+				}
+			}
+		}
+
+	if(!found)
+		for(c = h; c != NULL; c = c->next) {
+			rc = c->check_file(filename, &errmsg);
+			if(rc == 1) {
+				tpl = c;
+				found = 1;
+				break;
+			} else if(rc == -1 || errmsg != NULL) {
+				CERR(die, "check_file for plugin %s said: %s", c->info->pluginname, errmsg);
+				free(errmsg);
+				return NULL;
+			}
+		}
+
+	if(!found) {
+		debug_info(f, error, "cannot find plugin to extract metadata for %s!", filename);
+		return NULL;
+	}
+
+	fh = tpl->extract_from_file(filename, &errmsg);
+	if(errmsg != NULL) {
+		CERR(die, "extract_from_file for plugin %s said: %s", c->info->pluginname, errmsg);
+		free(errmsg);
+		return NULL;
+	}
+
 	return fh;
 }

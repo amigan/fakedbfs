@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.6 2005/08/13 02:52:53 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.7 2005/08/16 03:17:12 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -35,13 +35,14 @@
 #include <stdio.h>
 #include <errno.h>
 #include <ctype.h>
+#include <dlfcn.h> /* for dlclose */
 #include "dbspec.h"
 /* us */
 #include <dbspecdata.h>
 #include <fakedbfs.h>
 #include <lexdefines.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.6 2005/08/13 02:52:53 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.7 2005/08/16 03:17:12 dcp1990 Exp $")
 
 
 void* allocz(size)
@@ -178,6 +179,27 @@ void free_head_members(hd) /* only the heads contained within, not the structure
 {
 	free_cat_head_list(hd->cathead);
 	free_enum_head_list(hd->enumhead);
+}
+
+struct Plugin* destroy_plugin(e)
+	struct Plugin *e;
+{
+	struct Plugin *nx;
+
+	dlclose(e->libhandle);
+	nx = e->next;
+	free(e);
+	
+	return nx;
+}
+
+void destroy_plugin_list(h)
+	struct Plugin *h;
+{
+	struct Plugin *c, *next;
+	for(c = h; c != NULL; c = next) {
+		next = destroy_plugin(c);
+	}
 }
 
 void estr_free(e)
