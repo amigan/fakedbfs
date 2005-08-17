@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/findex/findex.c,v 1.2 2005/08/17 15:30:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.3 2005/08/17 15:58:34 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -41,35 +41,52 @@
 #define ARGSPEC "vhrd:e:"
 #define FINDEXVER "0.1"
 
-RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.2 2005/08/17 15:30:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.3 2005/08/17 15:58:34 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int recurse = 0;
-char *dbf;
-char *regex = NULL;
-fdbfs_t *f;
+static char *dbf;
+static char *regex = NULL;
+static fdbfs_t *f;
 
 void version(void)
 {
 	printf("findex v%s. (C)2005, Dan Ponte.\n"
 		       "Under the BSD license; see the source for more details.\n"
 		       "fakedbfs library v%s. Originally built for v%s.\n%s\n"
-		       "Visit http://www.theamigan.net/fakedbfs/ for more info.\n", FINDEXVER, fakedbfsver, FAKEDBFSVER, fakedbfscopyright);
+		       "Visit http://www.theamigan.net/fakedbfs/ for more info.\n",
+		       FINDEXVER, fakedbfsver, FAKEDBFSVER, fakedbfscopyright);
 }
+
 void usage(pn)
 	char *pn;
 {
 	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] [-r] "
-			"[-e regex] file/dir ...\n",
+			"[-e regex] <catalogue name> file/dir ...\n",
 			pn, pn);
+}
+
+int is_dir(file)
+	char *file;
+{
+#if defined(UNIX)
+	struct stat s;
+
+	if(stat(file, &s) == -1)
+		return -1;
+
+	return S_ISDIR(s.st_mode);
+#else
+	return 0;
+#endif
 }
 
 int main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	int c;
-	char *estr, *pname;
+	int c, i;
+	char *estr, *pname, *cat;
 
 	pname = strdup(argv[0]);
 
@@ -100,12 +117,17 @@ int main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
-	if(argc < 1) {
+	if(argc < 2) {
 		usage(pname);
 		free(pname);
 		if(regex != NULL) free(regex);
 		return -1;
 	}
+
+	cat = strdup(argv[0]);
+
+	argc--;
+	argv++;
 
 	free(pname);
 
@@ -121,12 +143,25 @@ int main(argc, argv)
 		fprintf(stderr, "error creating fdbfs instance: %s\n", estr);
 		free(dbf);
 		free(estr);
+		free(cat);
 		if(regex != NULL) free(regex);
 		return -1;
 	}
 
+	for(i = 0; i < argc; i++) {
+		c = is_dir(argv[i]);
+		if(c == -1) {
+			fprintf(stderr, "warning: couldn't stat %s: %s\n", argv[1], strerror(errno));
+		} else if(!c) {
+			/* index the file */
+		} else if(c) {
+			/* index the directory */
+		}
+	}
+
 	destroy_fdbfs(f);
 	free(dbf);
+	free(cat);
 	if(regex != NULL) free(regex);
 
 	return 0;
