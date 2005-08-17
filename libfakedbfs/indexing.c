@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.7 2005/08/17 01:14:32 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.8 2005/08/17 15:30:18 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.7 2005/08/17 01:14:32 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.8 2005/08/17 15:30:18 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -274,7 +274,7 @@ int file_has_changed(f, cat, filename)
 }
 
 	
-int index_dir(f, dir, cat, useplugs, batch, nocase, re)
+int index_dir(f, dir, cat, useplugs, batch, nocase, re, recurselevel)
 	fdbfs_t *f;
 	char *dir;
 	char *cat;
@@ -282,6 +282,7 @@ int index_dir(f, dir, cat, useplugs, batch, nocase, re)
 	int batch;
 	int nocase;
 	char *re;
+	int recurselevel;
 {
 #if defined(UNIX)
 	DIR *d;

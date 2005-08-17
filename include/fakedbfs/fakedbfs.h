@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.12 2005/08/16 21:30:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.13 2005/08/17 15:30:17 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -223,6 +223,7 @@ struct Plugin* search_plugs(fdbfs_t *f, struct Plugin *plugins, char *path);
 int init_plugins(fdbfs_t *f);
 struct Plugin* destroy_plugin(struct Plugin *e);
 void destroy_plugin_list(struct Plugin *h);
+int index_dir(fdbfs_t *f, char *dir, char *cat, int useplugs, int batch, int nocase, char *re, int recurselevel);
 
 /* application interfaces */
 int parse_definition(fdbfs_t *f, char *filename);
