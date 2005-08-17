@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2005, Dan Ponte
  *
- * fcreatedb.c - fcreate main (for creating databases)
+ * findex.c - indexer for fakedbfs
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,6 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.2 2005/08/17 15:30:12 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -37,23 +38,29 @@
 #include <fakedbfs.h>
 #include <fakedbfsapps.h>
 
-#define ARGSPEC "vhd:"
-#define FCREATEVER "0.1"
+#define ARGSPEC "vhrd:e:"
+#define FINDEXVER "0.1"
+
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.2 2005/08/17 15:30:12 dcp1990 Exp $")
 
 static int dbfu = 0;
+static int recurse = 0;
 char *dbf;
+char *regex = NULL;
+fdbfs_t *f;
 
 void version(void)
 {
-	printf("fcreatedb v%s. (C)2005, Dan Ponte.\n"
+	printf("findex v%s. (C)2005, Dan Ponte.\n"
 		       "Under the BSD license; see the source for more details.\n"
 		       "fakedbfs library v%s. Originally built for v%s.\n%s\n"
-		       "Visit http://www.theamigan.net/fakedbfs/ for more info.\n", FCREATEVER, fakedbfsver, FAKEDBFSVER, fakedbfscopyright);
+		       "Visit http://www.theamigan.net/fakedbfs/ for more info.\n", FINDEXVER, fakedbfsver, FAKEDBFSVER, fakedbfscopyright);
 }
 void usage(pn)
 	char *pn;
 {
-	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] specfile\n",
+	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] [-r] "
+			"[-e regex] file/dir ...\n",
 			pn, pn);
 }
 
@@ -62,6 +69,9 @@ int main(argc, argv)
 	char *argv[];
 {
 	int c;
+	char *estr, *pname;
+
+	pname = strdup(argv[0]);
 
 	while((c = getopt(argc, argv, ARGSPEC)) != -1)
 		switch(c) {
@@ -69,16 +79,55 @@ int main(argc, argv)
 				version();
 				return 0;
 			case 'h':
-				usage(argv[0]);
+				usage(pname);
 				return 0;
 			case 'd':
 				dbf = strdup(optarg);
 				dbfu = 1;
 				break;
+			case 'r':
+				recurse = 1;
+				break;
+			case 'e':
+				regex = strdup(optarg);
+				break;
 			case '?':
 			default:
-				usage(argv[0]);
+				usage(pname);
+				free(pname);
 				return 1;
 		}
+	argc -= optind;
+	argv += optind;
+
+	if(argc < 1) {
+		usage(pname);
+		free(pname);
+		if(regex != NULL) free(regex);
+		return -1;
+	}
+
+	free(pname);
+
+	if(!dbfu) {
+		if(getenv(FDBFSDBENV) != NULL)
+			dbf = strdup(getenv(FDBFSDBENV));
+		else
+			asprintf(&dbf, "%s/.fakedbfsdb", getenv("HOME"));
+	}
+
+	f = new_fdbfs(dbf, &estr, DEBUGFUNC_STDERR);
+	if(f == NULL) {
+		fprintf(stderr, "error creating fdbfs instance: %s\n", estr);
+		free(dbf);
+		free(estr);
+		if(regex != NULL) free(regex);
+		return -1;
+	}
+
+	destroy_fdbfs(f);
+	free(dbf);
+	if(regex != NULL) free(regex);
+
 	return 0;
 }
