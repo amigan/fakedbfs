@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.7 2005/08/15 20:28:03 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.8 2005/08/17 15:30:07 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -41,7 +41,7 @@
 #define ARGSPEC "vhad:"
 #define FCREATEVER "0.1"
 
-RCSID("$Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.7 2005/08/15 20:28:03 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.8 2005/08/17 15:30:07 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int append = 0;
@@ -120,6 +120,7 @@ int main(argc, argv)
 		fprintf(stderr, "error creating fdbfs instance: %s\n", estr);
 		free(dbf);
 		free(estr);
+		free(specf);
 		return -1;
 	}
 	if(!append)
@@ -127,8 +128,8 @@ int main(argc, argv)
 			fprintf(stderr, "starting DB: %s\n", f->error.emsg);
 			estr_free(&f->error);
 			free(dbf);
-			free(estr);
 			destroy_fdbfs(f);
+			free(specf);
 			return -1;
 		}
 
