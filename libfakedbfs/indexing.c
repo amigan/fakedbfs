@@ -27,18 +27,27 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.6 2005/08/16 21:30:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.7 2005/08/17 01:14:32 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <errno.h>
+#include <regex.h>
+#include <stdio.h>
+
+#ifdef UNIX
+#	include <sys/types.h>
+#	include <sys/stat.h>
+#	include <dirent.h>
+#endif
 /* other libraries */
 #include <sqlite3.h>
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.6 2005/08/16 21:30:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.7 2005/08/17 01:14:32 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -232,11 +241,39 @@ int file_has_changed(f, cat, filename)
 {
 #if defined(UNIX)
 	struct stat s;
+#endif
+	int rc;
 	time_t upd; /* time_t must be signed!!!!! */
 	
 	upd = (time_t)get_lastupdate(f, cat, filename);
 
-	if(upd
+	if(upd == -1) { /*error*/
+		CERR(die, "get_lsatupdate errored. ", NULL);
+		return -1;
+	} else if(upd == -2) {
+		return 1;
+	}
+#if defined(UNIX)
+	rc = stat(filename, &s);
+	if(rc == -1) {
+		ERR(die, "stat failed: %s", strerror(errno));
+		return -1;
+	}
+
+	if(S_ISDIR(s.st_mode)) {
+		return -2; /* a directory */
+	}
+
+	if(s.st_mtime > upd)
+		return 1;
+	else
+		return 0;
+#endif
+
+	return 0;
+}
+
+	
 int index_dir(f, dir, cat, useplugs, batch, nocase, re)
 	fdbfs_t *f;
 	char *dir;
@@ -248,10 +285,10 @@ int index_dir(f, dir, cat, useplugs, batch, nocase, re)
 {
 #if defined(UNIX)
 	DIR *d;
-	struct dirent *cfile;
+	struct dirent *cd;
 	int rc;
 	char *emsg;
-	char *fullpath;
+	char *fpth;
 	size_t fplen;
 	regex_t tre;
 
@@ -292,7 +329,21 @@ int index_dir(f, dir, cat, useplugs, batch, nocase, re)
 			fpth = malloc(sizeof(char) * fplen);
 			snprintf(fpth, fplen, "%s/%s", dir, cd->d_name);
 
-			index_file(f, fpth, cat, batch, useplugs, NULL);
+			rc = file_has_changed(f, cat, fpth);
+			if(rc == 0) {
+				free(fpth);
+				continue;
+			} else if(rc == 1) {
+				index_file(f, fpth, cat, batch, useplugs, NULL);
+				free(fpth);
+			} else if(rc == -2) { /* is a directory */
+				/* recurse*/
+				free(fpth);
+			} else if(rc == -1) { /* hack alert */
+				debug_info(f, warning, "error checking if %s changed: %s", fpth, f->error.emsg);
+				estr_free(&f->error);
+				free(fpth);
+			}
 
 			free(fpth);
 		} else {
@@ -307,8 +358,11 @@ int index_dir(f, dir, cat, useplugs, batch, nocase, re)
 			} else if(rc == 1) {
 				index_file(f, fpth, cat, batch, useplugs, NULL);
 				free(fpth);
+			} else if(rc == -2) { /* is a directory */
+				/* recurse*/
+				free(fpth);
 			} else if(rc == -1) { /* hack alert */
-				debug_info(warn, "error checking if %s changed: %s", fpth, f->error.emsg);
+				debug_info(f, warning, "error checking if %s changed: %s", fpth, f->error.emsg);
 				estr_free(&f->error);
 				free(fpth);
 			}

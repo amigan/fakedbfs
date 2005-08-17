@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.9 2005/08/16 21:30:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.10 2005/08/17 01:14:32 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.9 2005/08/16 21:30:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.10 2005/08/17 01:14:32 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -339,7 +339,8 @@ int get_lastupdate(f, cat, filename)
 {
 	sqlite3_stmt *cst;
 	int rc;
-	char *sql, *tail;
+	char *sql;
+	const char *tail;
 	int lu;
 	/* CAT_TABLE_PREFIX */
 
