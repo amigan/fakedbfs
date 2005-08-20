@@ -27,21 +27,27 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/findex/findex.c,v 1.4 2005/08/20 20:51:08 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.5 2005/08/20 20:53:11 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <errno.h>
 
 #include <fakedbfs.h>
 #include <fakedbfsapps.h>
 
+#ifdef UNIX
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
+
 #define ARGSPEC "vhrdi:e:"
 #define FINDEXVER "0.1"
 
-RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.4 2005/08/20 20:51:08 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.5 2005/08/20 20:53:11 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int recurse = 0;
