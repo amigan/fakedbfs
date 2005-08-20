@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.8 2005/08/17 15:30:18 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.9 2005/08/20 20:51:10 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.8 2005/08/17 15:30:18 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.9 2005/08/20 20:51:10 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -132,6 +132,7 @@ fields_t* fill_in_fields(f, filename)
 	fdbfs_t *f;
 	char *filename;
 {
+	/* TODO: make this use the askfunc(answer_t). */
 	struct Plugin *h = f->plugins, *c = NULL, *tpl = NULL;
 	fields_t *fh = NULL;
 	char *errmsg = NULL;
@@ -196,6 +197,38 @@ fields_t* fill_in_fields(f, filename)
 	return fh;
 }
 
+/* Basically, what this [should] do:
+ * Go through and get each field for the catalogue from the database and put
+ * it into an appropriate tree (this should be done already; see the
+ * cats_from_db() and enums_from_db() routines).
+ * Step through these fields, searching the defs list each time for the current
+ * element; use its value as the default.
+ * Call the askfunc. If it's an enum, give it the pointer to the EnumHead, and
+ * the subelem if it's a sub. For all other fields, just give a "none"-equiv.
+ * default.
+ * Have fun with this inefficient, New Age-esque code (though at least it's not
+ * in programming language del giorno)
+ *
+ * NOTE: in future implementations, do an initial call of askfunc with fieldname
+ * as NULL. If you get a NULL back, this means not to expect anything but (answer_t*)0x1
+ * back from them. At the end of the asking, do another call with fieldname as (char*)0x1;
+ * you should get back a linked list of answer_t's. Use this. This is for GUI applications
+ * that might want to fashion a dialogue during asking. Or we could just use a flag in the
+ * fdbfs_t* that tells us whether to do this or not :).
+ */
+fields_t* ask_for_fields(f, cat, defs) /* this routine is extremely inefficient
+					  ....I think. But it sure as hell
+					 isn't the worst. */
+	fdbfs_t *f;
+	char *cat;
+	fields_t *defs;
+{
+	answer_t *cans;
+	fields_t *c = NULL, *h = NULL, *n = NULL;
+
+	return h;
+}
+
 int index_file(f, filename, cat, batch, useplugs, fields)
 	fdbfs_t *f;
 	char *filename;
@@ -205,7 +238,7 @@ int index_file(f, filename, cat, batch, useplugs, fields)
 	fields_t *fields;
 {
 	int rc;
-	fields_t *c = NULL, *h = NULL;
+	fields_t *c = NULL, *h = NULL, *new = NULL;
 
 	if(useplugs) {
 		h = fill_in_fields(f, filename);
@@ -216,11 +249,16 @@ int index_file(f, filename, cat, batch, useplugs, fields)
 
 	if(fields != NULL) {
 		if(h != NULL) {
-			for(c = fields; c != NULL; c = c->next);
+			for(c = fields; c->next /* we want to use it */ != NULL;
+					c = c->next);
 			c->next = h;
 			h = fields;
 		}
 	}
+
+	if(!batch) {
+		new = ask_for_fields(f, cat, h);
+	}	
 
 	rc = add_file(f, filename, cat, h);
 	if(!rc) {
@@ -268,6 +306,8 @@ int file_has_changed(f, cat, filename)
 		return 1;
 	else
 		return 0;
+#else
+#	error "No code to stat for mtime"
 #endif
 
 	return 0;
@@ -373,6 +413,8 @@ int index_dir(f, dir, cat, useplugs, batch, nocase, re, recurselevel)
 	closedir(d);
 	if(re != NULL)
 		regfree(&tre);
+#else
+#	error "Code not written for index_dir under this OS"
 #endif
 	return 1;
 }

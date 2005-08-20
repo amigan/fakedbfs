@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.13 2005/08/17 15:30:17 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.14 2005/08/20 20:51:09 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -139,6 +139,18 @@ struct Plugin {
 };
 
 #define DEBUGFUNC_STDERR ((void(*)(char*, enum ErrorAction))0)
+#define AFFPROTO (char * /* default */, char * /*fieldname*/, \
+			char * /* filename */, enum DataType, struct EnumHead * /* if oenum */, struct EnumSubElem * /* if sub */)
+#define ASKFUNC_STD ((answer_t(*)AFFPROTO)0)
+typedef struct a_t {
+	enum DataType dt;
+	char *string; /* this and vd will be free()d if they aren't NULL, no exceptions. Hence, make them dynamic. */
+	int integer; /* applies to enums and subenums as well */
+	double fp;
+	void *vd;
+	char *fieldname; /* also UNUSED. See next element. */
+	struct a_t *next; /* UNUSED. This is here for future implementations of ask_for_fields(). Details coming soon. */
+} answer_t;
 
 typedef struct {
 	char *dbname;
@@ -147,16 +159,18 @@ typedef struct {
 	config_t conf;
 	struct Plugin *plugins;
 	void (*debugfunc)(char*, enum ErrorAction);
+	answer_t *(*askfieldfunc) AFFPROTO;
 } fdbfs_t;
 
 void* allocz(size_t size);
+void set_aff(fdbfs_t *f, answer_t *(*aff)AFFPROTO);
 char* normalise(char *s);
 struct EnumElem* find_elem_by_name(struct EnumElem *h, char *name);
 struct EnumHead* find_enumhead_by_name(struct EnumHead *h, char *name);
 struct CatalogueHead* find_cathead_by_name(struct CatalogueHead *h, char *name);
 struct CatElem* find_catelem_by_name(struct CatElem *h, char *name);
 struct EnumSubElem* copy_sub_list(
-		struct EnumSubElem *from, 
+		struct EnumSubElem *from,
 		struct EnumSubElem *to,
 		struct EnumElem *fajah,
 		int *lastval
@@ -216,6 +230,7 @@ fields_t* free_field(fields_t *e);
 void free_field_list(fields_t *h);
 int get_lastupdate(fdbfs_t *f, char *cat, char *filename);
 int file_has_changed(fdbfs_t *f, char *cat, char *filename);
+void free_answer_t(answer_t *e);
 
 /* plugin shiite */
 struct Plugin* probe_plugin(fdbfs_t *f, char *dirpath, char *filename, struct Plugin *last);

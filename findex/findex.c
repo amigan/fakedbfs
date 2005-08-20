@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/findex/findex.c,v 1.3 2005/08/17 15:58:34 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.4 2005/08/20 20:51:08 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -38,14 +38,15 @@
 #include <fakedbfs.h>
 #include <fakedbfsapps.h>
 
-#define ARGSPEC "vhrd:e:"
+#define ARGSPEC "vhrdi:e:"
 #define FINDEXVER "0.1"
 
-RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.3 2005/08/17 15:58:34 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.4 2005/08/20 20:51:08 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int recurse = 0;
-static char *dbf;
+static int interactive = 0;
+static char *dbf = NULL;
 static char *regex = NULL;
 static fdbfs_t *f;
 
@@ -61,7 +62,7 @@ void version(void)
 void usage(pn)
 	char *pn;
 {
-	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] [-r] "
+	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] [-i] [-r] "
 			"[-e regex] <catalogue name> file/dir ...\n",
 			pn, pn);
 }
@@ -94,9 +95,15 @@ int main(argc, argv)
 		switch(c) {
 			case 'v':
 				version();
+				free(pname);
+				if(dbf != NULL) free(dbf);
+				if(regex != NULL) free(regex);
 				return 0;
 			case 'h':
 				usage(pname);
+				free(pname);
+				if(dbf != NULL) free(dbf);
+				if(regex != NULL) free(regex);
 				return 0;
 			case 'd':
 				dbf = strdup(optarg);
@@ -108,10 +115,15 @@ int main(argc, argv)
 			case 'e':
 				regex = strdup(optarg);
 				break;
+			case 'i':
+				interactive = 1;
+				break;
 			case '?':
 			default:
 				usage(pname);
 				free(pname);
+				if(dbf != NULL) free(dbf);
+				if(regex != NULL) free(regex);
 				return 1;
 		}
 	argc -= optind;

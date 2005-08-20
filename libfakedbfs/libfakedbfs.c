@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.9 2005/08/16 03:17:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.10 2005/08/20 20:51:10 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -38,7 +38,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.9 2005/08/16 03:17:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.10 2005/08/20 20:51:10 dcp1990 Exp $")
 
 #ifndef lint
 const char const *fakedbfsver _unused = FAKEDBFSVER;
@@ -77,4 +77,11 @@ int destroy_fdbfs(f)
 	destroy_plugin_list(f->plugins);
 	free(f);
 	return 1;
+}
+
+void set_aff(f, aff)
+	fdbfs_t *f;
+	answer_t *(*aff)AFFPROTO;
+{
+	f->askfieldfunc = aff;
 }
