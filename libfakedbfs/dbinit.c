@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.19 2005/08/16 06:44:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.20 2005/08/22 16:13:54 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.19 2005/08/16 06:44:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.20 2005/08/22 16:13:54 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -150,6 +150,35 @@ struct CatElem* find_catelem_enum(h, en)
 	for(c = h; c != NULL; c = c->next) {
 		if(c->enumptr == en && c->type == oenum)
 			return c;
+	}
+
+	return NULL;
+}
+
+char* get_enum_string_by_value(h, val, fmted)
+	struct EnumElem *h;
+	unsigned int val;
+	short int fmted;
+{
+	struct EnumElem *c;
+
+	for(c = h; c != NULL; c = c->next) {
+		if(c->value == val)
+			return (fmted ? c->fmtname : c->name);
+	}
+
+	return NULL;
+}
+
+char* get_enum_sub_string_by_value(h, val)
+	struct EnumSubElem *h;
+	unsigned int val;
+{
+	struct EnumSubElem *c;
+
+	for(c = h; c != NULL; c = c->next) {
+		if(c->value == val)
+			return c->name;
 	}
 
 	return NULL;

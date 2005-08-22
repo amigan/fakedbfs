@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.10 2005/08/20 20:51:10 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.11 2005/08/22 16:13:54 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -38,17 +38,18 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.10 2005/08/20 20:51:10 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.11 2005/08/22 16:13:54 dcp1990 Exp $")
 
 #ifndef lint
 const char const *fakedbfsver _unused = FAKEDBFSVER;
 const char const *fakedbfscopyright _unused = "libfakedbfs (C)2005, Dan Ponte. Under the BSD license.";
 #endif
 
-fdbfs_t *new_fdbfs(dbfile, error, debugf)
+fdbfs_t *new_fdbfs(dbfile, error, debugf, useplugins)
 	char *dbfile;
 	char **error; /* if we return NULL, this must be freed */
 	void (*debugf)(char*, enum ErrorAction);
+	int useplugins;
 {
 	fdbfs_t *f;
 	int rc;
@@ -63,6 +64,14 @@ fdbfs_t *new_fdbfs(dbfile, error, debugf)
 		free(f);
 		return NULL;
 	}
+	if(useplugins) {
+		if(getenv(FDBFSPLUGENV) != NULL)
+			set_plug_path(f, getenv(FDBFSPLUGENV));
+		init_plugins(f);
+	}
+
+	set_aff(f, askfunc_std);
+
 	return f;
 }
 
@@ -84,4 +93,11 @@ void set_aff(f, aff)
 	answer_t *(*aff)AFFPROTO;
 {
 	f->askfieldfunc = aff;
+}
+
+void set_plug_path(f, path)
+	fdbfs_t *f;
+	char *path;
+{
+	f->conf.pluginpath = strdup(path);
 }

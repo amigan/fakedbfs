@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/findex/findex.c,v 1.5 2005/08/20 20:53:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.6 2005/08/22 16:13:54 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -44,14 +44,15 @@
 #include <sys/stat.h>
 #endif
 
-#define ARGSPEC "vhrdi:e:"
+#define ARGSPEC "vhrd:ic:e:"
 #define FINDEXVER "0.1"
 
-RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.5 2005/08/20 20:53:11 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.6 2005/08/22 16:13:54 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int recurse = 0;
 static int interactive = 0;
+static int nocase = 0;
 static char *dbf = NULL;
 static char *regex = NULL;
 static fdbfs_t *f;
@@ -68,7 +69,7 @@ void version(void)
 void usage(pn)
 	char *pn;
 {
-	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] [-i] [-r] "
+	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] [-i] [-r] [-c] "
 			"[-e regex] <catalogue name> file/dir ...\n",
 			pn, pn);
 }
@@ -93,12 +94,15 @@ int main(argc, argv)
 	char *argv[];
 {
 	int c, i;
-	char *estr, *pname, *cat;
+	char *estr, *pname, *cat, *cf;
 
 	pname = strdup(argv[0]);
 
 	while((c = getopt(argc, argv, ARGSPEC)) != -1)
 		switch(c) {
+			case 'c':
+				nocase = 1;
+				break;
 			case 'v':
 				version();
 				free(pname);
@@ -156,7 +160,7 @@ int main(argc, argv)
 			asprintf(&dbf, "%s/.fakedbfsdb", getenv("HOME"));
 	}
 
-	f = new_fdbfs(dbf, &estr, DEBUGFUNC_STDERR);
+	f = new_fdbfs(dbf, &estr, DEBUGFUNC_STDERR, 1);
 	if(f == NULL) {
 		fprintf(stderr, "error creating fdbfs instance: %s\n", estr);
 		free(dbf);
@@ -166,15 +170,21 @@ int main(argc, argv)
 		return -1;
 	}
 
+#define RECURSELVL 10
+
 	for(i = 0; i < argc; i++) {
-		c = is_dir(argv[i]);
+		cf = strdup(argv[i]);
+		c = is_dir(cf);
 		if(c == -1) {
 			fprintf(stderr, "warning: couldn't stat %s: %s\n", argv[1], strerror(errno));
 		} else if(!c) {
 			/* index the file */
+			index_file(f, cf, cat, (interactive ? 1 : 0), 1, NULL /* XXX: for now; implement specification on command line */);
 		} else if(c) {
 			/* index the directory */
+			index_dir(f, cf, cat, 1, (interactive ? 1 : 0), nocase, regex, RECURSELVL);
 		}
+		free(cf);
 	}
 
 	destroy_fdbfs(f);

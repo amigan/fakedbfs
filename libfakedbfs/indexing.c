@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.9 2005/08/20 20:51:10 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.10 2005/08/22 16:13:54 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.9 2005/08/20 20:51:10 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.10 2005/08/22 16:13:54 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -110,18 +110,18 @@ int add_file(f, file, catalogue, fields)
 	free(fieldtable);
 
 	if(rc != SQLITE_OK) {
-		return ERR(die, "index_file(\"%s\"): SQLite error after prepare: %s", file, sqlite3_errmsg(f->db));
+		return ERR(die, "add_file(\"%s\"): SQLite error after prepare: %s", file, sqlite3_errmsg(f->db));
 	}
 
 	for(c = fields; c != NULL; c = c->next) {
 		if(!bind_field(f, &fieldcount, c->type, c->val, c->len, stmt))
-			return CERR(die, "index_file(\"%s\"): bind error. ", file);
+			return CERR(die, "add_file(\"%s\"): bind error. ", file);
 	}
 
 	rc = sqlite3_step(stmt);
 
 	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
-		return ERR(die, "index_file(\"%s\"): SQLite error after step: %s", file, sqlite3_errmsg(f->db));
+		return ERR(die, "add_file(\"%s\"): SQLite error after step: %s", file, sqlite3_errmsg(f->db));
 	}
 
 	sqlite3_finalize(stmt);
@@ -197,6 +197,87 @@ fields_t* fill_in_fields(f, filename)
 	return fh;
 }
 
+answer_t* askfunc_std(buf, def, fieldname, filen, dt, ehead, subhead)
+	answer_t *buf;
+	answer_t *def;
+	char *fieldname;
+	char *filen;
+	enum DataType dt;
+	struct EnumHead *ehead;
+	struct EnumSubElem *subhead;
+{
+#define MAXLINELEN 512
+	char bf[MAXLINELEN];
+	char *nl;
+
+	if(fieldname == NULL)
+		return NULL;
+
+checkagain:
+	switch(dt) {
+		case number:
+			printf("%s [%d]> ", fieldname, def->integer);
+			break;
+		case boolean:
+			printf("%s [%s]> ", fieldname, (def->integer ? "true" : "false"));
+			break;
+		case oenum:
+			printf("%s [%d - '%s']> ", fieldname, def->integer, get_enum_string_by_value(ehead->headelem, def->integer, 1));
+			break;
+		case oenumsub:
+			printf("%s [%d - '%s']> ", fieldname, def->integer, get_enum_sub_string_by_value(subhead, def->integer));
+			break;
+		case string:
+			printf("%s ['%s']> ", fieldname, def->string);
+			break;
+		case fp:
+			printf("%s [%f]> ", fieldname, def->fp);
+			break;
+		case image:
+		case binary:
+			return 0; /* we can't deal here */
+			break;
+	}
+
+	fgets(bf, MAXLINELEN, stdin);
+
+	if(*bf == '\n')
+		return (answer_t*)0x1;
+
+	if((nl = strrchr(bf, '\n')) != NULL)
+		*nl = '\0';
+
+	switch(dt) {
+		case number:
+			buf->integer = atoi(bf);
+			break;
+		case boolean:
+			if(*bf == 't')
+				buf->integer = 1;
+			else if(*bf == 'f')
+				buf->integer = 0;
+			else
+				goto checkagain; /* it isn't BASIC, folks */
+			break;
+		case oenum:
+		case oenumsub:
+			/* TODO: make this, well, better... */
+			buf->integer = atoi(bf);
+			break;
+		case string:
+			buf->string = strdup(bf);
+			break;
+		case fp:
+			sscanf(bf, "%f", &buf->fp);
+			break;
+		case image:
+		case binary:
+			return 0; /* I told you already */
+	}
+
+	return buf;
+}
+
 /* Basically, what this [should] do:
  * Go through and get each field for the catalogue from the database and put
  * it into an appropriate tree (this should be done already; see the
@@ -209,24 +290,128 @@ fields_t* fill_in_fields(f, filename)
  * Have fun with this inefficient, New Age-esque code (though at least it's not
  * in programming language del giorno)
  *
- * NOTE: in future implementations, do an initial call of askfunc with fieldname
- * as NULL. If you get a NULL back, this means not to expect anything but (answer_t*)0x1
+ * Do an initial call of askfunc with fieldname
+ * as NULL. If you get an 0x1 back (instead of NULL), this means not to expect anything but (answer_t*)0x1
  * back from them. At the end of the asking, do another call with fieldname as (char*)0x1;
  * you should get back a linked list of answer_t's. Use this. This is for GUI applications
  * that might want to fashion a dialogue during asking. Or we could just use a flag in the
  * fdbfs_t* that tells us whether to do this or not :).
  */
-fields_t* ask_for_fields(f, cat, defs) /* this routine is extremely inefficient
+fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely inefficient
 					  ....I think. But it sure as hell
 					 isn't the worst. */
 	fdbfs_t *f;
+	char *filen;
 	char *cat;
 	fields_t *defs;
 {
 	answer_t *cans;
-	fields_t *c = NULL, *h = NULL, *n = NULL;
+	answer_t def;
+	answer_t cta;
+	short int dialoguemode = 0;
+	short int otherm = 0;
+	short int i, hasoth = 0;
+	fields_t *c = NULL /*, *h = NULL, *n = NULL*/;
 
-	return h;
+	cans = f->askfieldfunc(NULL, NULL, NULL, NULL, 0x0, NULL, NULL);
+	if(cans == (answer_t*)0x1)
+		dialoguemode = 1;
+	else if(cans == (answer_t*)-1) {
+		ERR(die, "askfieldfunc initial gave error.", NULL);
+		return NULL;
+	}
+
+#define cval (otherm ? c->otherval : c->val)
+#define clen (otherm ? c->othlen : c->len)
+#define ctype (otherm ? c->othtype : c->type)
+
+	for(c = defs; c != NULL; c = c->next) {
+		if(c->otherval != NULL)
+			hasoth = 1;
+		else
+			hasoth = 0;
+
+		for(i = 0; i < (hasoth ? 1 : 2); i++) {
+			memset(&def, 0, sizeof(def));
+			def.dt = ctype;
+			switch(c->type) {
+				case number:
+				case boolean:
+				case oenum:
+				case oenumsub:
+					def.integer = *(int*)cval;
+					break;
+				case string:
+					def.string = (char*)cval;
+					break;
+				case fp:
+					def.fp = *(FLOATTYPE *)cval;
+					break;
+				case image:
+				case binary:
+					def.vd = cval;
+					def.len = clen;
+					break;
+			}
+
+			cans = f->askfieldfunc(&cta, &def, c->fieldname, filen, def.dt, c->ehead, c->subhead);
+			if(!dialoguemode) {
+				if(cans == (answer_t*)-1) {
+					ERR(die, "askfunc said error here.", NULL);
+					/* clean up */
+					return NULL;
+				} else if(cans == (answer_t*)0x1) {
+					/* no change... */
+				} else if(cans == &cta) {
+					/* changed... */
+					free(cval);
+					switch(ctype) {
+						case number:
+						case boolean:
+						case oenum:
+						case oenumsub:
+							if(otherm) {
+								c->otherval = malloc(sizeof(int));
+								*(int*)c->otherval = cta.integer;
+							} else {
+								c->val = malloc(sizeof(int));
+								*(int*)c->val = cta.integer;
+							}
+							break;
+						case string:
+							if(otherm)
+								c->otherval = strdup(cta.string);
+							else
+								c->val = strdup(cta.string);
+							break;
+						case fp:
+							if(otherm) {
+								c->otherval = malloc(sizeof(FLOATTYPE));
+								*(FLOATTYPE*)c->otherval = cta.fp;
+							} else {
+								c->val = malloc(sizeof(FLOATTYPE));
+								*(FLOATTYPE*)c->val = cta.fp;
+							}
+							break;
+						case image:
+						case binary:
+							if(!otherm) {
+								c->val = malloc(cta.len);
+								memcpy(c->val, cta.vd, cta.len);
+							} else {
+								c->otherval = malloc(cta.len);
+								memcpy(c->otherval, cta.vd, cta.len);
+							}
+							break;
+					}
+				}
+			}
+		}
+	}
+	/* TODO: handle dialogue mode */
+		/* TODO: return code for new fields */
+
+	return defs;
 }
 
 int index_file(f, filename, cat, batch, useplugs, fields)
@@ -257,7 +442,7 @@ int index_file(f, filename, cat, batch, useplugs, fields)
 	}
 
 	if(!batch) {
-		new = ask_for_fields(f, cat, h);
+		new = ask_for_fields(f, filename, cat, h); /* we can only change existing stuff now anyway */
 	}	
 
 	rc = add_file(f, filename, cat, h);
@@ -378,7 +563,7 @@ int index_dir(f, dir, cat, useplugs, batch, nocase, re, recurselevel)
 				index_file(f, fpth, cat, batch, useplugs, NULL);
 				free(fpth);
 			} else if(rc == -2) { /* is a directory */
-				/* recurse*/
+				/* TODO: recurse*/
 				free(fpth);
 			} else if(rc == -1) { /* hack alert */
 				debug_info(f, warning, "error checking if %s changed: %s", fpth, f->error.emsg);

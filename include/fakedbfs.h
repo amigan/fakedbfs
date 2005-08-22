@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.14 2005/08/20 20:51:09 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.15 2005/08/22 16:13:54 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -51,10 +51,13 @@
 
 #define DELIMCHAR "|"
 #define FDBFSDIR ".fdbfs"
+#define FDBFSPLUGENV "FDBFSPLUGPATH"
 
 #ifdef lint
 /* LINTLIBRARY */
 #endif
+
+#define FLOATTYPE float
 
 enum ErrorAction {
 	die,
@@ -82,6 +85,8 @@ typedef struct Field {
 	enum DataType othtype;
 	void *val;
 	void *otherval;
+	struct EnumHead *ehead;
+	struct EnumSubElem *subhead;
 	size_t len;
 	size_t othlen;
 	struct Field *next;
@@ -139,15 +144,16 @@ struct Plugin {
 };
 
 #define DEBUGFUNC_STDERR ((void(*)(char*, enum ErrorAction))0)
-#define AFFPROTO (char * /* default */, char * /*fieldname*/, \
+#define AFFPROTO (answer_t * /* buffer */, answer_t * /* default */, char * /*fieldname*/, \
 			char * /* filename */, enum DataType, struct EnumHead * /* if oenum */, struct EnumSubElem * /* if sub */)
-#define ASKFUNC_STD ((answer_t(*)AFFPROTO)0)
+#define ASKFUNC_STD ((answer_t*(*)AFFPROTO)0)
 typedef struct a_t {
 	enum DataType dt;
 	char *string; /* this and vd will be free()d if they aren't NULL, no exceptions. Hence, make them dynamic. */
 	int integer; /* applies to enums and subenums as well */
-	double fp;
+	FLOATTYPE fp;
 	void *vd;
+	size_t len;
 	char *fieldname; /* also UNUSED. See next element. */
 	struct a_t *next; /* UNUSED. This is here for future implementations of ask_for_fields(). Details coming soon. */
 } answer_t;
@@ -159,7 +165,8 @@ typedef struct {
 	config_t conf;
 	struct Plugin *plugins;
 	void (*debugfunc)(char*, enum ErrorAction);
-	answer_t *(*askfieldfunc) AFFPROTO;
+	answer_t *(*askfieldfunc) AFFPROTO; /* returns status: 0 means no change, 1 means change, -1 means error */
+	Heads heads;
 } fdbfs_t;
 
 void* allocz(size_t size);
@@ -221,8 +228,6 @@ void dump_head_members(Heads *hd);
 char* strdupq(char *s);
 struct CatElem* find_catelem_enum(struct CatElem *h, struct EnumHead *en);
 int debug_info(fdbfs_t *f, enum ErrorAction sev, char *fmt, ...);
-int add_file(fdbfs_t *f, char *file, char *catalogue, fields_t *fields);
-fields_t* fill_in_fields(fdbfs_t *f, char *filename);
 int index_file(fdbfs_t *f, char *filename, char *cat, int batch, int useplugs, fields_t *fields);
 fields_t* fill_in_fields(fdbfs_t *f, char *filename);
 int add_file(fdbfs_t *f, char *file, char *catalogue, fields_t *fields);
@@ -231,6 +236,14 @@ void free_field_list(fields_t *h);
 int get_lastupdate(fdbfs_t *f, char *cat, char *filename);
 int file_has_changed(fdbfs_t *f, char *cat, char *filename);
 void free_answer_t(answer_t *e);
+fields_t* fill_in_fields(fdbfs_t *f, char *filename);
+fields_t* ask_for_fields(fdbfs_t *f, char *filen, char *cat, fields_t *defs);
+int index_file(fdbfs_t *f, char *filename, char *cat, int batch, int useplugs, fields_t *fields);
+int index_dir(fdbfs_t *f, char *dir, char *cat, int useplugs, int batch, int nocase, char *re, int recurselevel);
+int file_has_changed(fdbfs_t *f, char *cat, char *filename);
+char* get_enum_string_by_value(struct EnumElem *h, unsigned int val, short int fmted);
+char* get_enum_sub_string_by_value(struct EnumSubElem *h, unsigned int val);
+answer_t* askfunc_std AFFPROTO;
 
 /* plugin shiite */
 struct Plugin* probe_plugin(fdbfs_t *f, char *dirpath, char *filename, struct Plugin *last);
@@ -239,10 +252,11 @@ int init_plugins(fdbfs_t *f);
 struct Plugin* destroy_plugin(struct Plugin *e);
 void destroy_plugin_list(struct Plugin *h);
 int index_dir(fdbfs_t *f, char *dir, char *cat, int useplugs, int batch, int nocase, char *re, int recurselevel);
+void set_plug_path(fdbfs_t *f, char *path);
 
 /* application interfaces */
 int parse_definition(fdbfs_t *f, char *filename);
 int start_db(fdbfs_t *f);
-fdbfs_t *new_fdbfs(char *dbfile, char **error, void (*debugf)(char*, enum ErrorAction));
+fdbfs_t *new_fdbfs(char *dbfile, char **error, void (*debugf)(char*, enum ErrorAction), int useplugins);
 int destroy_fdbfs(fdbfs_t *f);
 void estr_free(error_t *e);
