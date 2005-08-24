@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/doc/FILE_PLUGINS,v 1.3 2005/08/16 03:17:12 dcp1990 Exp $
+$Amigan: fakedbfs/doc/FILE_PLUGINS,v 1.4 2005/08/24 06:23:34 dcp1990 Exp $
 
 How to write file plugins
 	By Dan Ponte
@@ -88,6 +88,7 @@ fields_t looks like this (defined in include/fakedbfs.h):
 typedef struct Field {
 	char *fieldname; /* the name of the field; this is why plugins and
 			    specfiles must stay in sync! */
+	char *fmtname; /* formatted name */
 	enum DataType type; /* the datatype of the field; see above */
 	enum DataType othtype; /* if type == oenum, the datatype of the "other"
 				element */
