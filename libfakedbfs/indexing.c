@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.12 2005/08/24 06:01:23 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.13 2005/08/24 06:26:38 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.12 2005/08/24 06:01:23 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.13 2005/08/24 06:26:38 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -133,7 +133,6 @@ fields_t* fill_in_fields(f, filename)
 	fdbfs_t *f;
 	char *filename;
 {
-	/* TODO: make this use the askfunc(answer_t). */
 	struct Plugin *h = f->plugins, *c = NULL, *tpl = NULL;
 	fields_t *fh = NULL;
 	char *errmsg = NULL;
