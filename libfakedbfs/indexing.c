@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.14 2005/08/24 06:53:30 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.15 2005/08/24 21:00:30 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.14 2005/08/24 06:53:30 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.15 2005/08/24 21:00:30 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -311,9 +311,9 @@ fields_t* find_field_by_name(h, name)
  *
  * Do an initial call of askfunc with fieldname
  * as NULL. If you get an 0x1 back (instead of NULL), this means not to expect anything but (answer_t*)0x1
- * back from them. At the end of the asking, do another call with fieldname as (char*)0x1;
- * you should get back a linked list of answer_t's. Use this. This is for GUI applications
- * that might want to fashion a dialogue during asking. Or we could just use a flag in the
+ * back from them. At the end of the asking, do another call with fieldname as (char*)0x1.
+ * Then loop through again, as usual. You should now get back peoperly-filled in answer_ts.
+ * This is for apps that might want to fashion a dialogue during asking. Or we could just use a flag in the
  * fdbfs_t* that tells us whether to do this or not :).
  */
 fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely inefficient
@@ -343,6 +343,51 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 #define cval (otherm ? c->otherval : c->val)
 #define clen (otherm ? c->othlen : c->len)
 #define ctype (otherm ? c->othtype : c->type)
+	if(dialoguemode) {
+		for(c = defs; c != NULL; c = c->next) {
+			if(c->otherval != NULL)
+				hasoth = 1;
+			else
+				hasoth = 0;
+
+			for(i = 0; i < (hasoth ? 2 : 1); i++) {
+				memset(&def, 0, sizeof(def));
+				def.dt = ctype;
+				switch(c->type) {
+					case number:
+					case boolean:
+					case oenum:
+					case oenumsub:
+						def.integer = *(int*)cval;
+						break;
+					case string:
+						def.string = (char*)cval;
+						break;
+					case fp:
+						def.fp = *(FLOATTYPE *)cval;
+						break;
+					case image:
+					case binary:
+						def.vd = cval;
+						def.len = clen;
+						break;
+				}
+
+				cans = f->askfieldfunc(&cta, &def, c->fmtname, c->fieldname, filen, def.dt, c->ehead, c->subhead);
+				if(cans == (answer_t*)-1) {
+					ERR(die, "askfunc said error here (dialoguemode).", NULL);
+					/* clean up */
+					return NULL;
+				}
+			}
+		}
+		cans = f->askfieldfunc(NULL, NULL, NULL, (char*)0x1 /* before real */, NULL, 0x0, NULL, NULL);
+		if(cans == (answer_t*)-1) {
+				ERR(die, "askfunc said error here (dialoguemode - before real).", NULL);
+				/* clean up */
+				return NULL;
+		}
+	}
 
 	for(c = defs; c != NULL; c = c->next) {
 		if(c->otherval != NULL)
@@ -374,61 +419,58 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 			}
 
 			cans = f->askfieldfunc(&cta, &def, c->fmtname, c->fieldname, filen, def.dt, c->ehead, c->subhead);
-			if(!dialoguemode) {
-				if(cans == (answer_t*)-1) {
-					ERR(die, "askfunc said error here.", NULL);
-					/* clean up */
-					return NULL;
-				} else if(cans == (answer_t*)0x1) {
-					/* no change... */
-				} else if(cans == &cta) {
-					/* changed... */
-					free(cval);
-					switch(ctype) {
-						case number:
-						case boolean:
-						case oenum:
-						case oenumsub:
-							if(otherm) {
-								c->otherval = malloc(sizeof(int));
-								*(int*)c->otherval = cta.integer;
-							} else {
-								hasoth = 0;
-								c->val = malloc(sizeof(int));
-								*(int*)c->val = cta.integer;
-							}
-							break;
-						case string:
-							if(otherm)
-								c->otherval = strdup(cta.string);
-							else
-								c->val = strdup(cta.string);
-							break;
-						case fp:
-							if(otherm) {
-								c->otherval = malloc(sizeof(FLOATTYPE));
-								*(FLOATTYPE*)c->otherval = cta.fp;
-							} else {
-								c->val = malloc(sizeof(FLOATTYPE));
-								*(FLOATTYPE*)c->val = cta.fp;
-							}
-							break;
-						case image:
-						case binary:
-							if(!otherm) {
-								c->val = malloc(cta.len);
-								memcpy(c->val, cta.vd, cta.len);
-							} else {
-								c->otherval = malloc(cta.len);
-								memcpy(c->otherval, cta.vd, cta.len);
-							}
-							break;
-					}
+			if(cans == (answer_t*)-1) {
+				ERR(die, "askfunc said error here.", NULL);
+				/* clean up */
+				return NULL;
+			} else if(cans == (answer_t*)0x1) {
+				/* no change... */
+			} else if(cans == &cta) {
+				/* changed... */
+				free(cval);
+				switch(ctype) {
+					case number:
+					case boolean:
+					case oenum:
+					case oenumsub:
+						if(otherm) {
+							c->otherval = malloc(sizeof(int));
+							*(int*)c->otherval = cta.integer;
+						} else {
+							hasoth = 0;
+							c->val = malloc(sizeof(int));
+							*(int*)c->val = cta.integer;
+						}
+						break;
+					case string:
+						if(otherm)
+							c->otherval = strdup(cta.string);
+						else
+							c->val = strdup(cta.string);
+						break;
+					case fp:
+						if(otherm) {
+							c->otherval = malloc(sizeof(FLOATTYPE));
+							*(FLOATTYPE*)c->otherval = cta.fp;
+						} else {
+							c->val = malloc(sizeof(FLOATTYPE));
+							*(FLOATTYPE*)c->val = cta.fp;
+						}
+						break;
+					case image:
+					case binary:
+						if(!otherm) {
+							c->val = malloc(cta.len);
+							memcpy(c->val, cta.vd, cta.len);
+						} else {
+							c->otherval = malloc(cta.len);
+							memcpy(c->otherval, cta.vd, cta.len);
+						}
+						break;
 				}
 			}
 		}
 	}
-	/* TODO: handle dialogue mode */
 
 	return defs;
 }

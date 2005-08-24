@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.16 2005/08/24 04:59:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.17 2005/08/24 21:00:30 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -156,8 +156,6 @@ typedef struct a_t {
 	FLOATTYPE fp;
 	void *vd;
 	size_t len;
-	char *fieldname; /* also UNUSED. See next element. */
-	struct a_t *next; /* UNUSED. This is here for future implementations of ask_for_fields(). Details coming soon. */
 } answer_t;
 
 typedef struct {
