@@ -1,0 +1,150 @@
+.\" El manpage-o for fcreatedb
+.\" (C)2005, Dan Ponte
+.\" $Amigan: fakedbfs/findex/findex.1,v 1.1 2005/08/24 07:21:59 dcp1990 Exp $
+.Dd August 24, 2005
+.Dt FINDEX 1
+.Os
+.Sh NAME
+.Nm findex
+.Nd index files and add them to the fakedbfs database
+.Sh SYNOPSIS
+.Nm
+.Op Fl hvrc
+.Op Fl d Ar dbfile
+.Op Fl e Ar regex
+.Ar file/dir1 .. file/dirN
+.Nm
+.Op Fl hvrc
+.Op Fl d Ar dbfile
+.Op Fl e Ar regex
+.Fl i
+.Ar file/dir1 .. file/dirN
+.Nm
+.Op Fl hvrc
+.Op Fl d Ar dbfile
+.Op Fl e Ar regex
+.Fl s
+.Op Ar file/dir1 .. file/dirN
+.Sh DESCRIPTION
+.Nm
+is part of the
+.Em fakedbfs
+distribution. It is used to index files and add them to the database, after using
+the appropriate plugins to extract metadata, or asking the user for input.
+.Pp
+.Nm
+accepts one or more mandatory arguments when the
+.Fl s
+option isn't specified. These are the
+.Ar file/dir1 .. file/dirN
+arguments.
+.Pp
+If
+.Fl s
+is specified, not only can
+.Nm
+index files or directories specified on the command line, it can also read them
+from
+.Em stdin ,
+much like the
+.Xr cpio 1
+utility. Note that
+.Fl s
+and
+.Fl i
+are mutually exclusive; this is because both read from
+.Em stdin .
+.Pp
+If any of the entities specified is a directory, the
+.Ar regex
+argument (with the
+.Fl e
+flag) can be used to only index those files and/or directories matching the
+.Xr regex 3
+pattern (see
+.Xr re_format 7
+for more details).
+.Pp
+If the
+.Fl i
+flag is specified,
+.Xr libfakedbfs 3
+will prompt the user for each field. The user may press enter to use the default value specified in brackets.
+.Pp
+One can also use the
+.Ar d
+argument to specify the database to use; by default it is either the value of
+the FAKEDBFSDB environment variable, or $HOME/.fakedbfsdb. This convention is
+followed by all utilities in this distribution, and should be followed for other
+applications using the libfakedbfs library. Note that this database must have already
+been created with
+.Xr fcreatedb 1 .
+.Pp
+.Nm
+recognizes the following command line options:
+.Bl -tag -width indent
+.It Fl h
+Print a short usage message.
+.It Fl r
+Tell the library to recurse in directories. It will recurse up to a predetermined number of
+iterations; see
+.Xr index_dir 3
+for more information.
+.It Fl c
+Tell the library to match
+.Ar regex
+with case insensitivity.
+.It Fl e Ar regex
+Only index files and/or directories matching
+.Ar regex ;
+see above for more information.
+.It Fl i
+Ask the user for a value for each field; see above for more information.
+.It Fl s
+Read filenames/directories to index from
+.Em stdin ,
+in style of
+.Xr cpio 1 .
+.It Fl v
+Print the library version, the
+.Nm
+utility version, and other information.
+.It Fl d Ar dbfile
+Use
+.Ar dbfile
+as the database instead of the default.
+.Sh DIAGNOSTICS
+The
+.Nm
+utility will print whatever error messages it gets from the library to
+.Em stderr .
+These usually will include a recursing list of errors as each function returns;
+see
+.Xr libfakedbfs 3
+for more information.
+.Sh ENVIRONMENT
+The FAKEDBFSDB is the only environment variable that
+.Nm
+uses. See above for use information.
+.Sh FILES
+.Bl -tag -width fdbfs
+.It Pa ~/.fakedbfsdb
+default database file
+.Sh SEE ALSO
+.Xr libfakedbfs 3 ,
+.Xr fcreatedb 1 ,
+.Xr fedit 1 ,
+.Xr fquery 1
+.Xr index_file 3
+.Xr index_dir 3
+.Sh HISTORY
+The
+.Nm
+utility appeared in fakedbfs v1.0.
+.Sh BUGS
+None. Period. And there never will be. If you think you've found one, it's only
+an illusion.
+.Sh AUTHOR
+Dan Ponte <dcp1990@neptune.atopia.net>
+.Pp
+Web: http://www.theamigan.net/fakedbfs/
