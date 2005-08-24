@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.11 2005/08/24 04:59:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.12 2005/08/24 06:01:23 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.11 2005/08/24 04:59:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.12 2005/08/24 06:01:23 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -231,7 +231,7 @@ checkagain:
 			break;
 		case oenumsub:
 			es =  get_enum_sub_string_by_value(subhead, def->integer);
-			printf("%s [%d - '%s']> ", fieldname, def->integer, (es == NULL ? "(none)" : es));
+			printf("%s sub [%d - '%s']> ", fieldname, def->integer, (es == NULL ? "(none)" : es));
 			break;
 		case string:
 			printf("%s ['%s']> ", fieldname, def->string);
