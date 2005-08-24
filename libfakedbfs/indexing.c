@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.13 2005/08/24 06:26:38 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.14 2005/08/24 06:53:30 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.13 2005/08/24 06:26:38 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.14 2005/08/24 06:53:30 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -614,10 +614,10 @@ int index_dir(f, dir, cat, useplugs, batch, nocase, re, recurselevel)
 
 	if(re != NULL) {
 		rc = regcomp(&tre, re, REG_EXTENDED | REG_NOSUB | (nocase ? REG_ICASE : 0));
-		if(!rc) {
+		if(rc != 0) {
 			emsg = malloc(128);
 			regerror(rc, &tre, emsg, 127);
-			ERR(die, "index_dir: error compiling regex '%s': %s", re, emsg);
+			ERR(die, "index_dir: error compiling regex (rc %d) '%s': %s", rc, re, emsg);
 			free(emsg);
 			return 0;
 		}
@@ -663,9 +663,8 @@ int index_dir(f, dir, cat, useplugs, batch, nocase, re, recurselevel)
 				debug_info(f, warning, "error checking if %s changed: %s", fpth, f->error.emsg);
 				estr_free(&f->error);
 				free(fpth);
-			}
-
-			free(fpth);
+			} else
+				free(fpth);
 		} else {
 			fplen = cd->d_namlen + 1 /* slash */ + strlen(dir) + 1 /* NULL */;
 			fpth = malloc(sizeof(char) * fplen);
