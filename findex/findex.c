@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/findex/findex.c,v 1.6 2005/08/22 16:13:54 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.7 2005/08/24 04:59:42 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -47,7 +47,7 @@
 #define ARGSPEC "vhrd:ic:e:"
 #define FINDEXVER "0.1"
 
-RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.6 2005/08/22 16:13:54 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.7 2005/08/24 04:59:42 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int recurse = 0;
@@ -170,6 +170,16 @@ int main(argc, argv)
 		return -1;
 	}
 
+	if(!read_specs_from_db(f)) {
+		fprintf(stderr, "error reading specs from db: %s\n", f->error.emsg);
+		free(dbf);
+		free(estr);
+		free(cat);
+		if(regex != NULL) free(regex);
+		destroy_fdbfs(f);
+		return -1;
+	}
+
 #define RECURSELVL 10
 
 	for(i = 0; i < argc; i++) {
@@ -179,10 +189,16 @@ int main(argc, argv)
 			fprintf(stderr, "warning: couldn't stat %s: %s\n", argv[1], strerror(errno));
 		} else if(!c) {
 			/* index the file */
-			index_file(f, cf, cat, (interactive ? 1 : 0), 1, NULL /* XXX: for now; implement specification on command line */);
+			if(!index_file(f, cf, cat, (interactive ? 0 : 1), 1, NULL /* XXX: for now; implement specification on command line */)) {
+				fprintf(stderr, "Error in index_file: %s\n", f->error.emsg);
+				break;
+			}
 		} else if(c) {
 			/* index the directory */
-			index_dir(f, cf, cat, 1, (interactive ? 1 : 0), nocase, regex, RECURSELVL);
+			if(!index_dir(f, cf, cat, 1, (interactive ? 0 : 1), nocase, regex, RECURSELVL)) {
+				fprintf(stderr, "Error in index_dir: %s\n", f->error.emsg);
+				break;
+			}
 		}
 		free(cf);
 	}

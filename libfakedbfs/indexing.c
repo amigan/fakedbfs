@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.10 2005/08/22 16:13:54 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.11 2005/08/24 04:59:42 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.10 2005/08/22 16:13:54 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.11 2005/08/24 04:59:42 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -112,6 +112,7 @@ int add_file(f, file, catalogue, fields)
 	if(rc != SQLITE_OK) {
 		return ERR(die, "add_file(\"%s\"): SQLite error after prepare: %s", file, sqlite3_errmsg(f->db));
 	}
+
 
 	for(c = fields; c != NULL; c = c->next) {
 		if(!bind_field(f, &fieldcount, c->type, c->val, c->len, stmt))
@@ -183,7 +184,9 @@ fields_t* fill_in_fields(f, filename)
 		}
 
 	if(!found) {
+#ifdef PLUGINS_VERBOSE
 		debug_info(f, error, "cannot find plugin to extract metadata for %s!", filename);
+#endif
 		return NULL;
 	}
 
@@ -197,10 +200,11 @@ fields_t* fill_in_fields(f, filename)
 	return fh;
 }
 
-answer_t* askfunc_std(buf, def, fieldname, filen, dt, ehead, subhead)
+answer_t* askfunc_std(buf, def, fieldname, name, filen, dt, ehead, subhead)
 	answer_t *buf;
 	answer_t *def;
 	char *fieldname;
+	char *name;
 	char *filen;
 	enum DataType dt;
 	struct EnumHead *ehead;
@@ -209,6 +213,7 @@ answer_t* askfunc_std(buf, def, fieldname, filen, dt, ehead, subhead)
 #define MAXLINELEN 512
 	char bf[MAXLINELEN];
 	char *nl;
+	char *es;
 
 	if(fieldname == NULL)
 		return NULL;
@@ -225,7 +230,8 @@ checkagain:
 			printf("%s [%d - '%s']> ", fieldname, def->integer, get_enum_string_by_value(ehead->headelem, def->integer, 1));
 			break;
 		case oenumsub:
-			printf("%s [%d - '%s']> ", fieldname, def->integer, get_enum_sub_string_by_value(subhead, def->integer));
+			es =  get_enum_sub_string_by_value(subhead, def->integer);
+			printf("%s [%d - '%s']> ", fieldname, def->integer, (es == NULL ? "(none)" : es));
 			break;
 		case string:
 			printf("%s ['%s']> ", fieldname, def->string);
@@ -278,6 +284,20 @@ checkagain:
 	return buf;
 }
 
+fields_t* find_field_by_name(h, name)
+	fields_t *h;
+	char *name;
+{
+	fields_t *c = NULL;
+	
+	for(c = h; c != NULL; c = c->next) {
+		if(strcmp(c->fieldname, name) == 0)
+			return c;
+	}
+	
+	return NULL;
+}
+
 /* Basically, what this [should] do:
  * Go through and get each field for the catalogue from the database and put
  * it into an appropriate tree (this should be done already; see the
@@ -313,7 +333,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 	short int i, hasoth = 0;
 	fields_t *c = NULL /*, *h = NULL, *n = NULL*/;
 
-	cans = f->askfieldfunc(NULL, NULL, NULL, NULL, 0x0, NULL, NULL);
+	cans = f->askfieldfunc(NULL, NULL, NULL, NULL, NULL, 0x0, NULL, NULL);
 	if(cans == (answer_t*)0x1)
 		dialoguemode = 1;
 	else if(cans == (answer_t*)-1) {
@@ -331,7 +351,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 		else
 			hasoth = 0;
 
-		for(i = 0; i < (hasoth ? 1 : 2); i++) {
+		for(i = 0; i < (hasoth ? 2 : 1); i++) {
 			memset(&def, 0, sizeof(def));
 			def.dt = ctype;
 			switch(c->type) {
@@ -354,7 +374,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 					break;
 			}
 
-			cans = f->askfieldfunc(&cta, &def, c->fieldname, filen, def.dt, c->ehead, c->subhead);
+			cans = f->askfieldfunc(&cta, &def, c->fmtname, c->fieldname, filen, def.dt, c->ehead, c->subhead);
 			if(!dialoguemode) {
 				if(cans == (answer_t*)-1) {
 					ERR(die, "askfunc said error here.", NULL);
@@ -374,6 +394,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 								c->otherval = malloc(sizeof(int));
 								*(int*)c->otherval = cta.integer;
 							} else {
+								hasoth = 0;
 								c->val = malloc(sizeof(int));
 								*(int*)c->val = cta.integer;
 							}
@@ -409,9 +430,76 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 		}
 	}
 	/* TODO: handle dialogue mode */
-		/* TODO: return code for new fields */
 
 	return defs;
+}
+
+int complete_fields_from_db(f, cat, h)
+	fdbfs_t *f;
+	char *cat;
+	fields_t **h;
+{
+	fields_t *c = NULL, *last = NULL, *new = NULL;
+	struct CatElem *cc = NULL, *ch = NULL;
+	struct CatalogueHead *hch = NULL, *hhh = NULL;
+
+	if(*h == NULL)
+		last = NULL;
+	else {
+		for(c = *h; c->next != NULL; c = c->next);
+		last = c;
+	}
+
+	hhh = f->heads.db_cath;
+
+	if(hhh == NULL) {
+		ERR(die, "list not filled in from DB! call read_specs_from_db() first.", NULL);
+		return 0;
+	}
+	
+	for(hch = hhh; hch != NULL; hch = hch->next) {
+		if(strcmp(hch->name, cat) == 0) {
+			ch = hch->headelem;
+		}
+	}
+	
+	if(ch == NULL) {
+		ERR(die, "couldn't find catalogue %s in list!", cat);
+		return 0;
+	}
+
+	for(cc = ch; cc != NULL; cc = cc->next) {
+		c = find_field_by_name(*h, cc->name);
+		if(c == NULL) {
+			new = allocz(sizeof(*new));
+			new->fieldname = strdup(cc->name);
+			new->fmtname = strdup(cc->alias);
+			new->type = cc->type;
+			new->val = allocz(1);
+			new->len = 1;
+			if(new->type == oenum) {
+				new->ehead = cc->enumptr;
+			}
+			if(new->type == oenum && cc->enumptr->otherelem != NULL) {
+				new->othtype = cc->enumptr->otherelem->othertype;
+				new->otherval = allocz(1);
+				new->othlen = 1;
+			}
+			if(cc->type == oenumsub) {
+				new->ehead = cc->subcatel->enumptr;
+				new->subhead = cc->subcatel->enumptr->headelem->subhead;
+			}
+			if(last != NULL) {
+				last->next = new;
+				last = new;
+			} else {
+				last = new;
+				*h = last;
+			}
+		}
+	}
+
+	return 1;
 }
 
 int index_file(f, filename, cat, batch, useplugs, fields)
@@ -423,7 +511,7 @@ int index_file(f, filename, cat, batch, useplugs, fields)
 	fields_t *fields;
 {
 	int rc;
-	fields_t *c = NULL, *h = NULL, *new = NULL;
+	fields_t *c = NULL, *h = NULL;
 
 	if(useplugs) {
 		h = fill_in_fields(f, filename);
@@ -441,8 +529,15 @@ int index_file(f, filename, cat, batch, useplugs, fields)
 		}
 	}
 
+	rc = complete_fields_from_db(f, cat, &h); /* fill out any others so the askfunc will ask the user */
+	if(!rc) {
+		CERR(die, "complete fields failed. ", NULL);
+		free_field_list(h);
+		return 0;
+	}
+
 	if(!batch) {
-		new = ask_for_fields(f, filename, cat, h); /* we can only change existing stuff now anyway */
+		ask_for_fields(f, filename, cat, h); /* we can only change existing stuff now anyway...this appends to h for us */
 	}	
 
 	rc = add_file(f, filename, cat, h);

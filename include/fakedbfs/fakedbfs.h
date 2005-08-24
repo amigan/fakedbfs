@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.15 2005/08/22 16:13:54 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.16 2005/08/24 04:59:42 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -81,6 +81,7 @@ typedef enum coltype {
 } coltype_t;
 typedef struct Field {
 	char *fieldname;
+	char *fmtname;
 	enum DataType type;
 	enum DataType othtype;
 	void *val;
@@ -89,6 +90,7 @@ typedef struct Field {
 	struct EnumSubElem *subhead;
 	size_t len;
 	size_t othlen;
+	short int asked;
 	struct Field *next;
 } fields_t;
 typedef struct tok {
@@ -144,7 +146,7 @@ struct Plugin {
 };
 
 #define DEBUGFUNC_STDERR ((void(*)(char*, enum ErrorAction))0)
-#define AFFPROTO (answer_t * /* buffer */, answer_t * /* default */, char * /*fieldname*/, \
+#define AFFPROTO (answer_t * /* buffer */, answer_t * /* default */, char * /*fieldname*/, char * /* unformatted name */, \
 			char * /* filename */, enum DataType, struct EnumHead * /* if oenum */, struct EnumSubElem * /* if sub */)
 #define ASKFUNC_STD ((answer_t*(*)AFFPROTO)0)
 typedef struct a_t {
@@ -244,6 +246,9 @@ int file_has_changed(fdbfs_t *f, char *cat, char *filename);
 char* get_enum_string_by_value(struct EnumElem *h, unsigned int val, short int fmted);
 char* get_enum_sub_string_by_value(struct EnumSubElem *h, unsigned int val);
 answer_t* askfunc_std AFFPROTO;
+fields_t* find_field_by_name(fields_t *h, char *name);
+int complete_fields_from_db(fdbfs_t *f, char *cat, fields_t **h);
+int read_specs_from_db(fdbfs_t *f);
 
 /* plugin shiite */
 struct Plugin* probe_plugin(fdbfs_t *f, char *dirpath, char *filename, struct Plugin *last);

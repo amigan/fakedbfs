@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.9 2005/08/20 20:51:10 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.10 2005/08/24 04:59:42 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -42,7 +42,7 @@
 #include <fakedbfs.h>
 #include <lexdefines.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.9 2005/08/20 20:51:10 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.10 2005/08/24 04:59:42 dcp1990 Exp $")
 
 
 void* allocz(size)
@@ -216,6 +216,7 @@ fields_t* free_field(e)
 	fields_t *nx;
 	
 	free(e->fieldname);
+	free(e->fmtname);
 	free(e->val);
 	if(e->otherval != NULL)
 		free(e->otherval);

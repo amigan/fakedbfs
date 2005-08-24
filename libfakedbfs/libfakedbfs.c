@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.11 2005/08/22 16:13:54 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.12 2005/08/24 04:59:42 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -38,7 +38,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.11 2005/08/22 16:13:54 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.12 2005/08/24 04:59:42 dcp1990 Exp $")
 
 #ifndef lint
 const char const *fakedbfsver _unused = FAKEDBFSVER;
@@ -84,6 +84,10 @@ int destroy_fdbfs(f)
 		return 0;
 	}
 	destroy_plugin_list(f->plugins);
+	if(f->heads.db_enumh != NULL)
+		free_enum_head_list(f->heads.db_enumh);
+	if(f->heads.db_cath != NULL)
+		free_cat_head_list(f->heads.db_cath);
 	free(f);
 	return 1;
 }
@@ -100,4 +104,16 @@ void set_plug_path(f, path)
 	char *path;
 {
 	f->conf.pluginpath = strdup(path);
+}
+
+int read_specs_from_db(f)
+	fdbfs_t *f;
+{
+	f->heads.db_enumh = enums_from_db(f);
+	if(f->heads.db_enumh == NULL && f->error.emsg != NULL)
+		return 0;
+	f->heads.db_cath = cats_from_db(f, f->heads.db_enumh);
+	if(f->heads.db_cath == NULL && f->error.emsg != NULL)
+		return 0;
+	return 1;
 }
