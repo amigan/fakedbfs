@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.18 2005/08/14 08:07:49 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.19 2005/08/24 05:06:07 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.18 2005/08/14 08:07:49 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.19 2005/08/24 05:06:07 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 extern char *yytext;
 }
@@ -239,6 +239,7 @@ catelem(A) ::= uqstring(B) aliasdef(C) AS catdatatype(D). {
 			break;
 			case 1:
 			A.catelem->alias = C.str;
+			break;
 			case 2:
 			A.catelem->alias = B.str;
 			A.catelem->flags |= CATE_USES_FC;
@@ -293,7 +294,9 @@ aliasdef(A) ::= EQUALS string(B). {
 		A.str = B.str;
 	}
 aliasdef(A) ::= . {A.num = 0;}
-aliasbd ::= LTHAN abd GTHAN.
+aliasbd(A) ::= LTHAN abd(B) GTHAN. {
+		A.num = B.num;
+	}
 abd(A) ::= FC. { /* first letter uppercase */
 		A.num = 2;
 	}
