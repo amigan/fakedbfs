@@ -27,13 +27,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/constdefs.h,v 1.1 2005/08/25 07:20:35 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/constdefs.h,v 1.2 2005/08/25 16:37:32 dcp1990 Exp $ */
 
 #define MP3EXT ".mp3"
 #define OGGEXT ".ogg"
 #define WAVEXT ".wav"
 
-#define FILENAME_REGEX "^(.*) - (.*) -( [0-9][0-9]-| )([0-9][0-9]) (.*)\\....$"
+#define FILENAME_REGEX "/([^/]*) - ([^/]*) -( [0-9][0-9]-| )([0-9][0-9]) ([^/]*)\\....$"
 #define CASE_INSENS 1
 #define NSUBS 5
 
