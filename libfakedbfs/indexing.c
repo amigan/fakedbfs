@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.19 2005/08/25 17:06:30 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.20 2005/08/25 19:05:52 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.19 2005/08/25 17:06:30 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.20 2005/08/25 19:05:52 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -681,6 +681,7 @@ int index_dir(f, dir, cat, useplugs, batch, nocase, re, recurselevel)
 		if(rc != 0) {
 			emsg = malloc(128);
 			regerror(rc, &tre, emsg, 127);
+			regfree(&tre);
 			ERR(die, "index_dir: error compiling regex (rc %d) '%s': %s", rc, re, emsg);
 			free(emsg);
 			return 0;

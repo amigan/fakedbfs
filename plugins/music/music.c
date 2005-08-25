@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.3 2005/08/25 16:55:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.4 2005/08/25 19:02:11 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.3 2005/08/25 16:55:37 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.4 2005/08/25 19:02:11 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
@@ -124,6 +124,7 @@ int match_filename(filename, errmsg, tc, th)
 	if(rc != REG_NOMATCH && rc != 0) {
 		*errmsg = malloc(128);
 		regerror(rc, &tre, *errmsg, 127);
+		regfree(&tre);
 		return 0;
 	} else if(rc != REG_NOMATCH) {
 		h = malloc(sizeof(*h));
@@ -200,6 +201,7 @@ int match_filename(filename, errmsg, tc, th)
 
 		free(ours);
 	}
+	regfree(&tre);
 
 	*tc = c;
 	*th = h;
@@ -320,6 +322,8 @@ fields_t* extract_from_mp3(filename, errmsg)
 			add_image_field(ACOVERNAME, ACOVERFMT, &h, &c, tdta, tsz);
 		}
 	}
+
+	ID3Tag_Delete(t);
 
 	return h;
 }
