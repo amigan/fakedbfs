@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.18 2005/08/25 16:55:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.19 2005/08/25 17:06:30 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.18 2005/08/25 16:55:37 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.19 2005/08/25 17:06:30 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -522,15 +522,16 @@ int complete_fields_from_db(f, cat, h)
 			new->fieldname = strdup(cc->name);
 			new->fmtname = strdup(cc->alias);
 			new->type = cc->type;
-			new->val = allocz(1);
-			*(char*)new->val = '\0';
+			new->val = allocz(sizeof(int));
+			*(int*)new->val = 0;
 			new->len = 1;
 			if(new->type == oenum) {
 				new->ehead = cc->enumptr;
 			}
 			if(new->type == oenum && cc->enumptr->otherelem != NULL) {
 				new->othtype = cc->enumptr->otherelem->othertype;
-				new->otherval = allocz(1);
+				new->otherval = allocz(sizeof(int));
+				*(int*)new->val = 0;
 				new->othlen = 1;
 			}
 			if(cc->type == oenumsub) {

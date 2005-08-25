@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.12 2005/08/24 06:26:38 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.13 2005/08/25 17:06:30 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.12 2005/08/24 06:26:38 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.13 2005/08/25 17:06:30 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -114,22 +114,23 @@ int create_table(f, tname, tspec)
 const char* gettype(t)
 	enum DataType t;
 {
+	/* make sure you know what you're doing; we have defaults here */
 	switch(t) {
 		case number:
 		case boolean:
 		case oenum:
 		case oenumsub:
-			return " INTEGER";
+			return " INTEGER DEFAULT 0";
 			break;
 		case string:
-			return " TEXT";
+			return " TEXT DEFAULT NULL";
 			break;
 		case fp:
-			return " REAL";
+			return " REAL DEFAULT 0";
 			break;
 		case image:
 		case binary:
-			return " BLOB";
+			return " BLOB DEFAULT NULL";
 			break;
 	}
 	return " BLOB";
