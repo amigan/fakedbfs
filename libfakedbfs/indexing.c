@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.17 2005/08/25 07:34:18 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.18 2005/08/25 16:55:37 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.17 2005/08/25 07:34:18 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.18 2005/08/25 16:55:37 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -550,25 +550,29 @@ int complete_fields_from_db(f, cat, h)
 	return 1;
 }
 
-int index_file(f, filename, cat, batch, useplugs, fields)
+int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 	fdbfs_t *f;
 	char *filename;
 	char *cat;
 	int batch;
 	int useplugs;
+	int forceupdate;
 	fields_t *fields;
 {
-	int rc;
+	int rc = 0;
 	fields_t *c = NULL, *h = NULL;
 
-	rc = file_has_changed(f, cat, filename);
-	if(rc == 0) {
-		return 1;
-	} else if(rc == -2) { /* is a directory */
-		debug_info(f, warning, "in index_file: %s is a directory", filename);
-	} else if(rc == -1) { /* hack alert */
-		debug_info(f, warning, "error checking if %s changed: %s", filename, f->error.emsg);
-		estr_free(&f->error);
+	if(rc != 2) {
+		rc = file_has_changed(f, cat, filename);
+		if(rc == 0) {
+			if(!forceupdate)
+				return 1;
+		} else if(rc == -2) { /* is a directory */
+			debug_info(f, warning, "in index_file: %s is a directory", filename);
+		} else if(rc == -1) { /* hack alert */
+			debug_info(f, warning, "error checking if %s changed: %s", filename, f->error.emsg);
+			estr_free(&f->error);
+		}
 	}
 
 	if(useplugs) {
@@ -713,7 +717,7 @@ int index_dir(f, dir, cat, useplugs, batch, nocase, re, recurselevel)
 				free(fpth);
 				continue;
 			} else if(rc == 1) {
-				index_file(f, fpth, cat, batch, useplugs, NULL);
+				index_file(f, fpth, cat, batch, useplugs, 2, NULL);
 				free(fpth);
 			} else if(rc == -2) { /* is a directory */
 				/* TODO: recurse*/
@@ -734,7 +738,7 @@ int index_dir(f, dir, cat, useplugs, batch, nocase, re, recurselevel)
 				free(fpth);
 				continue;
 			} else if(rc == 1) {
-				index_file(f, fpth, cat, batch, useplugs, NULL);
+				index_file(f, fpth, cat, batch, useplugs, 2, NULL);
 				free(fpth);
 			} else if(rc == -2) { /* is a directory */
 				/* recurse*/
@@ -756,4 +760,3 @@ int index_dir(f, dir, cat, useplugs, batch, nocase, re, recurselevel)
 	return 1;
 }
 
-/* int index_file(f, filename, cat, batch, useplugs, fields) */

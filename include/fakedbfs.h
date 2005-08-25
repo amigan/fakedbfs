@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.17 2005/08/24 21:00:30 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.18 2005/08/25 16:55:37 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -228,7 +228,6 @@ void dump_head_members(Heads *hd);
 char* strdupq(char *s);
 struct CatElem* find_catelem_enum(struct CatElem *h, struct EnumHead *en);
 int debug_info(fdbfs_t *f, enum ErrorAction sev, char *fmt, ...);
-int index_file(fdbfs_t *f, char *filename, char *cat, int batch, int useplugs, fields_t *fields);
 fields_t* fill_in_fields(fdbfs_t *f, char *filename);
 int add_file(fdbfs_t *f, char *file, char *catalogue, fields_t *fields);
 fields_t* free_field(fields_t *e);
@@ -238,7 +237,7 @@ int file_has_changed(fdbfs_t *f, char *cat, char *filename);
 void free_answer_t(answer_t *e);
 fields_t* fill_in_fields(fdbfs_t *f, char *filename);
 fields_t* ask_for_fields(fdbfs_t *f, char *filen, char *cat, fields_t *defs);
-int index_file(fdbfs_t *f, char *filename, char *cat, int batch, int useplugs, fields_t *fields);
+int index_file(fdbfs_t *f, char *filename, char *cat, int batch, int useplugs, int forceupdate, fields_t *fields);
 int index_dir(fdbfs_t *f, char *dir, char *cat, int useplugs, int batch, int nocase, char *re, int recurselevel);
 int file_has_changed(fdbfs_t *f, char *cat, char *filename);
 char* get_enum_string_by_value(struct EnumElem *h, unsigned int val, short int fmted);

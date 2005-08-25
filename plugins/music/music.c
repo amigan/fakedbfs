@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.2 2005/08/25 07:20:35 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.3 2005/08/25 16:55:37 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.2 2005/08/25 07:20:35 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.3 2005/08/25 16:55:37 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
@@ -157,7 +157,7 @@ int match_filename(filename, errmsg, tc, th)
 		c = n;
 		c->fieldname = strdup(DISCNAME);
 		c->fmtname = strdup(DISCFMT);
-		c->type = string;
+		c->type = number;
 		if(matches[3].rm_so == matches[3].rm_eo - 1) {
 			c->val = malloc(sizeof(int));
 			*(int*)c->val = 1;
@@ -176,7 +176,7 @@ int match_filename(filename, errmsg, tc, th)
 		c = n;
 		c->fieldname = strdup(TRACKNAME);
 		c->fmtname = strdup(TRACKFMT);
-		c->type = string;
+		c->type = number;
 		cur = ours + matches[4].rm_so;
 		oc = *(ours + matches[4].rm_eo);
 		*(ours + matches[4].rm_eo) = '\0';
@@ -291,10 +291,18 @@ fields_t* extract_from_mp3(filename, errmsg)
 
 	cfr = ID3Tag_FindFrameWithID(t, ID3FID_YEAR);
 	if(cfr != NULL) {
-		cv = malloc(sizeof(char) * 6); /* y10k compliant!!! */
-		ID3Field_GetASCII(ID3Frame_GetField(cfr, ID3FN_TEXT), cv, 5);
-		add_int_field(YEARNAME, YEARFMT, &h, &c, atoi(cv));
-		free(cv);
+		int tval;
+		size_t tsz;
+		ID3Field *tfield;
+		tfield = ID3Frame_GetField(cfr, ID3FN_TEXT);
+		tsz = ID3Field_Size(tfield);
+		if(tsz > 0) {
+			cv = malloc(sizeof(char) * 6); /* y10k compliant!!! */
+			ID3Field_GetASCII(tfield, cv, 5);
+			tval = atoi(cv);
+			add_int_field(YEARNAME, YEARFMT, &h, &c, tval);
+			free(cv);
+		}
 	}
 
 	cfr = ID3Tag_FindFrameWithID(t, ID3FID_PICTURE); /* album cover */
