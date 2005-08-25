@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/findex/findex.c,v 1.8 2005/08/24 06:47:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.9 2005/08/25 16:54:40 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -44,18 +44,19 @@
 #include <sys/stat.h>
 #endif
 
-#define ARGSPEC "vhrsd:ic:e:"
+#define ARGSPEC "vhrfsd:ic:e:"
 #define FINDEXVER "0.1"
 #define RECURSELVL 10
 #define MAXPLEN 1023
 
-RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.8 2005/08/24 06:47:11 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.9 2005/08/25 16:54:40 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int recurse = 0;
 static int interactive = 0;
 static int nocase = 0;
 static int readstd = 0;
+static int forceit = 0;
 static char *dbf = NULL;
 static char *regex = NULL;
 char tbfr[MAXPLEN];
@@ -73,7 +74,7 @@ void version(void)
 void usage(pn)
 	char *pn;
 {
-	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] [-i|-s] [-r] [-c] "
+	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] [-i|-s] [-r] [-c] [-f] "
 			"[-e regex] <catalogue name> [file/dir ... (if not -s, required)]\n",
 			pn, pn);
 }
@@ -103,7 +104,7 @@ int idxus(cf, cat)
 		fprintf(stderr, "warning: couldn't stat %s: %s\n", cf, strerror(errno));
 	} else if(!c) {
 		/* index the file */
-		if(!index_file(f, cf, cat, (interactive ? 0 : 1), 1, NULL /* XXX: for now; implement specification on command line */)) {
+		if(!index_file(f, cf, cat, (interactive ? 0 : 1), 1, forceit, NULL /* XXX: for now; implement specification on command line */)) {
 			fprintf(stderr, "Error in index_file: %s\n", f->error.emsg);
 			return 0;
 		}
@@ -147,6 +148,9 @@ int main(argc, argv)
 				if(dbf != NULL) free(dbf);
 				if(regex != NULL) free(regex);
 				return 0;
+			case 'f':
+				forceit = 1;
+				break;
 			case 'd':
 				dbf = strdup(optarg);
 				dbfu = 1;
