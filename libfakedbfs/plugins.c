@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.2 2005/08/15 21:57:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.3 2005/08/25 07:20:35 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdio.h>
@@ -47,7 +47,7 @@
 #include <fakedbfs.h>
 #include "../fdbfsconfig.h"
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.2 2005/08/15 21:57:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.3 2005/08/25 07:20:35 dcp1990 Exp $")
 
 #define LIBERR(sym) { \
 		debug_info(f, error, "probe_plugin: symbol referece %s failed in %s: %s", sym, fpth, dlerror()); \
@@ -126,7 +126,8 @@ struct Plugin* probe_plugin(f, dirpath, filename, last)
 		return last;
 	}
 
-	last->next = n;
+	if(last != NULL)
+		last->next = n;
 
 	free(fpth);
 	
@@ -144,6 +145,7 @@ struct Plugin* search_plugs(f, plugins, path)
 	/* warning; Unix-specific shiite here */
 	DIR *d;
 	char *ending;
+	char *ce;
 	struct dirent *dp;
 	struct Plugin *lp = plugins, *lpo = plugins;
 
@@ -160,11 +162,14 @@ struct Plugin* search_plugs(f, plugins, path)
 		ending = dp->d_name + (dp->d_namlen - strlen(LIBENDING));
 		if(strcmp(ending, LIBENDING) == 0) {
 			lpo = lp;
-			if((lp = probe_plugin(f, path, dp->d_name, lp)) == lpo && f->error.emsg != NULL) {
+			ce = strdup(dp->d_name);
+			if((lp = probe_plugin(f, path, ce, lp)) == lpo && f->error.emsg != NULL) {
+				free(ce);
 				closedir(d);
 				CERR(die, "Error scanning directory. ", NULL);
 				return lpo;
 			}
+			free(ce);
 		}
 	}
 

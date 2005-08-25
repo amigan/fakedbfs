@@ -2,7 +2,7 @@
 include ../../globals.mk
 LDFLAGS=-L/usr/local/lib
 CPPFLAGS+=-I../../include
-LIBS=
+LIBS=-lid3 -lstdc++ -lz
 SRCS=music.c
 OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'
 CFLAGS+=$(CPPFLAGS)

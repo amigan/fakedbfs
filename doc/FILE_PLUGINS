@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/doc/FILE_PLUGINS,v 1.4 2005/08/24 06:23:34 dcp1990 Exp $
+$Amigan: fakedbfs/doc/FILE_PLUGINS,v 1.5 2005/08/25 07:20:35 dcp1990 Exp $
 
 How to write file plugins
 	By Dan Ponte
@@ -101,6 +101,7 @@ typedef struct Field {
 			type (any type of binary data), the length of the data in
 			question */
 	size_t othlen; /* see above; this applies to otherval */
+	short int asked; /* internal use only */
 	struct Field *next; /* a pointer to the next element in the list */
 } fields_t;
 

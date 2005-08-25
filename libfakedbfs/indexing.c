@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.15 2005/08/24 21:00:30 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.16 2005/08/25 07:20:35 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.15 2005/08/24 21:00:30 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.16 2005/08/25 07:20:35 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -80,6 +80,11 @@ int add_file(f, file, catalogue, fields)
 
 
 	for(c = fields; c != NULL; c = c->next) {
+		if(c->fieldname == NULL) {
+			free(tablename);
+			free(fieldtable);
+			return ERR(die, "fieldname was null! Perhaps a misbehaving plugin?", NULL);
+		}
 		sqlkeyslen += strlen(c->fieldname) + 1 /* comma */;
 		sqlvalslen += 2; /* ",?" */
 	}
@@ -290,8 +295,9 @@ fields_t* find_field_by_name(h, name)
 	fields_t *c = NULL;
 	
 	for(c = h; c != NULL; c = c->next) {
-		if(strcmp(c->fieldname, name) == 0)
-			return c;
+		if(c->fieldname != NULL)
+			if(strcmp(c->fieldname, name) == 0)
+				return c;
 	}
 	
 	return NULL;
