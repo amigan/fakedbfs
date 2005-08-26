@@ -27,12 +27,15 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.18 2005/08/25 16:55:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.19 2005/08/26 21:36:14 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
 #ifndef HAVE_DBSPECDATA_H
 #include <dbspecdata.h>
+#endif
+#ifndef HAVE_QUERY_H
+#include <query.h>
 #endif
 #define ERR(act, fmt, ...) ferr(f, act, fmt, __VA_ARGS__)
 #define CERR(act, fmt, ...) cferr(f, act, fmt, __VA_ARGS__)
@@ -255,6 +258,12 @@ struct Plugin* destroy_plugin(struct Plugin *e);
 void destroy_plugin_list(struct Plugin *h);
 int index_dir(fdbfs_t *f, char *dir, char *cat, int useplugs, int batch, int nocase, char *re, int recurselevel);
 void set_plug_path(fdbfs_t *f, char *path);
+
+/* query stuff */
+int init_stack(query_t *f, size_t size);
+int destroy_stack(query_t *f);
+query_t* new_query(size_t stacksize);
+void destroy_query(query_t *q);
 
 /* application interfaces */
 int parse_definition(fdbfs_t *f, char *filename);

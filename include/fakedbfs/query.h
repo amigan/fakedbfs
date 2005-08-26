@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2005, Dan Ponte
  *
- * query.c - query code
+ * query.h - query opcodes and such
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,7 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 4. Neither the name of the author nor the names of his contributors
+ * 4. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -27,59 +27,50 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.2 2005/08/26 21:36:14 dcp1990 Exp $ */
-/* system includes */
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <time.h>
-#include <errno.h>
-#include <regex.h>
-#include <stdio.h>
+/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.1 2005/08/26 21:36:14 dcp1990 Exp $ */
+#ifndef HAVE_QUERY_H
+#define HAVE_QUERY_H 1
 
-/* other libraries */
-#include <sqlite3.h>
-/* us */
-#include <query.h>
-#include <fakedbfs.h>
+/* See doc/QUERY_OPCODES for how these are used */
+#define OP_BEGINQ	0x1
+#define OP_SETCAT	0x2
+#define OP_BEGIN_GRP	0x3
+#define OP_CLOSE_GRP	0x4
+#define OPL_AND		0x5
+#define OPL_OR		0x6
+#define OPL_NOT		0x7
+#define OPL_EQUAL	0x8
+#define OP_COLNAME	0x9
+#define OP_STRING	0xA
+#define OP_INT		0xB
+#define OP_UINT		0xC
+#define OP_FLOAT	0xE
+#define OP_PUSH		0xF
+#define OP_POP		0x10
+#define OP_ENDQ		0x11
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.2 2005/08/26 21:36:14 dcp1990 Exp $")
+#define USED_O1		0x1
+#define USED_O2		0x2
+#define USED_O3		0x3
 
-int init_stack(f, size)
-	query_t *f;
-	size_t size;
-{
-	f->stacksize = size;
-	f->stackbase = malloc(sizeof(operands_t) * size);
-	f->csp = f->stackbase;
-	f->top = f->stackbase + ((sizeof(operands_t) * size) - sizeof(operands_t));
-	return 1;
-}
+#define DEFAULT_STACKSIZE 20
 
-int destroy_stack(f)
-	query_t *f;
-{
-	free(f->stackbase);
-	f->csp = f->stackbase = f->top = NULL;
-	f->stacksize = 0;
-	return 1;
-}
+typedef struct {
+	int o1;
+	unsigned int o2;
+	void *o3;
+	int used;
+} operands_t;
 
-query_t* new_query(stacksize)
-	size_t stacksize;
-{
-	query_t *n;
-	n = allocz(sizeof(*n));
-	init_stack(n, stacksize != 0 ? stacksize : DEFAULT_STACKSIZE);
-	return n;
-}
+typedef struct Inst {
+	int opcode;
+	operands_t ops;
+	struct Inst *next;
+} inst_t;
 
-void destroy_query(q)
-	query_t *q;
-{
-	destroy_stack(q);
-	free(q);
-}
-
-int qi(q, opcode, op1, op2, op3, used)
-	query_t *q;
+typedef struct {
+	operands_t *stackbase, *top, *csp;
+	size_t stacksize; /* int number of elements, not bytes */
+	inst_t *insthead;
+} query_t;
+#endif
