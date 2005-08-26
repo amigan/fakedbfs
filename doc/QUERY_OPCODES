@@ -1,0 +1,33 @@
+$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.1 2005/08/26 02:05:26 dcp1990 Exp $
+
+Query opcodes
+	By Dan Ponte
+
+The fakedbfs opcode system is modelled in part on that of the VDBE driver used by SQLite.
+Like VBDE, each operation has 3 operands, the first being a signed integer, the second being
+unsigned, and the third being a pointer. These are named O1, O2, and O3, respectively.
+There is also a stack. All pointers to objects must be dynamically allocated using malloc(3).
+
+Here is a list of opcodes:
+========================================================================================================================================|
+OPCODE	|Name		|Description										|Accepts:		|
+	|		|											|O1	|O2	|O3	|
+========|===============|=======================================================================================|=======|=======|=======|
+0x1	|OP_BEGINQ	|Begin query. O3 is a pointer to a pointer of a fields_t where the head will be set to.	|	|	|X	|
+0x2	|OP_SETCAT	|Set catalogue name. O3 is a char* to the catalogue name.				|	|	|X	|
+0x3	|OP_BEGIN_GRP	|Begin grouping. Akin to an open-parentheses "(". No operands.				|	|	|	|
+0x4	|OP_CLOSE_GRP	|Close grouping. Akin to a closed-parentheses ")". No operands.				|	|	|	|
+0x5	|OPL_AND	|Logical AND. Like &&. No operands.							|	|	|	|
+0x6	|OPL_OR		|Logical OR. Like ||. No operands.							|	|	|	|
+0x7	|OPL_NOT	|NOT. Like !. No operands.								|	|	|	|
+0x8	|OPL_EQUAL	|Equals. No operands.									|	|	|	|
+0x9	|OP_COLNAME	|Column name. O3 is pointer to string containing name of column.			|	|	|X	|
+0xA	|OP_STRING	|String. O3 is the string (char*).							|	|	|X	|
+0xB	|OP_INT		|Signed int. O1 is the value.								|X	|	|	|
+0xC	|OP_UINT	|Unsigned int. O2 is the value.								|	|X	|	|
+0xD	|OP_VOID	|Void value. O2 is the size, O3 is a void* pointer to the data.				|	|X	|X	|
+0xE	|OP_FLOAT	|Float value. O3 is a pointer to a float*.						|	|	|X	|
+0xF	|OP_PUSH	|Push operand structure to stack. O3 is pointer to the operand structure.		|	|	|X	|
+0x10	|OP_POP		|Pop operand structure from stack. O3 is a pointer to a pointer that will be set.	|	|	|X	|
+0x11	|OP_ENDQ	|End query. No operands.								|	|	|	|
+========================================================================================================================================|
