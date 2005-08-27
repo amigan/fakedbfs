@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.2 2005/08/27 02:39:31 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.3 2005/08/27 02:40:42 dcp1990 Exp $ */
 #ifndef HAVE_QUERY_H
 #define HAVE_QUERY_H 1
 
@@ -78,7 +78,7 @@ enum estate {
 	init = 0, /* not started yet */
 	more, /* more rows waiting */
 	finished /* done; reset state and set to init */
-}
+};
 
 typedef struct {
 	operands_t *stackbase, *top, *csp;
