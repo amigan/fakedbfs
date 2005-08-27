@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.1 2005/08/26 21:36:14 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.2 2005/08/27 02:39:31 dcp1990 Exp $ */
 #ifndef HAVE_QUERY_H
 #define HAVE_QUERY_H 1
 
@@ -48,6 +48,7 @@
 #define OP_PUSH		0xF
 #define OP_POP		0x10
 #define OP_ENDQ		0x11
+#define OP_SELCN	0x12
 
 #define USED_O1		0x1
 #define USED_O2		0x2
@@ -68,9 +69,27 @@ typedef struct Inst {
 	struct Inst *next;
 } inst_t;
 
+typedef struct Result {
+	struct Field *fld;
+	struct Result *next; /* for your convenience; none of libfakedbfs' functions use this */
+} result_t;
+
+enum estate {
+	init = 0, /* not started yet */
+	more, /* more rows waiting */
+	finished /* done; reset state and set to init */
+}
+
 typedef struct {
 	operands_t *stackbase, *top, *csp;
 	size_t stacksize; /* int number of elements, not bytes */
+	size_t items;
+	struct FDBFS *f;
 	inst_t *insthead;
+	inst_t *lastinst;
+	/* state info */
+	inst_t *ip;
+	enum estate exec_state;
+	sqlite3_stmt *cst;
 } query_t;
 #endif

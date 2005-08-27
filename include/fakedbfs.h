@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.19 2005/08/26 21:36:14 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.20 2005/08/27 02:39:31 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -161,7 +161,7 @@ typedef struct a_t {
 	size_t len;
 } answer_t;
 
-typedef struct {
+typedef struct FDBFS {
 	char *dbname;
 	sqlite3 *db;
 	error_t error;
@@ -262,8 +262,18 @@ void set_plug_path(fdbfs_t *f, char *path);
 /* query stuff */
 int init_stack(query_t *f, size_t size);
 int destroy_stack(query_t *f);
-query_t* new_query(size_t stacksize);
+query_t* new_query(fdbfs_t *f, size_t stacksize);
 void destroy_query(query_t *q);
+int qi(query_t *q, int opcode, int op1, unsigned int op2, void *op3, int used);
+int spush(query_t *q, int o1, unsigned int o2, void *o3, int used);
+int spop(query_t *q, operands_t *bf);
+int pop1(query_t *q, int *o1);
+int pop2(query_t *q, unsigned int *o2);
+int pop3(query_t *q, void **o3);
+int push1(query_t *q, int o1);
+int push2(query_t *q, unsigned int o2);
+int push3(query_t *q, void *o3); /* we could use macros for push*(), but oh well */
+
 
 /* application interfaces */
 int parse_definition(fdbfs_t *f, char *filename);

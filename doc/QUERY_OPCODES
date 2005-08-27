@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.1 2005/08/26 02:05:26 dcp1990 Exp $
+$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.2 2005/08/27 02:39:31 dcp1990 Exp $
 
 Query opcodes
 	By Dan Ponte
@@ -30,4 +30,6 @@ OPCODE	|Name		|Description										|Accepts:		|
 0xF	|OP_PUSH	|Push operand structure to stack. O3 is pointer to the operand structure.		|	|	|X	|
 0x10	|OP_POP		|Pop operand structure from stack. O3 is a pointer to a pointer that will be set.	|	|	|X	|
 0x11	|OP_ENDQ	|End query. No operands.								|	|	|	|
+0x12	|OP_SELCN	|Select columns. O1 is 1 if this is akin to "all", 2 if one specific. O3 is the name
+	|		|if the column is specific. These cease to be recognized if an all is encountered.	|X	|	|X	|
 ========================================================================================================================================|
