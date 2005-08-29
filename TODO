@@ -1,8 +1,8 @@
-$Amigan: fakedbfs/TODO,v 1.1 2005/08/25 19:08:07 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.2 2005/08/29 07:59:12 dcp1990 Exp $
 
 TODO as of 1.0:
 *Mucho memory leaks. Some kind soul should run valgrind and fix them. I don't have the time; I will when
-	I port to amiga.
+	I port to amiga. (dmalloc may help in this respect; must test.)
 *Write more plugins
 *Write more specfiles
 *Document every API function
