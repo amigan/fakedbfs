@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/TODO,v 1.2 2005/08/29 07:59:12 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.3 2005/08/29 08:00:09 dcp1990 Exp $
 
 TODO as of 1.0:
 *Mucho memory leaks. Some kind soul should run valgrind and fix them. I don't have the time; I will when
@@ -10,3 +10,5 @@ TODO as of 1.0:
 *grep -R -E 'XXX:|TODO:' * and fix
 *Win32 port
 *Win32 applications
+*Amiga port
+*Add installation features to the build process (Makefile, etc)
