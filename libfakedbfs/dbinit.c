@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.21 2005/08/24 04:59:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.22 2005/08/29 07:43:58 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <ctype.h>
+#include <math.h>
 #include "dbspec.h"
 /* us */
 #include <dbspecdata.h>
@@ -44,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.21 2005/08/24 04:59:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.22 2005/08/29 07:43:58 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -280,17 +281,13 @@ int init_db_tables(f)
 size_t number_size(n)
 	unsigned int n;
 {
-	/* we go up to 999,999 */
-	if(n > 999999) return 7; /* insecure. so what? hopefully the snprintf() will truncate for us */
-	if(n >= 100000) return 6;
-	if(n >= 10000) return 5;
-	if(n >= 1000) return 4;
-	if(n >= 100) return 3;
-	if(n >= 10) return 2;
-	if(n >= 1) return 1;
-	if(n == 0) return 1;
-	fprintf(stderr, "WARNING in number_size(%d): had more than 7 digits! Expect the unexpected. Returning 8.\n", n);
-	return 8; /* random number time */
+	return floor(log10(n)) + 1;
+}
+
+size_t signed_size(n)
+	int n;
+{
+	return floor(log10(n)) + (n < 0 ? 2 : 1); /* sign */
 }
 
 char* construct_subelem_field(h)

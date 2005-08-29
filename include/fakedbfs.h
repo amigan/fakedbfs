@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.20 2005/08/27 02:39:31 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.21 2005/08/29 07:43:58 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -60,7 +60,7 @@
 /* LINTLIBRARY */
 #endif
 
-#define FLOATTYPE float
+#define FLOATTYPE double
 
 enum ErrorAction {
 	die,
@@ -258,6 +258,8 @@ struct Plugin* destroy_plugin(struct Plugin *e);
 void destroy_plugin_list(struct Plugin *h);
 int index_dir(fdbfs_t *f, char *dir, char *cat, int useplugs, int batch, int nocase, char *re, int recurselevel);
 void set_plug_path(fdbfs_t *f, char *path);
+size_t number_size(unsigned int n);
+size_t signed_size(int n);
 
 /* query stuff */
 int init_stack(query_t *f, size_t size);
@@ -273,6 +275,9 @@ int pop3(query_t *q, void **o3);
 int push1(query_t *q, int o1);
 int push2(query_t *q, unsigned int o2);
 int push3(query_t *q, void *o3); /* we could use macros for push*(), but oh well */
+int qne(query_t *q, fields_t *fld);
+int query_step(query_t *q, fields_t *fld);
+int query_init_exec(query_t *q, fields_t *fld);
 
 
 /* application interfaces */

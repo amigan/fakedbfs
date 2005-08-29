@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.3 2005/08/27 02:40:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.4 2005/08/29 07:43:58 dcp1990 Exp $ */
 #ifndef HAVE_QUERY_H
 #define HAVE_QUERY_H 1
 
@@ -44,17 +44,34 @@
 #define OP_STRING	0xA
 #define OP_INT		0xB
 #define OP_UINT		0xC
+#define OP_VOID		0xD
 #define OP_FLOAT	0xE
 #define OP_PUSH		0xF
 #define OP_POP		0x10
 #define OP_ENDQ		0x11
 #define OP_SELCN	0x12
+#define OP_REGEXP	0x13
 
 #define USED_O1		0x1
 #define USED_O2		0x2
 #define USED_O3		0x3
 
 #define DEFAULT_STACKSIZE 20
+
+#define Q_FINISHED 0x1
+#define Q_NEXT 0x2
+#define Q_INST_AFTER_END 0x3
+#define Q_UNBALANCED_GROUP 0x4
+#define Q_INVALID_O1 0x5
+#define Q_INVALID_O2 0x6
+#define Q_INVALID_O3 0x7
+#define Q_STEP_ON_UNINIT 0x8
+#define Q_MISSING_OPERAND 0x9
+#define Q_CATALOGUE_NOT_SET 0xA
+#define Q_OPERATION_WITHOUT_OPERANDS 0xB
+#define Q_DOUBLE_OPERAND 0xC
+#define Q_FDBFS_ERROR 0xD /* check q->f->error.emsg */
+#define Q_UNKNOWNSTATE 0xFF
 
 typedef struct {
 	int o1;
@@ -89,6 +106,7 @@ typedef struct {
 	inst_t *lastinst;
 	/* state info */
 	inst_t *ip;
+	char *catalogue;
 	enum estate exec_state;
 	sqlite3_stmt *cst;
 } query_t;

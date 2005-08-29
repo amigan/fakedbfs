@@ -1,9 +1,9 @@
-$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.2 2005/08/27 02:39:31 dcp1990 Exp $
+$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.3 2005/08/29 07:43:58 dcp1990 Exp $
 
 Query opcodes
 	By Dan Ponte
 
-The fakedbfs opcode system is modelled in part on that of the VDBE driver used by SQLite.
+The fakedbfs query virtual machine is modelled in part on that of the VDBE driver used by SQLite.
 Like VBDE, each operation has 3 operands, the first being a signed integer, the second being
 unsigned, and the third being a pointer. These are named O1, O2, and O3, respectively.
 There is also a stack. All pointers to objects must be dynamically allocated using malloc(3).
@@ -26,10 +26,12 @@ OPCODE	|Name		|Description										|Accepts:		|
 0xB	|OP_INT		|Signed int. O1 is the value.								|X	|	|	|
 0xC	|OP_UINT	|Unsigned int. O2 is the value.								|	|X	|	|
 0xD	|OP_VOID	|Void value. O2 is the size, O3 is a void* pointer to the data.				|	|X	|X	|
-0xE	|OP_FLOAT	|Float value. O3 is a pointer to a float*.						|	|	|X	|
+0xE	|OP_FLOAT	|Float value. O3 is a pointer to a double*.						|	|	|X	|
 0xF	|OP_PUSH	|Push operand structure to stack. O3 is pointer to the operand structure.		|	|	|X	|
 0x10	|OP_POP		|Pop operand structure from stack. O3 is a pointer to a pointer that will be set.	|	|	|X	|
 0x11	|OP_ENDQ	|End query. No operands.								|	|	|	|
-0x12	|OP_SELCN	|Select columns. O1 is 1 if this is akin to "all", 2 if one specific. O3 is the name
-	|		|if the column is specific. These cease to be recognized if an all is encountered.	|X	|	|X	|
+0x12	|OP_SELCN	|Select columns. O1 is 1 if this is akin to "all", 2 if one specific. O3 is the name if	|X	|	|X	|
+	|		|the column is specific, or NULL. These cease to be recognized if an all is encountered.|	|	|	|
+0x13	|OP_REGEXP	|Regular expression, implemented using regexp(3). O1 is 1 if case-insensitive matching	|X	|	|X	|
+	|		|matching is wanted, 0 else. O3 is a char* to the pattern to match.			|	|	|	|
 ========================================================================================================================================|
