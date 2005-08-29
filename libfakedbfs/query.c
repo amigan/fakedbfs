@@ -1,7 +1,8 @@
 /*
  * Copyright (c) 2005, Dan Ponte
  *
- * query.c - query code
+ * query.c - query code (namely the virtual machine)
+ * See doc/QUERY_OPCODES for how all of this works.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.4 2005/08/29 07:43:58 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.5 2005/08/29 07:45:00 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +45,7 @@
 #include <query.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.4 2005/08/29 07:43:58 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.5 2005/08/29 07:45:00 dcp1990 Exp $")
 
 int init_stack(f, size)
 	query_t *f;
