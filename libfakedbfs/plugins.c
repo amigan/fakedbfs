@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.3 2005/08/25 07:20:35 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.4 2005/08/29 07:48:02 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdio.h>
@@ -47,7 +47,7 @@
 #include <fakedbfs.h>
 #include "../fdbfsconfig.h"
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.3 2005/08/25 07:20:35 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.4 2005/08/29 07:48:02 dcp1990 Exp $")
 
 #define LIBERR(sym) { \
 		debug_info(f, error, "probe_plugin: symbol referece %s failed in %s: %s", sym, fpth, dlerror()); \
@@ -97,7 +97,7 @@ struct Plugin* probe_plugin(f, dirpath, filename, last)
 	}
 
 	if(n->info->minapi > MINOR_API_VERSION) {
-		debug_info(f, error, "error! %s (%s v%s)'s minapi (%d) > MAJOR_API_VERSION (%d)! These are incompatible.",
+		debug_info(f, error, "error! %s (%s v%s)'s minapi (%d) > MINOR_API_VERSION (%d)! These are incompatible.",
 				fpth, n->info->pluginname, n->info->version, n->info->majapi, MAJOR_API_VERSION);
 		free(fpth);
 		free(n);
