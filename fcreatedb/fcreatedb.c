@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.9 2005/08/22 16:13:54 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.10 2005/08/29 07:58:17 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -41,7 +41,7 @@
 #define ARGSPEC "vhad:"
 #define FCREATEVER "0.1"
 
-RCSID("$Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.9 2005/08/22 16:13:54 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.10 2005/08/29 07:58:17 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int append = 0;
@@ -52,8 +52,9 @@ void version(void)
 {
 	printf("fcreatedb v%s. (C)2005, Dan Ponte.\n"
 		       "Under the BSD license; see the source for more details.\n"
-		       "fakedbfs library v%s. Originally built for v%s.\n%s\n"
-		       "Visit http://www.theamigan.net/fakedbfs/ for more info.\n", FCREATEVER, fakedbfsver, FAKEDBFSVER, fakedbfscopyright);
+		       "fakedbfs library v%s ('%s'). Originally built for v%s.\n%s\n"
+		       "Visit http://www.theamigan.net/fakedbfs/ for more info.\n", FCREATEVER, fakedbfsver,
+		      fakedbfsvname, FAKEDBFSVER, fakedbfscopyright);
 }
 void usage(pn)
 	char *pn;
