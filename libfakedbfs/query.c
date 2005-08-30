@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.6 2005/08/30 05:14:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.7 2005/08/30 05:24:28 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #include <query.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.6 2005/08/30 05:14:51 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.7 2005/08/30 05:24:28 dcp1990 Exp $")
 
 int init_stack(f, size)
 	query_t *f;
@@ -262,16 +262,15 @@ int qi(q, opcode, op1, op2, op3, used)
 	return 1;
 }
 
-int qne(q, fld) /* Query Next/Execute */
+int qne(q) /* Query Next/Execute */
 	query_t *q;
-	fields_t **fld;
 {
 	switch(q->exec_state) {
 		case init:
-			return query_init_exec(fld);
+			return query_init_exec(q);
 			break;
 		case more:
-			return query_step(fld);
+			return query_step(q);
 			break;
 		case finished:
 			return Q_FINISHED;
@@ -281,10 +280,10 @@ int qne(q, fld) /* Query Next/Execute */
 }
 
 
-int query_step(q, fld) /* a pointer to the head of a fields_t list is pushed to the stack by this. */
+int query_step(q) /* a pointer to the head of a fields_t list is pushed to the stack by this. */
 	query_t *q;
 {
-	int colcount = 0, i = 0;
+	unsigned int colcount = 0, i = 0;
 	int rc, toret;
 	inst_t *c;
 	fields_t *h = NULL, *cf = NULL, *n = NULL;
@@ -298,7 +297,7 @@ int query_step(q, fld) /* a pointer to the head of a fields_t list is pushed to 
 	rc = sqlite3_step(q->cst);
 	if(rc == SQLITE_ROW)
 		toret = Q_NEXT;
-	else if(rc == SQLITE_DONE || rc = SQLITE_OK) {
+	else if(rc == SQLITE_DONE || rc == SQLITE_OK) {
 		toret = Q_FINISHED;
 		q->exec_state = finished;
 	} else {
@@ -321,7 +320,7 @@ int query_step(q, fld) /* a pointer to the head of a fields_t list is pushed to 
 	/* this won my "most absurd ternary" contest in ##freebsd */
 	for(i = (q->allcols ? 1 /* no id */ : colcount); (q->allcols ? (i < colcount) : (i > 0)); (q->allcols ? i++ : i--)) {
 		n = malloc(sizeof(*n));
-		n->fieldname = sqlite3_column_name(q->cst, i);
+		n->fieldname = strdup(sqlite3_column_name(q->cst, i));
 		/* TODO: get names, fmtnames, and "other" status from DB (preferably for all) and use accordingly */
 	}
 
@@ -330,7 +329,7 @@ int query_step(q, fld) /* a pointer to the head of a fields_t list is pushed to 
 }
 	
 
-int query_init_exec(q, fld)
+int query_init_exec(q)
 	query_t *q;
 {
 	inst_t *c;

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.23 2005/08/30 05:14:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.24 2005/08/30 05:24:28 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -276,9 +276,9 @@ int pop3(query_t *q, void **o3);
 int push1(query_t *q, int o1);
 int push2(query_t *q, unsigned int o2);
 int push3(query_t *q, void *o3); /* we could use macros for push*(), but oh well */
-int qne(query_t *q, fields_t **fld);
-int query_step(query_t *q, fields_t **fld);
-int query_init_exec(query_t *q, fields_t **fld);
+int qne(query_t *q);
+int query_step(query_t *q);
+int query_init_exec(query_t *q);
 qreg_t* qreg_compile(char *regex, char *colname, int case_insens, char **errmsg);
 void qreg_destroy(qreg_t *q);
 void free_inst(inst_t *e);

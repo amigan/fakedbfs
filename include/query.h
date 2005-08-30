@@ -27,9 +27,12 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/query.h,v 1.5 2005/08/30 05:14:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/query.h,v 1.6 2005/08/30 05:24:28 dcp1990 Exp $ */
 #ifndef HAVE_QUERY_H
 #define HAVE_QUERY_H 1
+#ifndef _REGEX_H_
+#include <regex.h>
+#endif
 
 /* See doc/QUERY_OPCODES for how these are used */
 #define OP_BEGINQ	0x1
