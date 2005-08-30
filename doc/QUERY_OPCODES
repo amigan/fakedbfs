@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.3 2005/08/29 07:43:58 dcp1990 Exp $
+$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.4 2005/08/30 05:14:51 dcp1990 Exp $
 
 Query opcodes
 	By Dan Ponte
@@ -8,12 +8,15 @@ Like VBDE, each operation has 3 operands, the first being a signed integer, the 
 unsigned, and the third being a pointer. These are named O1, O2, and O3, respectively.
 There is also a stack. All pointers to objects must be dynamically allocated using malloc(3).
 
+After each row, a pointer to the head of a fields_t is pushed to the stack. Pop it off to conserve stack entries.
+
 Here is a list of opcodes:
 ========================================================================================================================================|
 OPCODE	|Name		|Description										|Accepts:		|
 	|		|											|O1	|O2	|O3	|
 ========|===============|=======================================================================================|=======|=======|=======|
-0x1	|OP_BEGINQ	|Begin query. O3 is a pointer to a pointer of a fields_t where the head will be set to.	|	|	|X	|
+0x1	|OP_BEGINQ	|Begin query. O1 is true if you will be using OP_SELCN to select columns, false if you 	|X	|	|	|
+	|		|want all columns (in this case, all OP_SELCNs will be ignored).			|	|	|	|
 0x2	|OP_SETCAT	|Set catalogue name. O3 is a char* to the catalogue name.				|	|	|X	|
 0x3	|OP_BEGIN_GRP	|Begin grouping. Akin to an open-parentheses "(". No operands.				|	|	|	|
 0x4	|OP_CLOSE_GRP	|Close grouping. Akin to a closed-parentheses ")". No operands.				|	|	|	|
@@ -30,8 +33,14 @@ OPCODE	|Name		|Description										|Accepts:		|
 0xF	|OP_PUSH	|Push operand structure to stack. O3 is pointer to the operand structure.		|	|	|X	|
 0x10	|OP_POP		|Pop operand structure from stack. O3 is a pointer to a pointer that will be set.	|	|	|X	|
 0x11	|OP_ENDQ	|End query. No operands.								|	|	|	|
-0x12	|OP_SELCN	|Select columns. O1 is 1 if this is akin to "all", 2 if one specific. O3 is the name if	|X	|	|X	|
-	|		|the column is specific, or NULL. These cease to be recognized if an all is encountered.|	|	|	|
-0x13	|OP_REGEXP	|Regular expression, implemented using regexp(3). O1 is 1 if case-insensitive matching	|X	|	|X	|
-	|		|matching is wanted, 0 else. O3 is a char* to the pattern to match.			|	|	|	|
+0x12	|OP_SELCN	|Select columns. O3 is the name of the column. This is only recognized according to the	|	|	|X	|
+	|		|O1 of the OP_BEGINQ; see above for details.						|	|	|	|
+0x13	|OP_REGEXP	|Regular expression, implemented using regex(3).  O3 is a pointer to a compiled qreg_t	|	|	|X	|
+	|		|structure; see below for more info on this.						|	|	|	|
 ========================================================================================================================================|
+
+NOTE AS PROMISED:
+	qreg_t structures are compiled by a call to qreg_compile(char *regex, char *colname, int case_insens, char **errmsg). Returned is a pointer to a freshly-malloc(3)'d qreg_t. case_insens is true if case-insensitivity is desired; 0 otherwise. If an error is encountered, NULL is returned and *errmsg is set to a dynamically allocated (free with free(3)) string containing the message.
+This structure should be freed when no longer in use by a call to qreg_destroy(qreg_t *qreg) (this might be done for you in a query_destroy call).
+Note that the regex nor colname are not needed later; they will be strdup()'d if necessary.
+In essence, a OP_REGEXP instruction expands to "(colname =~ /regex)" in one instruction.

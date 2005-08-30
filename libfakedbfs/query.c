@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.5 2005/08/29 07:45:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.6 2005/08/30 05:14:51 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #include <query.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.5 2005/08/29 07:45:00 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.6 2005/08/30 05:14:51 dcp1990 Exp $")
 
 int init_stack(f, size)
 	query_t *f;
@@ -179,6 +179,46 @@ query_t* new_query(f, stacksize)
 	return n;
 }
 
+qreg_t* qreg_compile(regex, colname, case_insens, errmsg)
+	char *regex;
+	char *colname;
+	int case_insens;
+	char **errmsg;
+{
+	int rc;
+	qreg_t *new;
+
+	new = allocz(sizeof(*new));
+	new->colname = strdup(colname);
+	if((rc = regcomp(&(new->re), regex, REG_EXTENDED | REG_NOSUB | (case_insens ? REG_ICASE : 0))) != 0) {
+		*errmsg = malloc(128);
+		regerror(rc, &(new->re), *errmsg, 127);
+		regfree(&(new->re));
+		free(new->colname);
+		free(new);
+		return NULL;
+	}
+
+	return new;
+}
+
+void qreg_destroy(q)
+	qreg_t *q;
+{
+	regfree(&(q->re));
+	free(q->colname);
+	free(q);
+}
+
+void free_inst(e)
+	inst_t *e;
+{
+	if(e->opcode == OP_REGEXP)
+		qreg_destroy(e->ops.o3);
+	free(e);
+	return;
+}
+
 void destroy_query(q)
 	query_t *q;
 {
@@ -188,7 +228,7 @@ void destroy_query(q)
 	
 	for(c = q->insthead; c != NULL; c = next) {
 		next = c->next;
-		free(c);
+		free_inst(c);
 	}
 
 	free(q);
@@ -224,14 +264,14 @@ int qi(q, opcode, op1, op2, op3, used)
 
 int qne(q, fld) /* Query Next/Execute */
 	query_t *q;
-	fields_t *fld;
+	fields_t **fld;
 {
 	switch(q->exec_state) {
 		case init:
-			return query_init_exec(q, fld);
+			return query_init_exec(fld);
 			break;
 		case more:
-			return query_step(q, fld);
+			return query_step(fld);
 			break;
 		case finished:
 			return Q_FINISHED;
@@ -241,22 +281,57 @@ int qne(q, fld) /* Query Next/Execute */
 }
 
 
-int query_step(q, fld)
+int query_step(q, fld) /* a pointer to the head of a fields_t list is pushed to the stack by this. */
 	query_t *q;
-	fields_t *fld;
 {
+	int colcount = 0, i = 0;
+	int rc, toret;
+	inst_t *c;
+	fields_t *h = NULL, *cf = NULL, *n = NULL;
+
 	if(q->exec_state == finished)
 		return Q_FINISHED;
 	if(q->exec_state == init && q->catalogue == NULL)
 		return Q_STEP_ON_UNINIT;
 	/* XXX: step the query, fill up the fields, sqlite3_finalize() on finish!!!! */
-	return 0;
+
+	rc = sqlite3_step(q->cst);
+	if(rc == SQLITE_ROW)
+		toret = Q_NEXT;
+	else if(rc == SQLITE_DONE || rc = SQLITE_OK) {
+		toret = Q_FINISHED;
+		q->exec_state = finished;
+	} else {
+		toret = Q_FDBFS_ERROR;
+		q->exec_state = finished;
+		ferr(q->f, die, "sqlite3_step(): %s", sqlite3_errmsg(q->f->db));
+		sqlite3_finalize(q->cst); /* useless... */
+		return toret;
+	}
+		
+
+	for(c = q->insthead; c != NULL; c = c->next) {
+		if(c->opcode == OP_SELCN && !q->allcols) {
+			push3(q, c->ops.o3);
+		}
+	}
+
+	colcount = sqlite3_column_count(q->cst);
+
+	/* this won my "most absurd ternary" contest in ##freebsd */
+	for(i = (q->allcols ? 1 /* no id */ : colcount); (q->allcols ? (i < colcount) : (i > 0)); (q->allcols ? i++ : i--)) {
+		n = malloc(sizeof(*n));
+		n->fieldname = sqlite3_column_name(q->cst, i);
+		/* TODO: get names, fmtnames, and "other" status from DB (preferably for all) and use accordingly */
+	}
+
+
+	return toret;
 }
 	
 
 int query_init_exec(q, fld)
 	query_t *q;
-	fields_t *fld;
 {
 	inst_t *c;
 	int opengrps = 0, ended = 0;
@@ -265,6 +340,7 @@ int query_init_exec(q, fld)
 	short int saw_operat = 0;
 	const char *tail;
 	int indcounter = 1;
+	short int foundselcn = 0;
 	char *qusql;
 #define SPBUFSIZE 64
 	char spbuf[SPBUFSIZE];
@@ -333,33 +409,42 @@ int query_init_exec(q, fld)
 				/* do nothing */
 				break;
 			case OP_SELCN:
-				if(!(c->ops.used & USED_O1) || !(c->ops.used & USED_O3))
+				if(!(c->ops.used & USED_O3))
 					return Q_MISSING_OPERAND;
-				if(c->ops.o1 == 1) {
-					/* do nothing; no specific columns */;
-					col_sel_init = 2;
-				} else if(col_sel_init != 2) {
-					if(c->ops.o3 == NULL)
-						return Q_INVALID_O3;
-					if(!col_sel_init) {
-						query_len += 2 /* space */;
-						col_sel_init = 1;
-					}
-					query_len += strlen(c->ops.o3) + 1 /* comma */;
+				if(q->allcols)
+					break;
+				if(c->ops.o3 == NULL)
+					return Q_INVALID_O3;
+				if(!col_sel_init) {
+					query_len += 2 /* space */;
+					col_sel_init = 1;
 				}
+				query_len += strlen(c->ops.o3) + 1 /* comma */;
+				foundselcn = 1;
 				break;
 			case OP_REGEXP:
-				if(!(c->ops.used & USED_O1) || !(c->ops.used & USED_O3))
+				if(!(c->ops.used & USED_O3))
 					return Q_MISSING_OPERAND;
 				if(c->ops.o3 == NULL)
 					return Q_INVALID_O3;
-				/* this is done during the stepping; we do nothing now except perhaps compile the regexp */
 				break;
 			case OP_ENDQ:
 				ended = 1;
 				break;
+			case OP_BEGINQ:
+				if(!(c->ops.used & USED_O1))
+					return Q_MISSING_OPERAND;
+				if(c->ops.o1)
+					q->allcols = 0;
+				else
+					q->allcols = 1;
+				break;
 		}
 	}
+	
+
+	if(!q->allcols && !foundselcn)
+		return Q_NO_COLUMNS;
 	if(opengrps > 0)
 		return Q_UNBALANCED_GROUP;
 	if(q->catalogue == NULL)
@@ -491,5 +576,5 @@ int query_init_exec(q, fld)
 		return Q_FDBFS_ERROR;
 	}
 	
-	return query_step(q, fld);
+	return query_step(q);
 }

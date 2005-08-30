@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.22 2005/08/29 07:58:17 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.23 2005/08/30 05:14:51 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -44,7 +44,7 @@
 #define MAJOR_API_VERSION 1
 #define MINOR_API_VERSION 0
 
-#define FAKEDBFSVER "1.0"
+#define FAKEDBFSVER "1.0.0" /* major changes with major incompat changes, minor with minor incompat, micro with additions, bugfixes, and security fixes */
 #define VERNAME "Steely Dan" /* this changes for each release */
 
 #ifndef lint
@@ -276,9 +276,12 @@ int pop3(query_t *q, void **o3);
 int push1(query_t *q, int o1);
 int push2(query_t *q, unsigned int o2);
 int push3(query_t *q, void *o3); /* we could use macros for push*(), but oh well */
-int qne(query_t *q, fields_t *fld);
-int query_step(query_t *q, fields_t *fld);
-int query_init_exec(query_t *q, fields_t *fld);
+int qne(query_t *q, fields_t **fld);
+int query_step(query_t *q, fields_t **fld);
+int query_init_exec(query_t *q, fields_t **fld);
+qreg_t* qreg_compile(char *regex, char *colname, int case_insens, char **errmsg);
+void qreg_destroy(qreg_t *q);
+void free_inst(inst_t *e);
 
 
 /* application interfaces */
