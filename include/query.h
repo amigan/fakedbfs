@@ -27,11 +27,14 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/query.h,v 1.6 2005/08/30 05:24:28 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/query.h,v 1.7 2005/08/30 08:35:17 dcp1990 Exp $ */
 #ifndef HAVE_QUERY_H
 #define HAVE_QUERY_H 1
 #ifndef _REGEX_H_
 #include <regex.h>
+#endif
+#ifndef HAVE_DBSPECDATA_H
+#include <dbspecdata.h>
 #endif
 
 /* See doc/QUERY_OPCODES for how these are used */
@@ -75,6 +78,8 @@
 #define Q_DOUBLE_OPERAND 0xC
 #define Q_FDBFS_ERROR 0xD /* check q->f->error.emsg */
 #define Q_NO_COLUMNS 0xE
+#define Q_NO_SUCH_CAT 0xF
+#define Q_NO_SUCH_CELEM 0x10
 #define Q_UNKNOWNSTATE 0xFF
 
 typedef struct {
@@ -113,6 +118,9 @@ typedef struct {
 	char *catalogue;
 	enum estate exec_state;
 	sqlite3_stmt *cst;
+	struct CatalogueHead *ourcat; /* our paticular one */
+	struct CatalogueHead *cath;
+	struct EnumHead *enumh;
 } query_t;
 
 typedef struct {

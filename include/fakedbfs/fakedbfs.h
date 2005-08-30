@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.24 2005/08/30 05:24:28 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.25 2005/08/30 08:35:17 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -94,7 +94,6 @@ typedef struct Field {
 	struct EnumSubElem *subhead;
 	size_t len;
 	size_t othlen;
-	short int asked;
 	struct Field *next;
 } fields_t;
 typedef struct tok {

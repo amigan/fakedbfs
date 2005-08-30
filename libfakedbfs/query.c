@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.7 2005/08/30 05:24:28 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.8 2005/08/30 08:35:17 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #include <query.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.7 2005/08/30 05:24:28 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.8 2005/08/30 08:35:17 dcp1990 Exp $")
 
 int init_stack(f, size)
 	query_t *f;
@@ -175,6 +175,20 @@ query_t* new_query(f, stacksize)
 	query_t *n;
 	n = allocz(sizeof(*n));
 	n->f = f;
+	
+	if((n->enumh = enums_from_db(f)) == NULL) {
+		CERR(die, "new_query: ", NULL);
+		free(n);
+		return NULL;
+	}
+	
+	if((n->cath = cats_from_db(f, n->enumh)) == NULL) {
+		CERR(die, "new_query: ", NULL);
+		free_enum_head_list(n->enumh);
+		free(n);
+		return NULL;
+	}
+
 	init_stack(n, stacksize != 0 ? stacksize : DEFAULT_STACKSIZE);
 	return n;
 }
@@ -225,11 +239,16 @@ void destroy_query(q)
 	inst_t *c, *next;
 
 	destroy_stack(q);
+
+	free_cat_head_list(n->cath);
+	free_enum_head_list(n->enumh);
 	
 	for(c = q->insthead; c != NULL; c = next) {
 		next = c->next;
 		free_inst(c);
 	}
+
+	free(q->catalogue);
 
 	free(q);
 }
@@ -284,9 +303,14 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 	query_t *q;
 {
 	unsigned int colcount = 0, i = 0;
+	struct CatElem *cel;
 	int rc, toret;
+	short int special = 0;
 	inst_t *c;
-	fields_t *h = NULL, *cf = NULL, *n = NULL;
+	char *pname;
+	size_t len;
+	void *val;
+	fields_t *h = NULL, *cf = NULL, *n = NULL, *lastoth = NULL;
 
 	if(q->exec_state == finished)
 		return Q_FINISHED;
@@ -309,19 +333,104 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 	}
 		
 
-	for(c = q->insthead; c != NULL; c = c->next) {
-		if(c->opcode == OP_SELCN && !q->allcols) {
-			push3(q, c->ops.o3);
+	if(!q->allcols)
+		for(c = q->insthead; c != NULL; c = c->next) {
+			if(c->opcode == OP_SELCN) {
+				push3(q, c->ops.o3);
+			}
 		}
-	}
 
 	colcount = sqlite3_column_count(q->cst);
 
 	/* this won my "most absurd ternary" contest in ##freebsd */
 	for(i = (q->allcols ? 1 /* no id */ : colcount); (q->allcols ? (i < colcount) : (i > 0)); (q->allcols ? i++ : i--)) {
-		n = malloc(sizeof(*n));
-		n->fieldname = strdup(sqlite3_column_name(q->cst, i));
+		if(strcmp("id", sqlite3_column_name(q->cst, i)) == 0)
+				continue;
+		if(lastoth != NULL) {
+			if(strncmp(sqlite3_column_name(q->cst, i), "oth_", 4) == 0) {
+				if(strcmp(sqlite3_column_name(q->cst, i) + 4, lastoth->fieldname) == 0) {
+					n = lastoth;
+					lastoth = NULL;
+					special = 3;
+				}
+			}
+		} else {
+			n = malloc(sizeof(*n));
+			n->fieldname = strdup(sqlite3_column_name(q->cst, i));
+		}
+		if(!q->allcols) {
+			pop3(q, &pname); /* we're supposed to do something with this */
+		}
+		if(special != 3) {
+			if(strcmp(n->fieldname, "file") == 0) {
+				n->type = string;
+				special = 1;
+			} else if(strcmp(n->fieldname, "lastupdate") == 0) {
+				n->type = number;
+				special = 2;
+			} else {
+				cel = find_catelem_by_name(q->ourcat->headelem, n->fieldname);
+				if(cel == NULL) {
+					toret = Q_NO_SUCH_CELEM;
+					break;
+				}
+				n->fmtname = strdup(cel->alias);
+				n->type = cel->type;
+				switch(n->type) {
+					case oenum:
+						n->ehead = cel->enumptr;
+						if(n->ehead->otherelem != NULL) {
+							n->othtype = n->ehead->otherelem->othertype;
+							lastoth = n;
+						} else
+							n->othtype = 0;
+						break;
+					case oenumsub:
+						n->subhead = cel->subcatel;
+						break;
+				}
+				special = 0;
+			}
+		}
 		/* TODO: get names, fmtnames, and "other" status from DB (preferably for all) and use accordingly */
+		switch(sqlite3_column_type(q->cst, i)) {
+			case SQLITE_INTEGER:
+				val = malloc(sizeof(int));
+				*val = sqlite3_column_int(q->cst, i);
+				break;
+			case SQLITE_FLOAT:
+				val = malloc(sizeof(FLOATTYPE));
+				*val = sqlite3_column_double(q->cst, i);
+				break;
+			case SQLITE_TEXT:
+				val = strdup(sqlite3_column_text(q->cst, i));
+				len = strlen((char*)val);
+				break;
+			case SQLITE_BLOB:
+				void *tvd;
+				len = sqlite3_column_bytes(q->cst, i);
+				tvd = sqlite3_column_blob(q->cst, i);
+				val = malloc(n->len);
+				memcpy(val, tvd, len);
+				break;
+			case SQLITE_NULL:
+				val = NULL;
+				break;
+		}
+
+		if(special == 3) {
+			n->otherval = val;
+			n->othlen = len;
+		} else {
+			n->val = val;
+			n->len = len;
+			if(h == NULL) {
+				h = cf = n;
+			} else {
+				cf->next = n;
+				cf = n;
+			}
+		}
 	}
 
 
@@ -366,7 +475,10 @@ int query_init_exec(q)
 			case OP_SETCAT:
 				if(!(c->ops.used & USED_O3) || c->ops.o3 == NULL)
 					return Q_INVALID_O3;
-				q->catalogue = (char*)c->ops.o3;
+				q->catalogue = strdup((char*)c->ops.o3);
+				q->ourcat = find_cathead_by_name(q->cath, q->catalogue);
+				if(q->ourcat == NULL)
+					return Q_NO_SUCH_CAT;
 				query_len += strlen(q->catalogue);
 				break;
 			case OPL_AND:
