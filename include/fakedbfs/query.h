@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.7 2005/08/30 08:35:17 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.8 2005/08/31 04:47:37 dcp1990 Exp $ */
 #ifndef HAVE_QUERY_H
 #define HAVE_QUERY_H 1
 #ifndef _REGEX_H_
@@ -61,8 +61,6 @@
 #define USED_O1		0x1
 #define USED_O2		0x2
 #define USED_O3		0x3
-
-#define DEFAULT_STACKSIZE 20
 
 #define Q_FINISHED 0x1
 #define Q_NEXT 0x2

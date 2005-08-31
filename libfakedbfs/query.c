@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.9 2005/08/31 04:08:01 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.10 2005/08/31 04:47:37 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,9 @@
 #include <query.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.9 2005/08/31 04:08:01 dcp1990 Exp $")
+#include "../fdbfsconfig.h"
+
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.10 2005/08/31 04:47:37 dcp1990 Exp $")
 
 int init_stack(f, size)
 	query_t *f;
