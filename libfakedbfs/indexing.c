@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.23 2005/08/31 04:15:40 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.24 2005/08/31 04:41:16 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.23 2005/08/31 04:15:40 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.24 2005/08/31 04:41:16 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -204,6 +204,42 @@ fields_t* fill_in_fields(f, filename)
 	return fh;
 }
 
+void list_subenum(h)
+	struct EnumSubElem *h;
+{
+	struct EnumSubElem *c;
+
+	printf("Enum sub of '%s'\n", h->father->fmtname);
+
+	for(c = h; c != NULL; c = c->next) {
+		printf("%d - '%s' %s%s", c->value, (c->flags & SUBE_IS_SELF ? h->father->fmtname : c->name), (c->value >= ALLSUBSTART ? "(allsub)" : ""),
+				(c->flags & SUBE_IS_SELF ? " (self)" : ""));
+		if((c = c->next) == NULL) { /* next for columns */
+			printf("\n");
+			break;
+		}
+		printf("\t\t%d - '%s' %s%s\n", c->value, (c->flags & SUBE_IS_SELF ? h->father->fmtname : c->name), (c->value >= ALLSUBSTART ? "(allsub)" : ""),
+				(c->flags & SUBE_IS_SELF ? " (self)" : ""));
+	}
+}
+
+void list_enum(h)
+	struct EnumHead *h;
+{
+	struct EnumElem *c;
+
+	printf("Enum '%s'\n", h->name);
+
+	for(c = h->headelem; c != NULL; c = c->next) {
+		printf("%d - '%s' %s", c->value, c->fmtname, (c->other ? "(other)" : ""));
+		if((c = c->next) == NULL) { /* next for columns */
+			printf("\n");
+			break;
+		}
+		printf("\t\t%d - '%s' %s\n", c->value, c->fmtname, (c->other ? "(other)" : ""));
+	}
+}
+
 answer_t* askfunc_std(buf, def, fieldname, name, filen, dt, ehead, subhead)
 	answer_t *buf;
 	answer_t *def;
@@ -231,13 +267,13 @@ checkagain:
 			printf("%s [%s]> ", fieldname, (def->integer ? "true" : "false"));
 			break;
 		case oenum:
-			printf("%s [%d - '%s']> ", fieldname, def->integer, get_enum_string_by_value(ehead->headelem, def->integer, 1));
+			printf("%s [%d - '%s'] (? lists)> ", fieldname, def->integer, get_enum_string_by_value(ehead->headelem, def->integer, 1));
 			break;
 		case oenumsub:
 			es =  get_enum_sub_string_by_value(subhead, def->integer);
 			if(es == NULL)
 				return (answer_t*)0x1;
-			printf("%s sub [%d - '%s']> ", fieldname, def->integer, es);
+			printf("%s sub [%d - '%s'] (? lists)> ", fieldname, def->integer, es);
 			break;
 		case string:
 			printf("%s ['%s']> ", fieldname, def->string);
@@ -258,6 +294,14 @@ checkagain:
 
 	if((nl = strrchr(bf, '\n')) != NULL)
 		*nl = '\0';
+
+	if(*bf == '?' && dt == oenum) {
+		list_enum(ehead);
+		goto checkagain;
+	} else if(*bf == '?' && dt == oenumsub) {
+		list_subenum(subhead);
+		goto checkagain;
+	}
 
 	switch(dt) {
 		case number:
@@ -336,7 +380,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 	answer_t def;
 	answer_t cta;
 	short int dialoguemode = 0;
-	short int i, hasoth = 0;
+	short int i, hasoth = 0; /* inaccurate var names */
 	short int otherm = 0;
 	fields_t *c = NULL /*, *h = NULL, *n = NULL*/;
 

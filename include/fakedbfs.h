@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.26 2005/08/31 04:08:01 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.27 2005/08/31 04:41:16 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -253,6 +253,8 @@ int read_specs_from_db(fdbfs_t *f);
 struct EnumSubElem* get_subhead_by_enval(struct EnumElem *h, unsigned int val);
 fields_t* find_field_by_ehead(fields_t *h, struct EnumHead *e);
 fields_t* find_field_by_ename(fields_t *h, char *e);
+void list_enum(struct EnumHead *h);
+void list_subenum(struct EnumSubElem *h);
 
 /* plugin shiite */
 struct Plugin* probe_plugin(fdbfs_t *f, char *dirpath, char *filename, struct Plugin *last);
