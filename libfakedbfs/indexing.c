@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.22 2005/08/31 04:08:01 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.23 2005/08/31 04:15:40 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.22 2005/08/31 04:08:01 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.23 2005/08/31 04:15:40 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -235,7 +235,9 @@ checkagain:
 			break;
 		case oenumsub:
 			es =  get_enum_sub_string_by_value(subhead, def->integer);
-			printf("%s sub [%d - '%s']> ", fieldname, def->integer, (es == NULL ? "(none)" : es));
+			if(es == NULL)
+				return (answer_t*)0x1;
+			printf("%s sub [%d - '%s']> ", fieldname, def->integer, es);
 			break;
 		case string:
 			printf("%s ['%s']> ", fieldname, def->string);
@@ -334,8 +336,8 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 	answer_t def;
 	answer_t cta;
 	short int dialoguemode = 0;
-	short int otherm = 0;
 	short int i, hasoth = 0;
+	short int otherm = 0;
 	fields_t *c = NULL /*, *h = NULL, *n = NULL*/;
 
 	cans = f->askfieldfunc(NULL, NULL, NULL, NULL, NULL, 0x0, NULL, NULL);
@@ -346,17 +348,21 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 		return NULL;
 	}
 
-#define cval (otherm ? c->otherval : c->val)
-#define clen (otherm ? c->othlen : c->len)
-#define ctype (otherm ? c->othtype : c->type)
+#define cval (hasoth ? c->otherval : c->val)
+#define clen (hasoth ? c->othlen : c->len)
+#define ctype (hasoth ? c->othtype : c->type)
 	if(dialoguemode) {
 		for(c = defs; c != NULL; c = c->next) {
 			if(c->otherval != NULL)
-				hasoth = 1;
+				otherm = 1;
 			else
-				hasoth = 0;
+				otherm = 0;
 
-			for(i = 0; i < (hasoth ? 2 : 1); i++) {
+			for(i = 0; i < (otherm ? 2 : 1); i++) {
+				if(i == 1)
+					hasoth = i;
+				else
+					hasoth = 0;
 				memset(&def, 0, sizeof(def));
 				def.dt = ctype;
 				switch(c->type) {
@@ -402,11 +408,16 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 
 	for(c = defs; c != NULL; c = c->next) {
 		if(c->otherval != NULL)
-			hasoth = 1;
+			otherm = 1;
 		else
-			hasoth = 0;
+			otherm = 0;
 
 		for(i = 0; i < (hasoth ? 2 : 1); i++) {
+			if(i == 1)
+				hasoth = i;
+			else
+				hasoth = 0;
+
 			memset(&def, 0, sizeof(def));
 			def.dt = ctype;
 			switch((hasoth ? c->othtype : c->type)) {
@@ -448,7 +459,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 					case oenumsub:
 					case number:
 					case boolean:
-						if(otherm) {
+						if(hasoth) {
 							c->otherval = malloc(sizeof(int));
 							*(int*)c->otherval = cta.integer;
 						} else {
@@ -458,13 +469,13 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 						}
 						break;
 					case string:
-						if(otherm)
+						if(hasoth)
 							c->otherval = strdup(cta.string);
 						else
 							c->val = strdup(cta.string);
 						break;
 					case fp:
-						if(otherm) {
+						if(hasoth) {
 							c->otherval = malloc(sizeof(FLOATTYPE));
 							*(FLOATTYPE*)c->otherval = cta.fp;
 						} else {
@@ -474,7 +485,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 						break;
 					case image:
 					case binary:
-						if(!otherm) {
+						if(!hasoth) {
 							c->val = malloc(cta.len);
 							memcpy(c->val, cta.vd, cta.len);
 						} else {
