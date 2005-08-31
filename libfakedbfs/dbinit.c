@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.22 2005/08/29 07:43:58 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.23 2005/08/31 04:08:01 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.22 2005/08/29 07:43:58 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.23 2005/08/31 04:08:01 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -168,6 +168,20 @@ char* get_enum_string_by_value(h, val, fmted)
 			return (fmted ? c->fmtname : c->name);
 	}
 
+	return NULL;
+}
+
+struct EnumSubElem* get_subhead_by_enval(h, val)
+	struct EnumElem *h;
+	unsigned int val;
+{
+	struct EnumElem *c;
+
+	for(c = h; c != NULL; c = c->next) {
+		if(c->value == val)
+			return c->subhead;
+	}
+	
 	return NULL;
 }
 

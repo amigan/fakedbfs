@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.8 2005/08/30 08:35:17 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.9 2005/08/31 04:08:01 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #include <query.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.8 2005/08/30 08:35:17 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.9 2005/08/31 04:08:01 dcp1990 Exp $")
 
 int init_stack(f, size)
 	query_t *f;
@@ -176,15 +176,14 @@ query_t* new_query(f, stacksize)
 	n = allocz(sizeof(*n));
 	n->f = f;
 	
-	if((n->enumh = enums_from_db(f)) == NULL) {
-		CERR(die, "new_query: ", NULL);
+	if((n->enumh = f->heads.db_enumh) == NULL) {
+		CERR(die, "No definition in the fdbfs_t structure. Have you called read_specs_from_db()? ", NULL);
 		free(n);
 		return NULL;
 	}
 	
-	if((n->cath = cats_from_db(f, n->enumh)) == NULL) {
-		CERR(die, "new_query: ", NULL);
-		free_enum_head_list(n->enumh);
+	if((n->cath = f->heads.db_cath) == NULL) {
+		CERR(die, "No definition in the fdbfs_t structure. Have you called read_specs_from_db()? ", NULL);
 		free(n);
 		return NULL;
 	}
@@ -240,8 +239,8 @@ void destroy_query(q)
 
 	destroy_stack(q);
 
-	free_cat_head_list(n->cath);
-	free_enum_head_list(n->enumh);
+	free_cat_head_list(q->cath);
+	free_enum_head_list(q->enumh);
 	
 	for(c = q->insthead; c != NULL; c = next) {
 		next = c->next;
@@ -303,13 +302,14 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 	query_t *q;
 {
 	unsigned int colcount = 0, i = 0;
-	struct CatElem *cel;
+	struct CatElem *cel = NULL;
 	int rc, toret;
 	short int special = 0;
 	inst_t *c;
 	char *pname;
-	size_t len;
-	void *val;
+	size_t len = 0;
+	void *val = NULL;
+	const void *tvd = NULL;
 	fields_t *h = NULL, *cf = NULL, *n = NULL, *lastoth = NULL;
 
 	if(q->exec_state == finished)
@@ -359,7 +359,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 			n->fieldname = strdup(sqlite3_column_name(q->cst, i));
 		}
 		if(!q->allcols) {
-			pop3(q, &pname); /* we're supposed to do something with this */
+			pop3(q, (void**)&pname); /* we're supposed to do something with this */
 		}
 		if(special != 3) {
 			if(strcmp(n->fieldname, "file") == 0) {
@@ -386,28 +386,26 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 							n->othtype = 0;
 						break;
 					case oenumsub:
-						n->subhead = cel->subcatel;
+					default:
 						break;
 				}
 				special = 0;
 			}
 		}
-		/* TODO: get names, fmtnames, and "other" status from DB (preferably for all) and use accordingly */
 		switch(sqlite3_column_type(q->cst, i)) {
 			case SQLITE_INTEGER:
 				val = malloc(sizeof(int));
-				*val = sqlite3_column_int(q->cst, i);
+				*(int*)val = sqlite3_column_int(q->cst, i);
 				break;
 			case SQLITE_FLOAT:
 				val = malloc(sizeof(FLOATTYPE));
-				*val = sqlite3_column_double(q->cst, i);
+				*(FLOATTYPE*)val = sqlite3_column_double(q->cst, i);
 				break;
 			case SQLITE_TEXT:
 				val = strdup(sqlite3_column_text(q->cst, i));
 				len = strlen((char*)val);
 				break;
 			case SQLITE_BLOB:
-				void *tvd;
 				len = sqlite3_column_bytes(q->cst, i);
 				tvd = sqlite3_column_blob(q->cst, i);
 				val = malloc(n->len);
@@ -416,6 +414,16 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 			case SQLITE_NULL:
 				val = NULL;
 				break;
+			default:
+				val = NULL;
+				len = 0;
+				break;
+		}
+
+		if(special == 0 && n->type == oenumsub) {
+			/* we better hope that cel is what it should be */
+			if(cel != NULL)
+				n->subhead = get_subhead_by_enval(cel->enumptr->headelem, *(unsigned int*)val);
 		}
 
 		if(special == 3) {
@@ -433,6 +441,13 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 		}
 	}
 
+	if(q->exec_state == finished) {
+		sqlite3_finalize(q->cst);
+	}
+
+	if(toret == Q_NEXT || toret == Q_FINISHED) {
+		push3(q, h);
+	}
 
 	return toret;
 }

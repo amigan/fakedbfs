@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.25 2005/08/30 08:35:17 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.26 2005/08/31 04:08:01 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -94,6 +94,7 @@ typedef struct Field {
 	struct EnumSubElem *subhead;
 	size_t len;
 	size_t othlen;
+	struct Field *subparent; /* if type == oenumsub, this points to another field_t that is where the subhead will be determined. */
 	struct Field *next;
 } fields_t;
 typedef struct tok {
@@ -249,6 +250,9 @@ answer_t* askfunc_std AFFPROTO;
 fields_t* find_field_by_name(fields_t *h, char *name);
 int complete_fields_from_db(fdbfs_t *f, char *cat, fields_t **h);
 int read_specs_from_db(fdbfs_t *f);
+struct EnumSubElem* get_subhead_by_enval(struct EnumElem *h, unsigned int val);
+fields_t* find_field_by_ehead(fields_t *h, struct EnumHead *e);
+fields_t* find_field_by_ename(fields_t *h, char *e);
 
 /* plugin shiite */
 struct Plugin* probe_plugin(fdbfs_t *f, char *dirpath, char *filename, struct Plugin *last);

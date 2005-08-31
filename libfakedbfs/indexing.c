@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.21 2005/08/29 07:43:58 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.22 2005/08/31 04:08:01 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.21 2005/08/29 07:43:58 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.22 2005/08/31 04:08:01 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -271,7 +271,7 @@ checkagain:
 			break;
 		case oenum:
 		case oenumsub:
-			/* TODO: make this, well, better... */
+			/* TODO: make this, well, better... (provisions to list enum choices, etc) */
 			buf->integer = atoi(bf);
 			break;
 		case string:
@@ -379,7 +379,11 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 						break;
 				}
 
-				cans = f->askfieldfunc(&cta, &def, c->fmtname, c->fieldname, filen, def.dt, c->ehead, c->subhead);
+
+				cans = f->askfieldfunc(&cta, &def, c->fmtname, c->fieldname, filen, def.dt, c->ehead, c->subhead /* XXX: this is useless; the app must
+																    look up the value of the associated enum.
+																    we might provide functions to do this in the
+																    future */);
 				if(cans == (answer_t*)-1) {
 					ERR(die, "askfunc said error here (dialoguemode).", NULL);
 					/* clean up */
@@ -387,6 +391,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 				}
 			}
 		}
+
 		cans = f->askfieldfunc(NULL, NULL, NULL, (char*)0x1 /* before real */, NULL, 0x0, NULL, NULL);
 		if(cans == (answer_t*)-1) {
 				ERR(die, "askfunc said error here (dialoguemode - before real).", NULL);
@@ -404,7 +409,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 		for(i = 0; i < (hasoth ? 2 : 1); i++) {
 			memset(&def, 0, sizeof(def));
 			def.dt = ctype;
-			switch(c->type) {
+			switch((hasoth ? c->othtype : c->type)) {
 				case number:
 				case boolean:
 				case oenum:
@@ -424,6 +429,10 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 					break;
 			}
 
+			if(c->type == oenumsub) {
+				c->subhead = get_subhead_by_enval(c->subparent->ehead->headelem, *(unsigned int*)c->subparent->val);
+			}
+
 			cans = f->askfieldfunc(&cta, &def, c->fmtname, c->fieldname, filen, def.dt, c->ehead, c->subhead);
 			if(cans == (answer_t*)-1) {
 				ERR(die, "askfunc said error here.", NULL);
@@ -435,10 +444,10 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 				/* changed... */
 				free(cval);
 				switch(ctype) {
-					case number:
-					case boolean:
 					case oenum:
 					case oenumsub:
+					case number:
+					case boolean:
 						if(otherm) {
 							c->otherval = malloc(sizeof(int));
 							*(int*)c->otherval = cta.integer;
@@ -479,6 +488,36 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 	}
 
 	return defs;
+}
+
+
+fields_t* find_field_by_ehead(h, e)
+	fields_t *h;
+	struct EnumHead *e;
+{
+	fields_t *c;
+
+	for(c = h; c != NULL; c = c->next) {
+		if(c->ehead == e)
+			return c;
+	}
+
+	return NULL;
+}
+
+fields_t* find_field_by_ename(h, e)
+	fields_t *h;
+	char *e;
+{
+	fields_t *c;
+
+	for(c = h; c != NULL; c = c->next) {
+		if(h->ehead != NULL)
+			if(strcmp(e, h->ehead->name) == 0)
+				return c;
+	}
+
+	return NULL;
 }
 
 int complete_fields_from_db(f, cat, h)
@@ -534,9 +573,10 @@ int complete_fields_from_db(f, cat, h)
 				*(int*)new->val = 0;
 				new->othlen = 1;
 			}
-			if(cc->type == oenumsub) {
+			if(new->type == oenumsub) {
 				new->ehead = cc->subcatel->enumptr;
-				new->subhead = cc->subcatel->enumptr->headelem->subhead;
+				new->subparent = find_field_by_ehead(*h, new->ehead);
+				/* new->subhead = cc->subcatel->enumptr->headelem->subhead; */
 			}
 			if(last != NULL) {
 				last->next = new;
