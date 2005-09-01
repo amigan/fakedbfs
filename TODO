@@ -1,8 +1,9 @@
-$Amigan: fakedbfs/TODO,v 1.3 2005/08/29 08:00:09 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.4 2005/09/01 08:11:07 dcp1990 Exp $
 
 TODO as of 1.0:
 *Mucho memory leaks. Some kind soul should run valgrind and fix them. I don't have the time; I will when
 	I port to amiga. (dmalloc may help in this respect; must test.)
+*Add support for ogg to the music plugin
 *Write more plugins
 *Write more specfiles
 *Document every API function
