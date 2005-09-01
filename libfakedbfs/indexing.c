@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.25 2005/08/31 04:41:49 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.26 2005/09/01 08:05:57 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -41,13 +41,14 @@
 #	include <sys/types.h>
 #	include <sys/stat.h>
 #	include <dirent.h>
+#	include <fts.h>
 #endif
 /* other libraries */
 #include <sqlite3.h>
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.25 2005/08/31 04:41:49 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.26 2005/09/01 08:05:57 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -658,7 +659,7 @@ int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 	fields_t *c = NULL, *h = NULL;
 
 	if(rc != 2) {
-		rc = file_has_changed(f, cat, filename);
+		rc = file_has_changed(f, cat, filename, NULL);
 		if(rc == 0) {
 			if(!forceupdate)
 				return 1;
@@ -709,10 +710,11 @@ int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 	return 1;
 }
 
-int file_has_changed(f, cat, filename)
+int file_has_changed(f, cat, filename, statstruct)
 	fdbfs_t *f;
 	char *cat;
 	char *filename;
+	void *statstruct; /* we cast later; this is for portability */
 {
 #if defined(UNIX)
 	struct stat s;
@@ -729,10 +731,14 @@ int file_has_changed(f, cat, filename)
 		return 1;
 	}
 #if defined(UNIX)
-	rc = stat(filename, &s);
-	if(rc == -1) {
-		ERR(die, "stat failed: %s", strerror(errno));
-		return -1;
+	if(statstruct == NULL) {
+		rc = stat(filename, &s);
+		if(rc == -1) {
+			ERR(die, "stat failed: %s", strerror(errno));
+			return -1;
+		}
+	} else {
+		memcpy(&s, statstruct, sizeof(s));
 	}
 
 	if(S_ISDIR(s.st_mode)) {
@@ -750,24 +756,106 @@ int file_has_changed(f, cat, filename)
 	return 0;
 }
 
+#if defined(UNIX)
+/* all FTS stuff was heavily inspired by FreeBSD's /usr/src/bin/ls/ls.c */
+int cindexer_dir(f, cat, batch, useplugs, list, options, re) /* this has no prototype in fakedbfs.h; it's less ugly this way. */
+		fdbfs_t *f;
+		char *cat;
+		int batch;
+		int useplugs;
+		FTSENT *list;
+		int options;
+		regex_t *re;
+{
+	int rc;
+	FTSENT *c;
+	char *fpth;
+	size_t fplen;
+	char *emsg;
+
+	for(c = list; c; c = c->fts_link) {
+		if(c->fts_info == FTS_ERR || c->fts_info == FTS_NS) {
+			debug_info(f, error, "error %s: %s", c->fts_name, strerror(c->fts_errno));
+			c->fts_number = 1;
+			continue;
+		}
+		if(c->fts_info == FTS_D) /* no directories */
+			continue;
+		if(re != NULL) {
+			rc = regexec(re, c->fts_name, 0, NULL, 0);
+			if(rc == REG_NOMATCH) {
+				continue;
+			}
+			else if(rc != 0) {
+				emsg = malloc(128);
+				regerror(rc, re, emsg, 127);
+				ERR(die, "index_dir: error executing regex: %s", emsg);
+				free(emsg);
+				return 0;
+			}
+
+			fplen = strlen(c->fts_path) + 1 /* null */ + strlen(c->fts_name);
+			fpth = malloc(fplen * sizeof(char));
+			snprintf(fpth, fplen, "%s%s", c->fts_path, c->fts_name);
+
+			rc = file_has_changed(f, cat, fpth, c->fts_statp);
+			if(rc == 0) {
+				free(fpth);
+				continue;
+			} else if(rc == 1) {
+				index_file(f, fpth, cat, batch, useplugs, 2, NULL);
+				free(fpth);
+			} else if(rc == -2) { /* is a directory */
+				/* this does nothing; all directories are handled by index_dir() */
+				free(fpth);
+			} else if(rc == -1) { /* hack alert */
+				debug_info(f, warning, "error checking if %s changed: %s", fpth, f->error.emsg);
+				estr_free(&f->error);
+				free(fpth);
+			} else
+				free(fpth);
+		} else {
+			fplen = strlen(c->fts_path) + 1 /* null */ + strlen(c->fts_name);
+			fpth = malloc(fplen * sizeof(char));
+			snprintf(fpth, fplen, "%s%s", c->fts_path, c->fts_name);
+
+			rc = file_has_changed(f, cat, fpth, c->fts_statp);
+			if(rc == 0) {
+				free(fpth);
+				continue;
+			} else if(rc == 1) {
+				index_file(f, fpth, cat, batch, useplugs, 2, NULL);
+				free(fpth);
+			} else if(rc == -2) { /* is a directory */
+				free(fpth);
+			} else if(rc == -1) { /* hack alert */
+				debug_info(f, warning, "error checking if %s changed: %s", fpth, f->error.emsg);
+				estr_free(&f->error);
+				free(fpth);
+			}
+		}
+	}
+
+	return 1;
+}
+#endif
+
 	
-int index_dir(f, dir, cat, useplugs, batch, nocase, re, recurselevel)
+int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse)
 	fdbfs_t *f;
-	char *dir;
+	char **dirs;
 	char *cat;
 	int useplugs;
 	int batch;
 	int nocase;
 	char *re;
-	int recurselevel;
+	int recurse;
 {
 #if defined(UNIX)
-	DIR *d;
-	struct dirent *cd;
-	int rc;
+	FTS *fpt;
+	FTSENT *p, *chp;
 	char *emsg;
-	char *fpth;
-	size_t fplen;
+	int rc = 1;
 	regex_t tre;
 
 	if(re != NULL) {
@@ -782,77 +870,51 @@ int index_dir(f, dir, cat, useplugs, batch, nocase, re, recurselevel)
 		}
 	}
 
-	d = opendir(dir);
+	rc = 1;
 
-	if(d == NULL) {
-		ERR(die, "index_dir: cannot open directory '%s'", dir);
+	fpt = fts_open(dirs, FTS_NOCHDIR /* required to be thread safe...if we chdir(2) and another thread needs to do something, we're fucked */, NULL);
+
+	chp = fts_children(fpt, 0);
+	if (chp != NULL)
+		rc = cindexer_dir(f, cat, batch, useplugs, chp, 0, re != NULL ? &tre : NULL);
+
+	if(f == NULL) {
+		ERR(die, "index_dir: cannot open director{y,ies} because of %s", strerror(errno));
 		regfree(&tre);
 		return 0;
 	}
 
-	while((cd = readdir(d)) != NULL) {
-		if(re != NULL) {
-			rc = regexec(&tre, cd->d_name, 0, NULL, 0);
-			if(rc == REG_NOMATCH)
-				continue;
-			else if(rc != 0) {
-				emsg = malloc(128);
-				regerror(rc, &tre, emsg, 127);
-				ERR(die, "index_dir: error executing regex: %s", emsg);
-				free(emsg);
-				regfree(&tre);
-				return 0;
-			}
+	while((p = fts_read(fpt)) != NULL && rc) {
+		switch(p->fts_info) {
+			case FTS_DC:
+				/* cycle... */
+				break;
+			case FTS_DNR:
+			case FTS_ERR:
+				debug_info(f, error, "%s: %s", p->fts_name, strerror(p->fts_errno));
+				break;
+			case FTS_D:
+				/* directory */
+				chp = fts_children(fpt, 0);
+				rc = cindexer_dir(f, cat, batch, useplugs, chp, 0, re != NULL ? &tre : NULL);
 
-			fplen = cd->d_namlen + 1 /* slash */ + strlen(dir) + 1 /* NULL */;
-			fpth = malloc(sizeof(char) * fplen);
-			snprintf(fpth, fplen, "%s/%s", dir, cd->d_name);
+				if(!rc)
+					break;
 
-			rc = file_has_changed(f, cat, fpth);
-			if(rc == 0) {
-				free(fpth);
-				continue;
-			} else if(rc == 1) {
-				index_file(f, fpth, cat, batch, useplugs, 2, NULL);
-				free(fpth);
-			} else if(rc == -2) { /* is a directory */
-				/* TODO: recurse*/
-				free(fpth);
-			} else if(rc == -1) { /* hack alert */
-				debug_info(f, warning, "error checking if %s changed: %s", fpth, f->error.emsg);
-				estr_free(&f->error);
-				free(fpth);
-			} else
-				free(fpth);
-		} else {
-			fplen = cd->d_namlen + 1 /* slash */ + strlen(dir) + 1 /* NULL */;
-			fpth = malloc(sizeof(char) * fplen);
-			snprintf(fpth, fplen, "%s/%s", dir, cd->d_name);
-
-			rc = file_has_changed(f, cat, fpth);
-			if(rc == 0) {
-				free(fpth);
-				continue;
-			} else if(rc == 1) {
-				index_file(f, fpth, cat, batch, useplugs, 2, NULL);
-				free(fpth);
-			} else if(rc == -2) { /* is a directory */
-				/* recurse*/
-				free(fpth);
-			} else if(rc == -1) { /* hack alert */
-				debug_info(f, warning, "error checking if %s changed: %s", fpth, f->error.emsg);
-				estr_free(&f->error);
-				free(fpth);
-			}
+				if(!recurse && chp != NULL)
+					fts_set(fpt, p, FTS_SKIP);
+				break;
+			default:
+				break;
 		}
 	}
 
-	closedir(d);
+	fts_close(fpt);
 	if(re != NULL)
 		regfree(&tre);
 #else
 #	error "Code not written for index_dir under this OS"
 #endif
-	return 1;
+	return rc;
 }
 

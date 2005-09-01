@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.10 2005/08/31 04:47:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.11 2005/09/01 08:05:57 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 
 #include "../fdbfsconfig.h"
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.10 2005/08/31 04:47:37 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.11 2005/09/01 08:05:57 dcp1990 Exp $")
 
 int init_stack(f, size)
 	query_t *f;
@@ -318,7 +318,6 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 		return Q_FINISHED;
 	if(q->exec_state == init && q->catalogue == NULL)
 		return Q_STEP_ON_UNINIT;
-	/* XXX: step the query, fill up the fields, sqlite3_finalize() on finish!!!! */
 
 	rc = sqlite3_step(q->cst);
 	if(rc == SQLITE_ROW)

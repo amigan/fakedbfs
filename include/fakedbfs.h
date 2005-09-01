@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.27 2005/08/31 04:41:16 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.28 2005/09/01 08:05:57 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -237,13 +237,12 @@ int add_file(fdbfs_t *f, char *file, char *catalogue, fields_t *fields);
 fields_t* free_field(fields_t *e);
 void free_field_list(fields_t *h);
 int get_lastupdate(fdbfs_t *f, char *cat, char *filename);
-int file_has_changed(fdbfs_t *f, char *cat, char *filename);
+int file_has_changed(fdbfs_t *f, char *cat, char *filename, void *statstruct);
 void free_answer_t(answer_t *e);
 fields_t* fill_in_fields(fdbfs_t *f, char *filename);
 fields_t* ask_for_fields(fdbfs_t *f, char *filen, char *cat, fields_t *defs);
 int index_file(fdbfs_t *f, char *filename, char *cat, int batch, int useplugs, int forceupdate, fields_t *fields);
-int index_dir(fdbfs_t *f, char *dir, char *cat, int useplugs, int batch, int nocase, char *re, int recurselevel);
-int file_has_changed(fdbfs_t *f, char *cat, char *filename);
+int index_dir(fdbfs_t *f, char **dirs, char *cat, int useplugs, int batch, int nocase, char *re, int recurse);
 char* get_enum_string_by_value(struct EnumElem *h, unsigned int val, short int fmted);
 char* get_enum_sub_string_by_value(struct EnumSubElem *h, unsigned int val);
 answer_t* askfunc_std AFFPROTO;
@@ -262,7 +261,6 @@ struct Plugin* search_plugs(fdbfs_t *f, struct Plugin *plugins, char *path);
 int init_plugins(fdbfs_t *f);
 struct Plugin* destroy_plugin(struct Plugin *e);
 void destroy_plugin_list(struct Plugin *h);
-int index_dir(fdbfs_t *f, char *dir, char *cat, int useplugs, int batch, int nocase, char *re, int recurselevel);
 void set_plug_path(fdbfs_t *f, char *path);
 size_t number_size(unsigned int n);
 size_t signed_size(int n);

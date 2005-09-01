@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/findex/findex.c,v 1.11 2005/08/29 07:58:17 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.12 2005/09/01 08:05:57 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -46,10 +46,9 @@
 
 #define ARGSPEC "vhrfsd:ice:"
 #define FINDEXVER "0.1"
-#define RECURSELVL 10
 #define MAXPLEN 1023
 
-RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.11 2005/08/29 07:58:17 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.12 2005/09/01 08:05:57 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int recurse = 0;
@@ -98,22 +97,10 @@ int idxus(cf, cat)
 	char *cf;
 	char *cat;
 {
-	int c;
-	c = is_dir(cf);
-	if(c == -1) {
-		fprintf(stderr, "warning: couldn't stat %s: %s\n", cf, strerror(errno));
-	} else if(!c) {
-		/* index the file */
-		if(!index_file(f, cf, cat, (interactive ? 0 : 1), 1, forceit, NULL /* XXX: for now; implement specification on command line */)) {
-			fprintf(stderr, "Error in index_file: %s\n", f->error.emsg);
-			return 0;
-		}
-	} else if(c) {
-		/* index the directory */
-		if(!index_dir(f, cf, cat, 1, (interactive ? 0 : 1), nocase, regex, RECURSELVL)) {
-			fprintf(stderr, "Error in index_dir: %s\n", f->error.emsg);
-			return 0;
-		}
+	char *cps[] = {cf, NULL}; /* hack, oh well */
+	if(!index_dir(f, cps, cat, 1, (interactive ? 0 : 1), nocase, regex, recurse)) {
+		fprintf(stderr, "Error in index_dir: %s\n", f->error.emsg);
+		return 0;
 	}
 
 	return 1;
