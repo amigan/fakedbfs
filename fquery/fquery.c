@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fquery/fquery.c,v 1.3 2005/09/06 07:27:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fquery/fquery.c,v 1.4 2005/09/06 07:30:34 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -48,7 +48,7 @@
 #define FQUERYVER "0.1"
 #define MAXPLEN 1023
 
-RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.3 2005/09/06 07:27:22 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.4 2005/09/06 07:30:34 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
@@ -61,13 +61,13 @@ void version(void)
 		       "Under the BSD license; see the source for more details.\n"
 		       "fakedbfs library v%s ('%s'). Originally built for v%s.\n%s\n"
 		       "Visit http://www.theamigan.net/fakedbfs/ for more info.\n",
-		       FINDEXVER, fakedbfsver, fakedbfsvname, FAKEDBFSVER, fakedbfscopyright);
+		       FQUERYVER, fakedbfsver, fakedbfsvname, FAKEDBFSVER, fakedbfscopyright);
 }
 
 void usage(pn)
 	char *pn;
 {
-	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] query\n"
+	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] query\n",
 			pn, pn);
 }
 
@@ -75,7 +75,7 @@ int main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	int c, i;
+	int c;
 	char *estr, *pname, *cf;
 
 	pname = strdup(argv[0]);
@@ -149,20 +149,19 @@ int main(argc, argv)
 		destroy_fdbfs(f);
 	}
 
-	if(!compile_query(q, cf)) {
+/*	if(!compile_query(q, cf)) {
 		fprintf(stderr, "error compiling query: %s\n", f->error.emsg);
 		estr_free(&f->error);
 		free(dbf);
 		free(cf);
 		destroy_query(q);
 		destroy_fdbfs(f);
-	}
+	}*/
 
 	destroy_query(q);
 	destroy_fdbfs(f);
 	free(dbf);
 	free(cf);
-	if(regex != NULL) free(regex);
 
 	return 0;
 }
