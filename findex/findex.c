@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/findex/findex.c,v 1.12 2005/09/01 08:05:57 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.13 2005/09/06 07:27:22 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -48,7 +48,7 @@
 #define FINDEXVER "0.1"
 #define MAXPLEN 1023
 
-RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.12 2005/09/01 08:05:57 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.13 2005/09/06 07:27:22 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int recurse = 0;
@@ -100,6 +100,7 @@ int idxus(cf, cat)
 	char *cps[] = {cf, NULL}; /* hack, oh well */
 	if(!index_dir(f, cps, cat, 1, (interactive ? 0 : 1), nocase, regex, recurse)) {
 		fprintf(stderr, "Error in index_dir: %s\n", f->error.emsg);
+		estr_free(&f->error);
 		return 0;
 	}
 
@@ -216,8 +217,8 @@ int main(argc, argv)
 
 	if(!read_specs_from_db(f)) {
 		fprintf(stderr, "error reading specs from db: %s\n", f->error.emsg);
+		estr_free(&f->error);
 		free(dbf);
-		free(estr);
 		free(cat);
 		if(regex != NULL) free(regex);
 		destroy_fdbfs(f);
