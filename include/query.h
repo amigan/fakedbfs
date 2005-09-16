@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/query.h,v 1.8 2005/08/31 04:47:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/query.h,v 1.9 2005/09/16 21:06:26 dcp1990 Exp $ */
 #ifndef HAVE_QUERY_H
 #define HAVE_QUERY_H 1
 #ifndef _REGEX_H_
@@ -57,10 +57,13 @@
 #define OP_ENDQ		0x11
 #define OP_SELCN	0x12
 #define OP_REGEXP	0x13
+#define OP_NULL		0x14
 
 #define USED_O1		0x1
 #define USED_O2		0x2
-#define USED_O3		0x3
+#define USED_O3		0x4
+#define US_DYNA		0x8 /* free free(3) o3 if set */
+#define US_FILE		0xF /* mmap or whatever */
 
 #define Q_FINISHED 0x1
 #define Q_NEXT 0x2

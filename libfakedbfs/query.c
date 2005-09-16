@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.11 2005/09/01 08:05:57 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.12 2005/09/16 21:06:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,14 @@
 
 #include "../fdbfsconfig.h"
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.11 2005/09/01 08:05:57 dcp1990 Exp $")
+#ifdef UNIX
+#	include <sys/mman.h>
+#	include <fcntl.h>
+#	include <sys/types.h>
+#	include <sys/stat.h>
+#endif
+
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.12 2005/09/16 21:06:26 dcp1990 Exp $")
 
 int init_stack(f, size)
 	query_t *f;
@@ -146,6 +153,8 @@ int pop3(q, o3)
 		return rc;
 
 	*o3 = c.o3;
+	if(c.used & US_DYNA)
+		rc = US_DYNA; /* free it please */
 	return rc;
 }
 
@@ -230,6 +239,14 @@ void free_inst(e)
 {
 	if(e->opcode == OP_REGEXP)
 		qreg_destroy(e->ops.o3);
+	else if(e->ops.used & US_DYNA)
+		free(e->ops.o3);
+	else if(e->ops.used & US_FILE) {
+#ifdef HAVE_MMAP
+		munmap(e->ops.o3);
+#endif
+	}
+
 	free(e);
 	return;
 }
@@ -523,9 +540,13 @@ int query_init_exec(q)
 					return Q_MISSING_OPERAND;
 				query_len++; /* used bind */
 				break;
+			case OP_NULL:
+				query_len++; /* quest */
+				break;
 			case OP_VOID:
 				if(!(c->ops.used & USED_O2))
 					return Q_MISSING_OPERAND;
+				/* FALLTHROUGH */
 			case OP_FLOAT:
 				if(!(c->ops.used & USED_O3) || c->ops.o3 == NULL)
 					return Q_INVALID_O3;
@@ -652,6 +673,7 @@ int query_init_exec(q)
 			case OP_FLOAT:
 			case OP_STRING:
 			case OP_VOID:
+			case OP_NULL:
 				if(saw_operan) {
 					ec = Q_DOUBLE_OPERAND;
 					break;
@@ -693,6 +715,9 @@ int query_init_exec(q)
 			case OP_VOID:
 				ec = sqlite3_bind_blob(q->cst, indcounter++, c->ops.o3, c->ops.o2, SQLITE_STATIC);
 				break;
+			case OP_NULL:
+				ec = sqlite3_bind_null(q->cst, indcounter++);
+				break;
 		}
 		if(ec != SQLITE_OK)
 			break; /* so c stays the same */
@@ -705,3 +730,52 @@ int query_init_exec(q)
 	
 	return query_step(q);
 }
+
+void* read_file(f, fn)
+	fdbfs_t *f;
+	char *fn;
+{
+	void *tbf = NULL;
+#ifdef HAVE_MMAP
+	int fd;
+	int rc;
+	struct stat sst;
+
+	fd = open(fn, O_RDONLY);
+	if(fd < 0) {
+		ERR(die, "Error opening %s: %s", fn, strerror(errno));
+		return NULL;
+	}
+
+	if((rc = fstat(fd, &sst)) == -1) {
+		ERR(die, "Couldn't stat fd: %s", strerror(errno));
+		close(fd);
+		return NULL;
+	}
+
+	if((tbf = mmap(NULL, sst.st_size, PROT_READ, 0, fd, 0)) == MAP_FAILED) {
+		ERR(die, "Couldn't mmap: %s", strerror(errno));
+		close(fd);
+		return NULL;
+	}
+
+	close(fd);
+
+#else
+	ERR(die, "Error opening %s: feature not implemented on this OS", fn);
+	return NULL;
+#endif
+	return tbf;
+}
+
+int query_parse(q, qstr)
+	query_t *q;
+	char *qstr;
+{
+	char *cp = qstr, *op;
+	char **cptr = &cp;
+	int token;
+	Toke to;
+	
+	while((op = qtok(cptr, &to, &token)) != NULL) {
+		QParse();

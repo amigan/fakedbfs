@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.1 2005/09/06 07:44:30 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.2 2005/09/16 21:06:26 dcp1990 Exp $ */
 %name {QParse}
 %include {
 #include <sqlite3.h>
@@ -35,7 +35,7 @@
 #include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.1 2005/09/06 07:44:30 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.2 2005/09/16 21:06:26 dcp1990 Exp $")
 extern char *yytext;
 }
 %token_type {Toke}
@@ -46,7 +46,122 @@ extern char *yytext;
 	return;
 }
 
-query ::= command.
-command ::= . {
-		q->f = NULL;
+statem ::= command.
+command ::= query.
+
+query ::= qry CATALOGUE catname COND cexp EOQUERY. {
+		qi(q, OP_ENDQ, 0x0, 0x0, NULL, 0);
+	}
+
+qry ::= bqry.
+qry ::= sqry COLS OPAR coldefs CPAR. 
+
+coldefs ::= coldefs COMMA coldef.
+coldefs ::= coldef.
+
+coldef ::= UQSTRING(A). {
+		qi(q, OP_SELCN, 0x0, 0x0, A.str, USED_O3 | US_DYNA);
+	}
+sqry ::= QUERY. {
+		qi(q, OP_BEGINQ, 0x1, 0x0, NULL, USED_01);
+	}
+bqry ::= QUERY. {
+		qi(q, OP_BEGINQ, 0x0, 0x0, NULL, USED_O1);
+	}
+
+catname ::= UQSTRING(A). {
+		qi(q, OP_SETCAT, 0x0, 0x0, A.str, USED_O3 | US_DYNA);
+	}
+
+cexp ::= en.
+
+en ::= rlgr.
+en ::= en boolop.
+en ::= oparen en cparen.
+en ::= .
+
+
+rlgr ::= lval compop rval.
+rlgr ::= regex.
+
+lval ::= colname.
+boolop ::= andop.
+boolop ::= orop.
+boolop ::= notop.
+compop ::= equop.
+rval ::= null.
+rval ::= integer.
+rval ::= eqstring.
+rval ::= voidfile.
+rval ::= floatp.
+
+oparen ::= OPAR. {
+		qi(q, OP_BEGIN_GRP, 0x0, 0x0, NULL, 0x0);
+	}
+cparen ::= CPAR. {
+		qi(q, OP_CLOSE_GRP, 0x0, 0x0, NULL, 0x0);
+	}
+
+colname ::= UQSTRING(A). {
+		qi(q, OP_COLNAME, 0x0, 0x0, A.str, USED_O3 | US_DYNA);
+	}
+
+andop ::= B_AND. {
+		qi(q, OPL_AND, 0x0, 0x0, NULL, 0x0);
+	}
+orop ::= B_OR. {
+		qi(q, OPL_OR, 0x0, 0x0, NULL, 0x0);
+	}
+notop ::= B_NOT. {
+		qi(q, OPL_NOT, 0x0, 0x0, NULL, 0x0);
+	}
+equop ::= EQUALS. {
+		qi(q, OPL_EQUAL, 0x0, 0x0, NULL, 0x0);
+	}
+null ::= NIL. {
+		qi(q, OP_NULL, 0x0, 0x0, NULL, 0x0);
+	}
+integer ::= SIGNEDINT(A). {
+		qi(q, OP_INT, A.num, 0x0, NULL, USED_O1);
+	}
+integer ::= USINT(A). {
+		qi(q, OP_UINT, 0x0, A.unum, NULL, USED_O2);
+	}
+eqstring ::= STRING(A). {
+		qi(q, OP_STRING, 0x0, 0x0, A.str, USED_O3 | US_DYNA);
+	}
+voidfile ::= VFILE OPAR STRING(A) CPAR. {
+		void *tfp;
+		tfp = read_file(q->f, A.str);
+		free(A.str);
+		if(tfp == NULL) {
+			fcerr(q->f, die, "Error reading file. ");
+			return;
+		}
+		qi(q, OP_VOID, 0x0, 0x0, tfp, USED_O3 | US_FILE);
+	}
+floatp ::= FLOATPN(A). {
+		qi(q, OP_FLOAT, 0x0, 0x0, A.flt, USED_O3 | US_DYNA);
+	}
+
+regex ::= UQSTRING(A) REGEQU REGSTART REGEXP(B) REGEND flags(C). {
+		qreg_t *qr;
+		char *ems;
+
+		if((qr = qreg_compile(B.str, A.str, C.num, &ems)) == NULL) {
+			ferr(q->f, die, "Error compiling regex %s on col %s: %s", B.str, A.str, ems);
+			free(ems);
+			free(B.str);
+			free(A.str);
+			return;
+		}
+
+		qi(q, OP_REGEXP, 0x0, 0x0, qr, USED_O3);
+	}
+
+flags(A) ::= CINSENS. {
+		A.num = 1;
+	}
+flags(A) ::= . {
+		A.num = 0;
 	}

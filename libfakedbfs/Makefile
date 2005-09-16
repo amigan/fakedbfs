@@ -1,4 +1,4 @@
-# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.10 2005/09/06 07:44:30 dcp1990 Exp $
+# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.11 2005/09/16 21:06:26 dcp1990 Exp $
 CC=cc
 LDFLAGS=-L/usr/local/lib
 CPPFLAGS=-I../include -I/usr/local/include -DYY_NO_UNPUT $(PDEBUG) -DUNIX
@@ -29,4 +29,4 @@ lint:
 install: all
 	install libfakedbfs.so /usr/local/lib
 clean:
-	rm -f *.core *.o *~ .depend dbspec.c dbspec.h dbspec.out libfakedbfs.so lex.yy.c libfakedbfs.a
+	rm -f *.core *.o *~ .depend dbspec.c dbspec.h dbspec.out libfakedbfs.so lex.yy.c libfakedbfs.a queryparser.c queryparser.h queryparser.out

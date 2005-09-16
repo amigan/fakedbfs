@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.28 2005/09/01 08:05:57 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.29 2005/09/16 21:06:26 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -101,6 +101,7 @@ typedef struct tok {
 	char *str;
 	int num;
 	unsigned int unum;
+	FLOATTYPE *flt;
 	struct EnumElem *enumelem;
 	struct CatElem *catelem;
 	struct EnumSubElem *subelem;
@@ -285,6 +286,7 @@ int query_init_exec(query_t *q);
 qreg_t* qreg_compile(char *regex, char *colname, int case_insens, char **errmsg);
 void qreg_destroy(qreg_t *q);
 void free_inst(inst_t *e);
+void* read_file(fdbfs_t *f, char *fn);
 
 
 /* application interfaces */
