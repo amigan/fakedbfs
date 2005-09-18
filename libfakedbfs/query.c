@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.12 2005/09/16 21:06:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.13 2005/09/18 04:29:47 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -54,7 +54,16 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.12 2005/09/16 21:06:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.13 2005/09/18 04:29:47 dcp1990 Exp $")
+
+
+#define ParseTOKENTYPE Toke
+#define ParseARG_PDECL ,query_t *q
+
+void QParse(void *yyp, int yymajor, ParseTOKENTYPE yyminor ParseARG_PDECL);
+void QParseTrace(FILE *TraceFILE, char *zTracePrompt);
+void *QParseAlloc(void *(*mallocProc)(size_t));
+void QParseFree(void *p, void (*freeProc)(void*));
 
 int init_stack(f, size)
 	query_t *f;
@@ -772,10 +781,23 @@ int query_parse(q, qstr)
 	query_t *q;
 	char *qstr;
 {
-	char *cp = qstr, *op;
+	char *cp = qstr;
 	char **cptr = &cp;
+	void *pa;
 	int token;
 	Toke to;
-	
-	while((op = qtok(cptr, &to, &token)) != NULL) {
-		QParse();
+
+	pa = QParseAlloc(malloc);
+
+	while(qtok(cptr, &token, &to)) {
+		QParse(pa, token, to, q);
+		if(q->f->error.emsg != NULL) {
+			QParseFree(pa, free);
+			cferr(q->f, die, "Query parse of '%s'. ", qstr);
+			return 0;
+		}
+	}
+	QParse(pa, 0, to, q);
+	QParseFree(pa, free);
+	return 1;
+}
