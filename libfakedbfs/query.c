@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.16 2005/09/19 22:23:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.17 2005/09/19 22:31:40 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.16 2005/09/19 22:23:37 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.17 2005/09/19 22:31:40 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -223,7 +223,7 @@ qreg_t* qreg_compile(regex, colname, case_insens, errmsg)
 	qreg_t *new;
 
 	new = allocz(sizeof(*new));
-	new->colname = fstrdup(colname);
+	new->colname = strdup(colname);
 	if((rc = regcomp(&(new->re), regex, REG_EXTENDED | REG_NOSUB | (case_insens ? REG_ICASE : 0))) != 0) {
 		*errmsg = malloc(128);
 		regerror(rc, &(new->re), *errmsg, 127);
@@ -383,7 +383,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 			}
 		} else {
 			n = malloc(sizeof(*n));
-			n->fieldname = fstrdup(sqlite3_column_name(q->cst, i));
+			n->fieldname = strdup(sqlite3_column_name(q->cst, i));
 		}
 		if(!q->allcols) {
 			pop3(q, (void**)&pname); /* we're supposed to do something with this */
@@ -401,7 +401,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 					toret = Q_NO_SUCH_CELEM;
 					break;
 				}
-				n->fmtname = fstrdup(cel->alias);
+				n->fmtname = strdup(cel->alias);
 				n->type = cel->type;
 				switch(n->type) {
 					case oenum:
@@ -429,7 +429,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 				*(FLOATTYPE*)val = sqlite3_column_double(q->cst, i);
 				break;
 			case SQLITE_TEXT:
-				val = fstrdup(sqlite3_column_text(q->cst, i));
+				val = strdup(sqlite3_column_text(q->cst, i));
 				len = strlen((char*)val);
 				break;
 			case SQLITE_BLOB:
@@ -518,7 +518,7 @@ int query_init_exec(q)
 			case OP_SETCAT:
 				if(!(c->ops.used & USED_O3) || c->ops.o3 == NULL)
 					return Q_INVALID_O3;
-				q->catalogue = fstrdup((char*)c->ops.o3);
+				q->catalogue = strdup((char*)c->ops.o3);
 				q->ourcat = find_cathead_by_name(q->cath, q->catalogue);
 				if(q->ourcat == NULL)
 					return Q_NO_SUCH_CAT;

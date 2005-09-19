@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/findex/findex.c,v 1.14 2005/09/19 22:23:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.15 2005/09/19 22:31:40 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -48,7 +48,7 @@
 #define FINDEXVER "0.1"
 #define MAXPLEN 1023
 
-RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.14 2005/09/19 22:23:37 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.15 2005/09/19 22:31:40 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int recurse = 0;
@@ -117,7 +117,7 @@ int main(argc, argv)
 	char *estr, *pname, *cat, *cf;
 	char *tnl;
 
-	pname = fstrdup(argv[0]);
+	pname = strdup(argv[0]);
 
 	while((c = getopt(argc, argv, ARGSPEC)) != -1)
 		switch(c) {
@@ -159,7 +159,7 @@ int main(argc, argv)
 				recurse = 1;
 				break;
 			case 'e':
-				regex = fstrdup(optarg);
+				regex = strdup(optarg);
 				break;
 			case 'i':
 				if(readstd) {
@@ -191,7 +191,7 @@ int main(argc, argv)
 		return -1;
 	}
 
-	cat = fstrdup(argv[0]);
+	cat = strdup(argv[0]);
 
 	argc--;
 	argv++;
@@ -200,7 +200,7 @@ int main(argc, argv)
 
 	if(!dbfu) {
 		if(getenv(FDBFSDBENV) != NULL)
-			dbf = fstrdup(getenv(FDBFSDBENV));
+			dbf = strdup(getenv(FDBFSDBENV));
 		else
 			asprintf(&dbf, "%s/.fakedbfsdb", getenv("HOME"));
 	}
@@ -227,7 +227,7 @@ int main(argc, argv)
 
 	
 	for(i = 0; i < argc; i++) {
-		cf = fstrdup(argv[i]);
+		cf = strdup(argv[i]);
 		if(!idxus(cf, cat)) {
 			free(cf);
 			break;
