@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/query.h,v 1.9 2005/09/16 21:06:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/query.h,v 1.10 2005/09/19 00:21:11 dcp1990 Exp $ */
 #ifndef HAVE_QUERY_H
 #define HAVE_QUERY_H 1
 #ifndef _REGEX_H_
@@ -114,6 +114,8 @@ typedef struct {
 	struct FDBFS *f;
 	inst_t *insthead;
 	inst_t *lastinst;
+	short int error;
+	char *yytext;
 	/* state info */
 	short int allcols;
 	char *catalogue;

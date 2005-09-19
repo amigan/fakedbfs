@@ -27,22 +27,23 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.2 2005/09/16 21:06:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.3 2005/09/19 00:21:11 dcp1990 Exp $ */
 %name {QParse}
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
-#include <fakedbfs.h>
 #include <string.h>
 #include <unistd.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.2 2005/09/16 21:06:26 dcp1990 Exp $")
-extern char *yytext;
+#include <fakedbfs.h>
+RCSID("$Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.3 2005/09/19 00:21:11 dcp1990 Exp $")
 }
 %token_type {Toke}
+%nonassoc ASSIGN BW_OR BW_AND ILLEGAL SPACE.
 %extra_argument {query_t *q}
 %syntax_error {
 	fdbfs_t *in = (fdbfs_t *)q->f;
-	ferr(in, die, "Query Syntax error near %s", yytext);
+	ferr(in, die, "Query Syntax error near '%s'", q->yytext);
+	q->error++;
 	return;
 }
 
@@ -63,7 +64,7 @@ coldef ::= UQSTRING(A). {
 		qi(q, OP_SELCN, 0x0, 0x0, A.str, USED_O3 | US_DYNA);
 	}
 sqry ::= QUERY. {
-		qi(q, OP_BEGINQ, 0x1, 0x0, NULL, USED_01);
+		qi(q, OP_BEGINQ, 0x1, 0x0, NULL, USED_O1);
 	}
 bqry ::= QUERY. {
 		qi(q, OP_BEGINQ, 0x0, 0x0, NULL, USED_O1);
@@ -135,12 +136,12 @@ voidfile ::= VFILE OPAR STRING(A) CPAR. {
 		tfp = read_file(q->f, A.str);
 		free(A.str);
 		if(tfp == NULL) {
-			fcerr(q->f, die, "Error reading file. ");
+			cferr(q->f, die, "Error reading file. ");
 			return;
 		}
 		qi(q, OP_VOID, 0x0, 0x0, tfp, USED_O3 | US_FILE);
 	}
-floatp ::= FLOATPN(A). {
+floatp ::= FLOAT(A). {
 		qi(q, OP_FLOAT, 0x0, 0x0, A.flt, USED_O3 | US_DYNA);
 	}
 

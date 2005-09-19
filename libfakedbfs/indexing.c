@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.27 2005/09/16 21:06:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.28 2005/09/19 00:21:11 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.27 2005/09/16 21:06:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.28 2005/09/19 00:21:11 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -324,7 +324,7 @@ checkagain:
 			buf->string = strdup(bf);
 			break;
 		case fp:
-			sscanf(bf, "%f", (float*)&buf->fp);
+			buf->fp = strtod(bf, NULL);
 			break;
 		case image:
 		case binary:

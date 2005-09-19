@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.23 2005/08/31 04:08:01 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.24 2005/09/19 00:21:11 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,13 +39,13 @@
 #include "dbspec.h"
 /* us */
 #include <dbspecdata.h>
-#include <fakedbfs.h>
 #include <lexdefines.h>
+#include <fakedbfs.h>
 /* dbspec stuff */
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.23 2005/08/31 04:08:01 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.24 2005/09/19 00:21:11 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -699,6 +699,8 @@ struct CatElem* catelems_from_dbtab(f, table, enumhead)
 		cenumname = (char*)sqlite3_column_text(cst, 4);
 		if(cenumname != NULL)
 			cenumname = strdup(cenumname);
+		else
+			cenumname = strdup("");
 		n = allocz(sizeof(*n));
 		n->name = ccname;
 		n->alias = ccfmt;

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.29 2005/09/16 21:06:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.30 2005/09/19 00:21:11 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -36,6 +36,9 @@
 #endif
 #ifndef HAVE_QUERY_H
 #include <query.h>
+#endif
+#ifdef DMALLOC
+#include "dmalloc.h"
 #endif
 #define ERR(act, fmt, ...) ferr(f, act, fmt, __VA_ARGS__)
 #define CERR(act, fmt, ...) cferr(f, act, fmt, __VA_ARGS__)
@@ -101,7 +104,7 @@ typedef struct tok {
 	char *str;
 	int num;
 	unsigned int unum;
-	FLOATTYPE *flt;
+	FLOATTYPE *flt; /* hack because even though it could be passed by value, we don't have a FLOATTYPE operand (O4) in the VM */
 	struct EnumElem *enumelem;
 	struct CatElem *catelem;
 	struct EnumSubElem *subelem;
@@ -287,11 +290,14 @@ qreg_t* qreg_compile(char *regex, char *colname, int case_insens, char **errmsg)
 void qreg_destroy(qreg_t *q);
 void free_inst(inst_t *e);
 void* read_file(fdbfs_t *f, char *fn);
-
+size_t toktl(char *cp, int *tval);
+int extract_token_data(char *cp, int t, size_t len, Toke *toke);
+int qtok(char **cp, int *tval, Toke *toke, char *ctok /* MUST be a buffer at least 512b long */);
 
 /* application interfaces */
 int parse_definition(fdbfs_t *f, char *filename);
 int start_db(fdbfs_t *f);
 fdbfs_t *new_fdbfs(char *dbfile, char **error, void (*debugf)(char*, enum ErrorAction), int useplugins);
 int destroy_fdbfs(fdbfs_t *f);
+int query_parse(query_t *q, char *qstr);
 void estr_free(error_t *e);

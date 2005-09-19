@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fquery/fquery.c,v 1.4 2005/09/06 07:30:34 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fquery/fquery.c,v 1.5 2005/09/19 00:21:11 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -35,8 +35,8 @@
 #include <string.h>
 #include <getopt.h>
 #include <errno.h>
+#include <signal.h>
 
-#include <fakedbfs.h>
 #include <fakedbfsapps.h>
 
 #ifdef UNIX
@@ -48,7 +48,9 @@
 #define FQUERYVER "0.1"
 #define MAXPLEN 1023
 
-RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.4 2005/09/06 07:30:34 dcp1990 Exp $")
+#include <fakedbfs.h>
+
+RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.5 2005/09/19 00:21:11 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
@@ -70,6 +72,7 @@ void usage(pn)
 	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] query\n",
 			pn, pn);
 }
+
 
 int main(argc, argv)
 	int argc;
@@ -147,16 +150,18 @@ int main(argc, argv)
 		free(dbf);
 		free(cf);
 		destroy_fdbfs(f);
+		return 1;
 	}
 
-/*	if(!compile_query(q, cf)) {
+	if(!query_parse(q, cf)) {
 		fprintf(stderr, "error compiling query: %s\n", f->error.emsg);
 		estr_free(&f->error);
 		free(dbf);
 		free(cf);
 		destroy_query(q);
 		destroy_fdbfs(f);
-	}*/
+		return 1;
+	}
 
 	destroy_query(q);
 	destroy_fdbfs(f);

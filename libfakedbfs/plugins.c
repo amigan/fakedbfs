@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.4 2005/08/29 07:48:02 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.5 2005/09/19 00:21:11 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdio.h>
@@ -44,10 +44,10 @@
 /* other libraries */
 #include <sqlite3.h>
 /* us */
-#include <fakedbfs.h>
 #include "../fdbfsconfig.h"
+#include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.4 2005/08/29 07:48:02 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.5 2005/09/19 00:21:11 dcp1990 Exp $")
 
 #define LIBERR(sym) { \
 		debug_info(f, error, "probe_plugin: symbol referece %s failed in %s: %s", sym, fpth, dlerror()); \

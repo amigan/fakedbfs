@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.1 2005/09/16 21:06:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.2 2005/09/19 00:21:11 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -37,16 +37,17 @@
 #include <regex.h>
 #include <stdio.h>
 #include <float.h>
+#include <ctype.h>
 
 /* other libraries */
 #include <sqlite3.h>
 /* us */
 #include <query.h>
-#include <fakedbfs.h>
 
 #include "../fdbfsconfig.h"
 
 #include "queryparser.h"
+#include <fakedbfs.h>
 
 
 /* from SQLite... */
@@ -79,129 +80,232 @@ static const char isIdChar[] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,  /* 7x */
 };
 
+#define IdChar(C)  (((c=C)&0x80)!=0 || (c>0x1f && isIdChar[c-0x20]))
 
-short int isvalchar(c)
-	char c;
+
+static int uqstrtok(cp, len)
+	char *cp;
+	size_t len;
 {
-	switch(c)a{
-		case '-':
-		case '_':
-			return 1;
-		default:
-			return 0;
+	if(strncasecmp(cp, "NULL", len) == 0) {
+		return NIL;
+	} else if(strncasecmp(cp, "QUERY", len) == 0) {
+		return QUERY;
+	} else if(strncasecmp(cp, "CAT", len) == 0) {
+		return CATALOGUE;
+	} else if(strncasecmp(cp, "WHERE", len) == 0) {
+		return COND;
+	} else if(strncmp(cp, "vfile", len) == 0) {
+		return VFILE;
+	} else {
+		return UQSTRING;
 	}
-
-	return 0;
 }
 
-
-size_t qtok(cp, tok, tval)
+size_t toktl(cp, tval)
 	char *cp;
-	Toke *tok;
 	int *tval;
 {
-	char *last = *cp;
-	char *find;
-	int kg = 1;
+	size_t l = 1;
+	char tdel;
+	int i;
+	char c;
+	char nc = *(*cp == '\0' ? cp : cp + 1);
 	
 	*tval = 0;
 
 	switch(*cp) {
+		case ' ':
+		case '\t':
+		case '\n':
+		case '\r':
+			for(i = 1; isspace(*(cp + i)); i++) ;
+			*tval = SPACE;
+			l += i - 1;
+			break;
 		case '"':
-			while(1) {
-				if((find = strchr(*:scp, '"')) != NULL) {
-					if(*(find - 1) != '\\')
+		case '\'':
+			tdel = *cp;
+			for(i = 1; (c = *(cp + i)) != '\0'; i++) {
+				if(c == tdel) {
+					if(cp[i + 1] == tdel) {
+						i++;
+					} else
 						break;
-				} else {
-					*tval = -1;
-					return NULL;
 				}
 			}
-			*find = '\0';
+
+			if(c)
+				i++;
+
 			*tval = STRING;
-			tok->str = strdup(*cp);
-			*find = '"';
-			*cp = find;
+
+			l += i - 1;
 			break;
 		case '(':
-			(*cp)++;
 			*tval = OPAR;
 			break;
 		case ')':
-			(*cp)++;
 			*tval = CPAR;
 			break;
 		case '=':
-			if(*(*cp + 1) == '=') {
-				*cp += 2;
+			if(nc == '=') {
 				*tval = EQUALS;
+				l++;
 				break;
-			} else if(*(*cp + 1) == '~') {
-				*cp += 2;
+			} else if(nc == '~') {
 				*tval = REGEQU;
+				l++;
 				break;
 			} else {
-				*tval = -1;
-				return NULL;
+				*tval = ASSIGN;
 			}
 		case '!':
-			(*cp)++;
 			*tval = B_NOT;
 			break;
 		case '|':
-			if(*(*cp + 1) == '|') {
-				*cp += 2;
+			if(nc == '|') {
 				*tval = B_OR;
-				break;
+				l++;
 			} else {
-				*tval = -1;
-				return NULL;
+				*tval = BW_OR;
 			}
+			break;
 		case '&':
-			if(*(*cp + 1) == '&') {
-				*cp += 2;
+			if(nc == '&') {
 				*tval = B_AND;
+				l++;
 				break;
 			} else {
-				*tval = -1;
-				return NULL;
+				*tval = BW_AND;
 			}
+			break;
 		case '/':
-			(*cp)++;
 			*tval = REGSTART;
 			break;
 		case '\\':
-			(*cp)++;
 			*tval = REGEND;
 			break;
 		case ',':
-			(*cp)++;
 			*tval = COMMA;
 			break;
 		case 'i':
-			if(!isalnum(*(*cp + 1)) && !isvalchar(*(*cp + 1))) {
+			if(!isalnum(nc) && !IdChar(nc)) {
 				*tval = CINSENS;
-				(*cp)++;
 				break;
 			}
+			break;
+		case '\0':
+			*tval = -1;
+			l = 0;
 			break;
 	}
 
 	if(*tval != 0)
-		return last;
+		return l;
+	else if(isdigit(*cp) || (*cp == '-' && isdigit(nc))) {
+		if(isdigit(nc)) {
+			*tval = SIGNEDINT;
+			i = 2;
+		} else {
+			i = 1;
+			*tval = USINT;
+		}
+		for(; isdigit(*(cp + i)); i++) ;
+		if(*(cp + i) == '.' && isdigit(*(cp + i + 1))) {
+			i += 2;
+			while(isdigit(*(cp + i)))
+				i++;
+			*tval = FLOAT;
+		}
 
-	if(strncasecmp(cp, "NULL", 4) == 0) {
-		*cp += 4;
-		*tval = NIL;
-	} else if(strncmp(cp, "vfile", 5) == 0) {
-		*cp += 5;
-		*tval = VFILE;
-	} else if(isdigit(**cp)) {
-		tok->unum = (unsigned int)strtoul(nptr, (char **)NULL, 10);
-		*tval = UINT;
-	} else if(**cp == '-' && isdigit(*(*(cp + 1)))) {
-		tok->num = (int)strtol(nptr, (char **)NULL, 10);
-		*tval = INT;
+		l += i - 1;
+	} else {
+		if(IdChar(*cp)) {
+			for(i = 1; IdChar(*(cp + i)); i++) ;
+			*tval = uqstrtok(cp, i);
+			l += i - 1;
+		}
 	}
 
-	/* make recursive call */
+	if(*tval != 0)
+		return l;
+	else {
+		*tval = ILLEGAL;
+		return 1;
+	}
+
+	/* NOTREACHED */
+}
+
+int extract_token_data(cp, t, len, toke)
+	char *cp;
+	int t;
+	size_t len;
+	Toke *toke;
+{
+	char ocp;
+
+	switch(t) {
+		case STRING:
+			ocp = *(cp + (len - 1));
+			*(cp + (len - 1)) = '\0';
+			toke->str = strdup(cp + 1);
+			*(cp + (len - 1)) = ocp;
+			break;
+		case UQSTRING:
+			ocp = *(cp + len);
+			*(cp + len) = '\0';
+			toke->str = strdup(cp);
+			*(cp + len) = ocp;
+			break;
+		case SIGNEDINT:
+			ocp = *(cp + len);
+			*(cp + len) = '\0';
+			toke->num = (int)strtol(cp, NULL, 10);
+			*(cp + len) = ocp;
+			break;
+		case USINT:
+			ocp = *(cp + len);
+			*(cp + len) = '\0';
+			toke->unum = (unsigned int)strtoul(cp, NULL, 10);
+			*(cp + len) = ocp;
+			break;
+		case FLOAT:
+			ocp = *(cp + len);
+			*(cp + len) = '\0';
+			toke->flt = malloc(sizeof(FLOATTYPE));
+			*toke->flt = (FLOATTYPE)strtof(cp, NULL);
+			*(cp + len) = ocp;
+			break;
+	}
+
+	return 1;
+}
+			
+
+
+
+int qtok(cp, tval, toke, ctok)
+	char **cp;
+	int *tval;
+	Toke *toke;
+	char *ctok; /* at least 512 bytes */
+{
+	int len, rc;
+	char *last = *cp;
+
+	len = toktl(*cp, tval);
+
+	strncpy(ctok, last, (len >= 511 ? 511 : len));
+
+	if(*tval == -1 || *tval == ILLEGAL || *tval == 0)
+		return 0;
+
+	rc = extract_token_data(*cp, *tval, len, toke);
+
+	*cp += len;
+
+
+	return rc;
+}

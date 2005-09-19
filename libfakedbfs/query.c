@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.13 2005/09/18 04:29:47 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.14 2005/09/19 00:21:11 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -43,9 +43,10 @@
 #include <sqlite3.h>
 /* us */
 #include <query.h>
-#include <fakedbfs.h>
 
 #include "../fdbfsconfig.h"
+#include "queryparser.h"
+#include <fakedbfs.h>
 
 #ifdef UNIX
 #	include <sys/mman.h>
@@ -54,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.13 2005/09/18 04:29:47 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.14 2005/09/19 00:21:11 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -267,15 +268,13 @@ void destroy_query(q)
 
 	destroy_stack(q);
 
-	free_cat_head_list(q->cath);
-	free_enum_head_list(q->enumh);
-	
 	for(c = q->insthead; c != NULL; c = next) {
 		next = c->next;
 		free_inst(c);
 	}
 
-	free(q->catalogue);
+	if(q->catalogue != NULL)
+		free(q->catalogue);
 
 	free(q);
 }
@@ -786,17 +785,25 @@ int query_parse(q, qstr)
 	void *pa;
 	int token;
 	Toke to;
+	char ctb[513];
 
 	pa = QParseAlloc(malloc);
 
-	while(qtok(cptr, &token, &to)) {
+	memset(ctb, 0, sizeof(ctb));
+
+	while(qtok(cptr, &token, &to, ctb) != 0) {
+		if(token == SPACE)
+			continue;
+		q->yytext = ctb;
 		QParse(pa, token, to, q);
-		if(q->f->error.emsg != NULL) {
-			QParseFree(pa, free);
+		if(q->f->error.emsg != NULL || q->error) {
 			cferr(q->f, die, "Query parse of '%s'. ", qstr);
+			QParseFree(pa, free);
 			return 0;
 		}
+		memset(ctb, 0, sizeof(ctb));
 	}
+	QParse(pa, EOQUERY, to, q);
 	QParse(pa, 0, to, q);
 	QParseFree(pa, free);
 	return 1;
