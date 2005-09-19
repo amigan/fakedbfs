@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.14 2005/09/19 00:21:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.15 2005/09/19 02:20:30 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.14 2005/09/19 00:21:11 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.15 2005/09/19 02:20:30 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -807,4 +807,48 @@ int query_parse(q, qstr)
 	QParse(pa, 0, to, q);
 	QParseFree(pa, free);
 	return 1;
+}
+
+char* query_error(rc)
+	int rc;
+{
+	switch(rc) {
+		case Q_FINISHED:
+			return "Query finished.";
+		case Q_NEXT:
+			return "More rows available.";
+		case Q_INST_AFTER_END:
+			return "Found instruction(s) after ENDQ opcode.";
+		case Q_UNBALANCED_GROUP:
+			return "Unbalanced grouping in query.";
+		case Q_INVALID_O1:
+			return "Invalid/missing operand (O1).";
+		case Q_INVALID_O2:
+			return "Invalid/missing operand (O2).";
+		case Q_INVALID_O3:
+			return "Invalid/missing operand (O3).";
+		case Q_STEP_ON_UNINIT:
+			return "Query stepped before initialisation.";
+		case Q_MISSING_OPERAND:
+			return "Missing operand.";
+		case Q_CATALOGUE_NOT_SET:
+			return "Catalogue name not set!";
+		case Q_OPERATION_WITHOUT_OPERANDS:
+			return "Math operation without operands.";
+		case Q_DOUBLE_OPERAND:
+			return "Math operation with double operands.";
+		case Q_FDBFS_ERROR:
+			return "FDBFS internal error. See f->error.emsg.";
+		case Q_NO_COLUMNS:
+			return "User-defined columns flag in BEGINQ set, but none defined!";
+		case Q_NO_SUCH_CAT:
+			return "No such catalogue.";
+		case Q_NO_SUCH_CELEM:
+			return "No such element/field in catalogue.";
+		case Q_UNKNOWNSTATE:
+			return "Query VM is in an unknown state!";
+		default:
+			return "Unknown error.";
+	}
+	/* NOTREACHED */
 }

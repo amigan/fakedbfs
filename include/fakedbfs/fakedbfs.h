@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.30 2005/09/19 00:21:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.31 2005/09/19 02:20:30 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -293,6 +293,7 @@ void* read_file(fdbfs_t *f, char *fn);
 size_t toktl(char *cp, int *tval);
 int extract_token_data(char *cp, int t, size_t len, Toke *toke);
 int qtok(char **cp, int *tval, Toke *toke, char *ctok /* MUST be a buffer at least 512b long */);
+char* query_error(int rc);
 
 /* application interfaces */
 int parse_definition(fdbfs_t *f, char *filename);

@@ -1,16 +1,16 @@
-# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.12 2005/09/19 00:21:11 dcp1990 Exp $
+# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.13 2005/09/19 02:20:30 dcp1990 Exp $
 CC=cc
 LDFLAGS=-L/usr/local/lib
-CPPFLAGS=-I../include -I/usr/local/include -DYY_NO_UNPUT $(PDEBUG) -DUNIX -DDMALLOC
+CPPFLAGS=-I../include -I/usr/local/include -DYY_NO_UNPUT $(PDEBUG) -DUNIX
 LIBS=-lsqlite3 -lfl -lm
 CFLAGS+=-g -Wall -ansi
 SRCS=libfakedbfs.c sqlite.c dbspec.c dbinit.c lex.yy.c memory.c error.c indexing.c debug.c plugins.c query.c queryparser.c qtokenise.c
 OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'
-CFLAGS+=$(CPPFLAGS) # why?
 .if defined(DMALLOC)
-CFLAGS+=-DDMALLOC
+CPPFLAGS+=-DDMALLOC
 LIBS+=-ldmalloc
 .endif
+CFLAGS+=$(CPPFLAGS) # why?
 #OBJS=sqlite.o dbspec.o dbinit.o lex.yy.o memory.o error.o indexing.o
 all: .depend libfakedbfs.so libfakedbfs.a
 .depend: $(SRCS)

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fquery/fquery.c,v 1.5 2005/09/19 00:21:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fquery/fquery.c,v 1.6 2005/09/19 02:20:30 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -50,7 +50,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.5 2005/09/19 00:21:11 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.6 2005/09/19 02:20:30 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
@@ -73,12 +73,45 @@ void usage(pn)
 			pn, pn);
 }
 
+int print_fields(h)
+	fields_t *h;
+{
+	fields_t *c;
+	for(c = h; c != NULL; c = c->next) {
+		printf("%s (%s) = ", c->fmtname, c->fieldname);
+		switch(c->type) {
+			case string:
+				printf("\"%s\"", (char*)c->val);
+				break;
+			case number:
+				printf("%d (%x)", *(int*)c->val, *(int*)c->val);
+				break;
+			case boolean:
+				printf("%s", *(int*)c->val ? "true" : "false");
+				break;
+			case fp:
+				printf("%g", *(FLOATTYPE*)c->val);
+				break;
+			case oenum:
+				printf("%s (%d)", get_enum_string_by_value(c->ehead->headelem, *(int*)c->val, 1), *(int*)c->val);
+				break;
+			/* TODO: handle oenumsub */
+			default:
+				break;
+		}
+		printf("\n");
+	}
+
+	return 1;
+}
 
 int main(argc, argv)
 	int argc;
 	char *argv[];
 {
 	int c;
+	int rc, trc = 0;
+	fields_t *ch;
 	char *estr, *pname, *cf;
 
 	pname = strdup(argv[0]);
@@ -163,10 +196,25 @@ int main(argc, argv)
 		return 1;
 	}
 
+	while((rc = qne(q)) == Q_NEXT) {
+		pop3(q, (void*)&ch); /* we don't care if US_DYNA is returned; we know it will be */
+		print_fields(ch);
+		free_field_list(ch);
+	}
+
+	if(rc == Q_FDBFS_ERROR) {
+		fprintf(stderr, "error stepping: %s\n", f->error.emsg);
+		estr_free(&f->error);
+		trc = -2;
+	} else if(rc != Q_FINISHED) {
+		fprintf(stderr, "query execution error: %s\n", query_error(rc));
+		trc = -3;
+	}
+
 	destroy_query(q);
 	destroy_fdbfs(f);
 	free(dbf);
 	free(cf);
 
-	return 0;
+	return trc;
 }
