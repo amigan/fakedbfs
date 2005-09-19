@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.15 2005/09/19 02:20:30 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.16 2005/09/19 22:23:37 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.15 2005/09/19 02:20:30 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.16 2005/09/19 22:23:37 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -223,7 +223,7 @@ qreg_t* qreg_compile(regex, colname, case_insens, errmsg)
 	qreg_t *new;
 
 	new = allocz(sizeof(*new));
-	new->colname = strdup(colname);
+	new->colname = fstrdup(colname);
 	if((rc = regcomp(&(new->re), regex, REG_EXTENDED | REG_NOSUB | (case_insens ? REG_ICASE : 0))) != 0) {
 		*errmsg = malloc(128);
 		regerror(rc, &(new->re), *errmsg, 127);
@@ -344,6 +344,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 	if(q->exec_state == init && q->catalogue == NULL)
 		return Q_STEP_ON_UNINIT;
 
+
 	rc = sqlite3_step(q->cst);
 	if(rc == SQLITE_ROW)
 		toret = Q_NEXT;
@@ -382,7 +383,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 			}
 		} else {
 			n = malloc(sizeof(*n));
-			n->fieldname = strdup(sqlite3_column_name(q->cst, i));
+			n->fieldname = fstrdup(sqlite3_column_name(q->cst, i));
 		}
 		if(!q->allcols) {
 			pop3(q, (void**)&pname); /* we're supposed to do something with this */
@@ -400,7 +401,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 					toret = Q_NO_SUCH_CELEM;
 					break;
 				}
-				n->fmtname = strdup(cel->alias);
+				n->fmtname = fstrdup(cel->alias);
 				n->type = cel->type;
 				switch(n->type) {
 					case oenum:
@@ -428,13 +429,14 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 				*(FLOATTYPE*)val = sqlite3_column_double(q->cst, i);
 				break;
 			case SQLITE_TEXT:
-				val = strdup(sqlite3_column_text(q->cst, i));
+				val = fstrdup(sqlite3_column_text(q->cst, i));
 				len = strlen((char*)val);
 				break;
 			case SQLITE_BLOB:
 				len = sqlite3_column_bytes(q->cst, i);
+				printf("len is %s\n", sqlite3_column_name(q->cst, i));
 				tvd = sqlite3_column_blob(q->cst, i);
-				val = malloc(n->len);
+				val = malloc(len);
 				memcpy(val, tvd, len);
 				break;
 			case SQLITE_NULL:
@@ -516,7 +518,7 @@ int query_init_exec(q)
 			case OP_SETCAT:
 				if(!(c->ops.used & USED_O3) || c->ops.o3 == NULL)
 					return Q_INVALID_O3;
-				q->catalogue = strdup((char*)c->ops.o3);
+				q->catalogue = fstrdup((char*)c->ops.o3);
 				q->ourcat = find_cathead_by_name(q->cath, q->catalogue);
 				if(q->ourcat == NULL)
 					return Q_NO_SUCH_CAT;
@@ -537,6 +539,11 @@ int query_init_exec(q)
 #if 0
 				query_len += 1 /* quote */ + strlen((char*)c->ops.o3) + 1 /* other quote */;
 #endif
+				break;
+			case OP_COLNAME:
+				if(!(c->ops.used & USED_O3) || c->ops.o3 == NULL)
+					return Q_MISSING_OPERAND;
+				query_len += strlen(c->ops.o3) + 1; /* like smart people */
 				break;
 			case OP_UINT:
 				if(!(c->ops.used & USED_O2))
@@ -677,6 +684,15 @@ int query_init_exec(q)
 				snprintf(spbuf, SPBUFSIZE, "%u", c->ops.o2);
 				strlcat(qusql, spbuf, query_len);
 				break;
+			case OP_COLNAME:
+				if(saw_operan) {
+					ec = Q_DOUBLE_OPERAND;
+					break;
+				}
+				saw_operat = 0;
+				saw_operan = 1;
+				strlcat(qusql, c->ops.o3, query_len);
+				break;
 			case OP_INT:
 			case OP_FLOAT:
 			case OP_STRING:
@@ -698,6 +714,7 @@ int query_init_exec(q)
 		return ec;
 	}
 
+	printf("is %s\n", qusql);
 	ec = sqlite3_prepare(q->f->db, qusql, strlen(qusql), &q->cst, &tail);
 	if(ec != SQLITE_OK) {
 		ferr(q->f, die, "prepare of \"%s\": %s", qusql, sqlite3_errmsg(q->f->db));

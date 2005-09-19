@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.28 2005/09/19 00:21:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.29 2005/09/19 22:23:37 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.28 2005/09/19 00:21:11 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.29 2005/09/19 22:23:37 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -321,7 +321,7 @@ checkagain:
 			buf->integer = atoi(bf);
 			break;
 		case string:
-			buf->string = strdup(bf);
+			buf->string = fstrdup(bf);
 			break;
 		case fp:
 			buf->fp = strtod(bf, NULL);
@@ -514,9 +514,9 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 						break;
 					case string:
 						if(hasoth)
-							c->otherval = strdup(cta.string);
+							c->otherval = fstrdup(cta.string);
 						else
-							c->val = strdup(cta.string);
+							c->val = fstrdup(cta.string);
 						break;
 					case fp:
 						if(hasoth) {
@@ -613,8 +613,8 @@ int complete_fields_from_db(f, cat, h)
 		c = find_field_by_name(*h, cc->name);
 		if(c == NULL) {
 			new = allocz(sizeof(*new));
-			new->fieldname = strdup(cc->name);
-			new->fmtname = strdup(cc->alias);
+			new->fieldname = fstrdup(cc->name);
+			new->fmtname = fstrdup(cc->alias);
 			new->type = cc->type;
 			new->val = allocz(sizeof(int));
 			*(int*)new->val = 0;
@@ -770,7 +770,6 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re) /* this has no prot
 	int rc;
 	FTSENT *c;
 	char *fpth;
-	size_t fplen;
 	char *emsg;
 
 	for(c = list; c; c = c->fts_link) {
@@ -794,9 +793,13 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re) /* this has no prot
 				return 0;
 			}
 
+#if 0
 			fplen = strlen(c->fts_path) + 1 /* null */ + strlen(c->fts_name);
 			fpth = malloc(fplen * sizeof(char));
-			snprintf(fpth, fplen, "%s%s", c->fts_path, c->fts_name);
+			strlcpy(fpth, c->fts_path, fplen);
+			strlcat(fpth, c->fts_name, fplen);
+#endif
+			fpth = fstrdup(c->fts_name);
 
 			rc = file_has_changed(f, cat, fpth, c->fts_statp);
 			if(rc == 0) {
@@ -815,9 +818,7 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re) /* this has no prot
 			} else
 				free(fpth);
 		} else {
-			fplen = strlen(c->fts_path) + 1 /* null */ + strlen(c->fts_name);
-			fpth = malloc(fplen * sizeof(char));
-			snprintf(fpth, fplen, "%s%s", c->fts_path, c->fts_name);
+			fpth = fstrdup(c->fts_name);
 
 			rc = file_has_changed(f, cat, fpth, c->fts_statp);
 			if(rc == 0) {

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.24 2005/09/19 00:21:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.25 2005/09/19 22:23:37 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.24 2005/09/19 00:21:11 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.25 2005/09/19 22:23:37 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -60,7 +60,7 @@ void ParseTrace(FILE *TraceFILE, char *zTracePrompt);
 char* normalise(s)
 	char *s;
 {
-	char *n = strdup(s);
+	char *n = fstrdup(s);
 	size_t siz = strlen(n);
 	int i;
 	for(i = 0; i < siz; i++) {
@@ -438,7 +438,7 @@ int new_catalog(f, specfile, h)
 			strlcat(tdesc, ilbuffer, tds);
 		}
 		if(c->flags & CATE_USES_FC) {
-			c->alias = strdup(c->name);
+			c->alias = fstrdup(c->name);
 			*c->alias = toupper(*c->alias); /* XXX: is this safe?  just make sure that this field stays dynamic*/
 		}
 
@@ -533,7 +533,7 @@ struct EnumSubElem* subelements_from_field(f, fajah, subs)
 			n->name = NULL;
 			n->flags |= SUBE_IS_SELF;
 		} else {
-			n->name = strdup(op);
+			n->name = fstrdup(op);
 		}
 		n->value = atoi(dsp);
 		n->father = fajah;
@@ -575,12 +575,12 @@ struct EnumElem* enumelems_from_dbtab(f, table, e)
 	sqlite3_free(sql);
 	
 	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
-		cename = strdup(sqlite3_column_text(cst, 1));
-		cefmt = strdup(sqlite3_column_text(cst, 2));
+		cename = fstrdup(sqlite3_column_text(cst, 1));
+		cefmt = fstrdup(sqlite3_column_text(cst, 2));
 		cval = sqlite3_column_int(cst, 3);
 		oth = sqlite3_column_int(cst, 4);
 		subs = (char*)sqlite3_column_text(cst, 5);
-		subs = (subs == NULL ? NULL : strdup(subs));
+		subs = (subs == NULL ? NULL : fstrdup(subs));
 		n = allocz(sizeof(*n));
 		n->name = cename;
 		n->fmtname = cefmt;
@@ -634,8 +634,8 @@ struct EnumHead* enums_from_db(f)
 	}
 	
 	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
-		enumname = strdup(sqlite3_column_text(cst, 1));
-		tabledef = strdup(sqlite3_column_text(cst, 2));
+		enumname = fstrdup(sqlite3_column_text(cst, 1));
+		tabledef = fstrdup(sqlite3_column_text(cst, 2));
 		n = allocz(sizeof(*n));
 		n->name = enumname;
 		n->headelem = enumelems_from_dbtab(f, tabledef, n);
@@ -693,14 +693,14 @@ struct CatElem* catelems_from_dbtab(f, table, enumhead)
 	sqlite3_free(sql);
 	
 	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
-		ccname = strdup(sqlite3_column_text(cst, 1));
-		ccfmt = strdup(sqlite3_column_text(cst, 2));
+		ccname = fstrdup(sqlite3_column_text(cst, 1));
+		ccfmt = fstrdup(sqlite3_column_text(cst, 2));
 		cctype = sqlite3_column_int(cst, 3);
 		cenumname = (char*)sqlite3_column_text(cst, 4);
 		if(cenumname != NULL)
-			cenumname = strdup(cenumname);
+			cenumname = fstrdup(cenumname);
 		else
-			cenumname = strdup("");
+			cenumname = fstrdup("");
 		n = allocz(sizeof(*n));
 		n->name = ccname;
 		n->alias = ccfmt;
@@ -762,9 +762,9 @@ struct CatalogueHead* cats_from_db(f, enumhead)
 	}
 	
 	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
-		catname = strdup(sqlite3_column_text(cst, 1));
-		catalias = strdup(sqlite3_column_text(cst, 2));
-		tabledef = strdup(sqlite3_column_text(cst, 4));
+		catname = fstrdup(sqlite3_column_text(cst, 1));
+		catalias = fstrdup(sqlite3_column_text(cst, 2));
+		tabledef = fstrdup(sqlite3_column_text(cst, 4));
 		n = allocz(sizeof(*n));
 		n->name = catname;
 		n->fmtname = catalias; /* god only knows why I use such liberal naming of

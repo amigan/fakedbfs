@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fquery/fquery.c,v 1.6 2005/09/19 02:20:30 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fquery/fquery.c,v 1.7 2005/09/19 22:23:37 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -50,7 +50,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.6 2005/09/19 02:20:30 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.7 2005/09/19 22:23:37 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
@@ -78,7 +78,7 @@ int print_fields(h)
 {
 	fields_t *c;
 	for(c = h; c != NULL; c = c->next) {
-		printf("%s (%s) = ", c->fmtname, c->fieldname);
+		printf("%p (%p) = ", c->fmtname, c->fieldname);
 		switch(c->type) {
 			case string:
 				printf("\"%s\"", (char*)c->val);
@@ -209,6 +209,8 @@ int main(argc, argv)
 	} else if(rc != Q_FINISHED) {
 		fprintf(stderr, "query execution error: %s\n", query_error(rc));
 		trc = -3;
+	} else {
+		printf("--END--\n");
 	}
 
 	destroy_query(q);

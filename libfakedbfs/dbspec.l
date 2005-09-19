@@ -1,12 +1,12 @@
 %{
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.10 2005/09/19 00:21:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.11 2005/09/19 22:23:37 dcp1990 Exp $ */
 #include <stdio.h>
 #include <string.h>
 #include "dbspec.h"
 #include <lexdefines.h>
 #undef DMALLOC
 #include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.10 2005/09/19 00:21:11 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.11 2005/09/19 22:23:37 dcp1990 Exp $")
 int chrcnt = 0, lincnt = 1; /* not thread-safe, I know */
 %}
 %s comment
@@ -47,7 +47,7 @@ fc			return FC;
 				return STRING;
 }
 <INITIAL>[A-Za-z0-9_]+		{
-				yylval.string = strdup(yytext);
+				yylval.string = fstrdup(yytext);
 #ifdef PARSERDEBUG
 				fprintf(stderr, "string %s\n", yylval.string);
 #endif

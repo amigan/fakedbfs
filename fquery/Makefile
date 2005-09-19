@@ -1,7 +1,7 @@
-# $Amigan: fakedbfs/fquery/Makefile,v 1.2 2005/09/19 00:21:11 dcp1990 Exp $
+# $Amigan: fakedbfs/fquery/Makefile,v 1.3 2005/09/19 22:23:37 dcp1990 Exp $
 include ../globals.mk
 LDFLAGS+=-L../libfakedbfs
-LIBS=-lfakedbfs
+LIBS+=-lfakedbfs
 SRCS=fquery.c
 OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'
 CFLAGS+=-ansi $(CPPFLAGS) # why?
