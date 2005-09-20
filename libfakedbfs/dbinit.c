@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.26 2005/09/19 22:31:40 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.27 2005/09/20 01:40:05 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.26 2005/09/19 22:31:40 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.27 2005/09/20 01:40:05 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -439,7 +439,7 @@ int new_catalog(f, specfile, h)
 		}
 		if(c->flags & CATE_USES_FC) {
 			c->alias = strdup(c->name);
-			*c->alias = toupper(*c->alias); /* XXX: is this safe?  just make sure that this field stays dynamic*/
+			*c->alias = toupper(*c->alias);
 		}
 
 		if(c->type == oenum)
@@ -482,6 +482,8 @@ int make_tables_from_spec(f, sfile, h)
 	for(ceh = h->enumhead; ceh != NULL; ceh = ceh->next) {
 		if(!new_enum(f, sfile, ceh)) {
 			CERR(die, "make_tables_from_spec(f, \"%s\", h): error adding enum. ", sfile);
+			free_cat_head_list(h->cathead);
+			free_enum_head_list(h->enumhead);
 			return 0;
 		}
 	}
@@ -489,10 +491,17 @@ int make_tables_from_spec(f, sfile, h)
 	/* catalogues */
 	for(cch = h->cathead; cch != NULL; cch = cch->next) {
 		if(!new_catalog(f, sfile, cch)) {
+			free_cat_head_list(h->cathead);
+			free_enum_head_list(h->enumhead);
 			CERR(die, "make_tables_from_spec(f, \"%s\", h): error adding catalogue. ", sfile);
 			return 0;
 		}
 	}
+
+	free_cat_head_list(h->cathead);
+	free_enum_head_list(h->enumhead);
+
+	
 	return 1;
 }
 

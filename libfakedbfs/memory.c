@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.13 2005/09/19 22:23:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.14 2005/09/20 01:40:05 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -42,9 +42,10 @@
 #include <lexdefines.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.13 2005/09/19 22:23:37 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.14 2005/09/20 01:40:05 dcp1990 Exp $")
 
 
+#ifdef NO_CALLOC
 void* allocz(size)
 	size_t size;
 {
@@ -52,6 +53,7 @@ void* allocz(size)
 	memset(p, 0, size);
 	return p;
 }
+#endif
 
 struct EnumSubElem* free_enum_sub_elem(e, allsub) /* returns next */
 	struct EnumSubElem *e;

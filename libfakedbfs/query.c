@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.17 2005/09/19 22:31:40 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.18 2005/09/20 01:40:05 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.17 2005/09/19 22:31:40 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.18 2005/09/20 01:40:05 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -382,7 +382,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 				}
 			}
 		} else {
-			n = malloc(sizeof(*n));
+			n = allocz(sizeof(*n));
 			n->fieldname = strdup(sqlite3_column_name(q->cst, i));
 		}
 		if(!q->allcols) {
@@ -391,9 +391,11 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 		if(special != 3) {
 			if(strcmp(n->fieldname, "file") == 0) {
 				n->type = string;
+				n->fmtname = strdup("Filename");
 				special = 1;
 			} else if(strcmp(n->fieldname, "lastupdate") == 0) {
 				n->type = number;
+				n->fmtname = strdup("Last Updated");
 				special = 2;
 			} else {
 				cel = find_catelem_by_name(q->ourcat->headelem, n->fieldname);
@@ -434,7 +436,6 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 				break;
 			case SQLITE_BLOB:
 				len = sqlite3_column_bytes(q->cst, i);
-				printf("len is %s\n", sqlite3_column_name(q->cst, i));
 				tvd = sqlite3_column_blob(q->cst, i);
 				val = malloc(len);
 				memcpy(val, tvd, len);
@@ -714,7 +715,6 @@ int query_init_exec(q)
 		return ec;
 	}
 
-	printf("is %s\n", qusql);
 	ec = sqlite3_prepare(q->f->db, qusql, strlen(qusql), &q->cst, &tail);
 	if(ec != SQLITE_OK) {
 		ferr(q->f, die, "prepare of \"%s\": %s", qusql, sqlite3_errmsg(q->f->db));
