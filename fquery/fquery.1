@@ -1,115 +1,50 @@
 .\" El manpage-o for findex
 .\" (C)2005, Dan Ponte
-.\" $Amigan: fakedbfs/fquery/fquery.1,v 1.1 2005/09/01 08:05:57 dcp1990 Exp $
-.Dd August 24, 2005
-.Dt FINDEX 1
+.\" $Amigan: fakedbfs/fquery/fquery.1,v 1.2 2005/09/20 02:26:29 dcp1990 Exp $
+.Dd September 19, 2005
+.Dt FQUERY 1
 .Os
 .Sh NAME
-.Nm findex
-.Nd index files and add them to the fakedbfs database
+.Nm fquery
+.Nd query the fakedbfs database
 .Sh SYNOPSIS
 .Nm
-.Op Fl hvrcf
+.Op Fl hvf
 .Op Fl d Ar dbfile
-.Op Fl e Ar regex
-.Ar file/dir1 .. file/dirN
-.Nm
-.Op Fl hvrcf
-.Op Fl d Ar dbfile
-.Op Fl e Ar regex
-.Fl i
-.Ar file/dir1 .. file/dirN
-.Nm
-.Op Fl hvrcf
-.Op Fl d Ar dbfile
-.Op Fl e Ar regex
-.Fl s
-.Op Ar file/dir1 .. file/dirN
+.Ar query_string
 .Sh DESCRIPTION
 .Nm
 is part of the
 .Em fakedbfs
-distribution. It is used to index files and add them to the database, after using
-the appropriate plugins to extract metadata, or asking the user for input.
+distribution. It is used to query the database for files.
 .Pp
 .Nm
-accepts one or more mandatory arguments when the
-.Fl s
-option isn't specified. These are the
-.Ar file/dir1 .. file/dirN
-arguments.
-.Pp
-If
-.Fl s
-is specified, not only can
-.Nm
-index files or directories specified on the command line, it can also read them
-from
-.Em stdin ,
-much like the
-.Xr cpio 1
-utility. Note that
-.Fl s
-and
-.Fl i
-are mutually exclusive; this is because both read from
-.Em stdin .
-.Pp
-If any of the entities specified is a directory, the
-.Ar regex
-argument (with the
-.Fl e
-flag) can be used to only index those files and/or directories matching the
-.Xr regex 3
-pattern (see
-.Xr re_format 7
-for more details).
-.Pp
-If the
-.Fl i
-flag is specified,
-.Xr libfakedbfs 3
-will prompt the user for each field. The user may press enter to use the default value specified in brackets.
+accepts one mandatory argument,
+.Ar query_string .
+This is a single string, usually quoted using single-quotes in the shell.
+See
+.Xr fdbfsquery_fmt 7
+for more information on the format of queries.
 .Pp
 One can also use the
-.Ar d
+.Fl d
+flag with the
+.Ar dbfile
 argument to specify the database to use; by default it is either the value of
 the FAKEDBFSDB environment variable, or $HOME/.fakedbfsdb. This convention is
 followed by all utilities in this distribution, and should be followed for other
 applications using the libfakedbfs library. Note that this database must have already
 been created with
 .Xr fcreatedb 1 .
+It should also have files catalogued in it for maximum utility.
 .Pp
 .Nm
 recognizes the following command line options:
 .Bl -tag -width indent
 .It Fl f
-For files, force an update even if the file's mtime is less than or equal to the time in the database for
-the
-.Em lastupdated
-field.
+Print a full listing, including every field, as opposed to just the filenames.
 .It Fl h
 Print a short usage message.
-.It Fl r
-Tell the library to recurse in directories. It will recurse up to a predetermined number of
-iterations; see
-.Xr index_dir 3
-for more information.
-.It Fl c
-Tell the library to match
-.Ar regex
-with case insensitivity.
-.It Fl e Ar regex
-Only index files and/or directories matching
-.Ar regex ;
-see above for more information.
-.It Fl i
-Ask the user for a value for each field; see above for more information.
-.It Fl s
-Read filenames/directories to index from
-.Em stdin ,
-in style of
-.Xr cpio 1 .
 .It Fl v
 Print the library version, the
 .Nm
@@ -139,9 +74,8 @@ default database file
 .Xr libfakedbfs 3 ,
 .Xr fcreatedb 1 ,
 .Xr fedit 1 ,
-.Xr fquery 1
-.Xr index_file 3
-.Xr index_dir 3
+.Xr findex 1 ,
+.Xr fdbfsquery_fmt 7
 .Sh HISTORY
 The
 .Nm

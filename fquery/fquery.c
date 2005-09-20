@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2005, Dan Ponte
  *
- * findex.c - indexer for fakedbfs
+ * fquery.c - queryer for fakedbfs
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fquery/fquery.c,v 1.8 2005/09/20 01:57:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fquery/fquery.c,v 1.9 2005/09/20 02:26:29 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -50,7 +50,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.8 2005/09/20 01:57:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.9 2005/09/20 02:26:29 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
