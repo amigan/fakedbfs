@@ -1,15 +1,19 @@
-$Amigan: fakedbfs/TODO,v 1.4 2005/09/01 08:11:07 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.5 2005/09/20 02:13:21 dcp1990 Exp $
 
-TODO as of 1.0:
+TODO as of 1.0 (double stars means "must do before release"):
+**Handle backslash escapes in qtokeniser
+**Add support for OP_REGEXP to querying VM!!!
 *Mucho memory leaks. Some kind soul should run valgrind and fix them. I don't have the time; I will when
-	I port to amiga. (dmalloc may help in this respect; must test.)
+	I port to amiga. (dmalloc helps greatly)
 *Add support for ogg to the music plugin
 *Write more plugins
 *Write more specfiles
 *Document every API function
-*Querying
-*grep -R -E 'XXX:|TODO:' * and fix
-*Win32 port
+**grep -R -E 'XXX:|TODO:' * and fix
+**Win32 port
 *Win32 applications
 *Amiga port
-*Add installation features to the build process (Makefile, etc)
+**Add installation features to the build process (Makefile, etc)
+
+Wishlist for 1.2/2.0:
+*Build in Unix-specific stuff for platforms that don't have it
