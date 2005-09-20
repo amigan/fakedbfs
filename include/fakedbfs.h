@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.32 2005/09/19 22:23:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.33 2005/09/20 01:40:28 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -177,7 +177,11 @@ typedef struct FDBFS {
 	Heads heads;
 } fdbfs_t;
 
+#ifdef NO_CALLOC
 void* allocz(size_t size);
+#else
+#define allocz(x)	calloc(1, x)
+#endif
 void set_aff(fdbfs_t *f, answer_t *(*aff)AFFPROTO);
 char* normalise(char *s);
 struct EnumElem* find_elem_by_name(struct EnumElem *h, char *name);
