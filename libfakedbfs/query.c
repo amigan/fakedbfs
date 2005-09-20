@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.19 2005/09/20 01:57:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.20 2005/09/20 02:09:11 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.19 2005/09/20 01:57:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.20 2005/09/20 02:09:11 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -482,7 +482,6 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 
 	return toret;
 }
-	
 
 int query_init_exec(q)
 	query_t *q;
@@ -495,6 +494,7 @@ int query_init_exec(q)
 	const char *tail;
 	int indcounter = 1;
 	short int foundselcn = 0;
+	short int have_cond = 0;
 	char *qusql;
 #define SPBUFSIZE 64
 	char spbuf[SPBUFSIZE];
@@ -509,6 +509,7 @@ int query_init_exec(q)
 			case OP_BEGIN_GRP:
 				opengrps++;
 				query_len++;
+				have_cond = 1;
 				break;
 			case OP_CLOSE_GRP:
 				if(opengrps <= 0)
@@ -542,21 +543,25 @@ int query_init_exec(q)
 #if 0
 				query_len += 1 /* quote */ + strlen((char*)c->ops.o3) + 1 /* other quote */;
 #endif
+				have_cond = 1;
 				break;
 			case OP_COLNAME:
 				if(!(c->ops.used & USED_O3) || c->ops.o3 == NULL)
 					return Q_MISSING_OPERAND;
 				query_len += strlen(c->ops.o3) + 1; /* like smart people */
+				have_cond = 1;
 				break;
 			case OP_UINT:
 				if(!(c->ops.used & USED_O2))
 					return Q_MISSING_OPERAND;
 				query_len += number_size(c->ops.o2); /* traditional because it's unsigned */
+				have_cond = 1;
 				break;
 			case OP_INT:
 				if(!(c->ops.used & USED_O1))
 					return Q_MISSING_OPERAND;
 				query_len++; /* used bind */
+				have_cond = 1;
 				break;
 			case OP_NULL:
 				query_len++; /* quest */
@@ -633,8 +638,8 @@ int query_init_exec(q)
 		strlcat(qusql, "*", query_len);
 	strlcat(qusql, " FROM c_", query_len);
 	strlcat(qusql, q->catalogue, query_len);
-	/* XXX: we aren't handling null queries (akin to SELECT * from blah;) */
-	strlcat(qusql, " WHERE ", query_len);
+	if(have_cond)
+		strlcat(qusql, " WHERE ", query_len);
 	ended = 0;
 
 	for(c = q->insthead; c != NULL && ec == 0; c = c->next) {
