@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fquery/fquery.c,v 1.7 2005/09/19 22:23:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fquery/fquery.c,v 1.8 2005/09/20 01:57:12 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -44,16 +44,17 @@
 #include <sys/stat.h>
 #endif
 
-#define ARGSPEC "vhd:"
+#define ARGSPEC "vhfd:"
 #define FQUERYVER "0.1"
 #define MAXPLEN 1023
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.7 2005/09/19 22:23:37 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.8 2005/09/20 01:57:12 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
+static short int full = 0;
 static fdbfs_t *f;
 static query_t *q;
 
@@ -69,8 +70,23 @@ void version(void)
 void usage(pn)
 	char *pn;
 {
-	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] query\n",
+	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] [-f] query\n",
 			pn, pn);
+}
+
+int print_name(h)
+	fields_t *h;
+{
+	fields_t *c;
+
+	for(c = h; c != NULL; c = c->next) {
+		if(strcmp(c->fieldname, "file") == 0) {
+			printf("%s\n", (char*)c->val);
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 int print_fields(h)
@@ -78,7 +94,7 @@ int print_fields(h)
 {
 	fields_t *c;
 	for(c = h; c != NULL; c = c->next) {
-		printf("%p (%p) = ", c->fmtname, c->fieldname);
+		printf("\n%s (%s) = ", c->fmtname, c->fieldname);
 		switch(c->type) {
 			case string:
 				printf("\"%s\"", (char*)c->val);
@@ -128,6 +144,9 @@ int main(argc, argv)
 				free(pname);
 				if(dbf != NULL) free(dbf);
 				return 0;
+			case 'f':
+				full = 1;
+				break;
 			case 'd':
 				dbf = strdup(optarg);
 				dbfu = 1;
@@ -198,7 +217,10 @@ int main(argc, argv)
 
 	while((rc = qne(q)) == Q_NEXT) {
 		pop3(q, (void*)&ch); /* we don't care if US_DYNA is returned; we know it will be */
-		print_fields(ch);
+		if(full)
+			print_fields(ch);
+		else
+			print_name(ch);
 		free_field_list(ch);
 	}
 
@@ -210,7 +232,8 @@ int main(argc, argv)
 		fprintf(stderr, "query execution error: %s\n", query_error(rc));
 		trc = -3;
 	} else {
-		printf("--END--\n");
+		if(full)
+			printf("--END--\n");
 	}
 
 	destroy_query(q);

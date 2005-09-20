@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.18 2005/09/20 01:40:05 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.19 2005/09/20 01:57:12 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.18 2005/09/20 01:40:05 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.19 2005/09/20 01:57:12 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -346,9 +346,10 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 
 
 	rc = sqlite3_step(q->cst);
-	if(rc == SQLITE_ROW)
+	if(rc == SQLITE_ROW) {
+		q->exec_state = more;
 		toret = Q_NEXT;
-	else if(rc == SQLITE_DONE || rc == SQLITE_OK) {
+	} else if(rc == SQLITE_DONE || rc == SQLITE_OK) {
 		toret = Q_FINISHED;
 		q->exec_state = finished;
 	} else {
@@ -466,6 +467,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 			} else {
 				cf->next = n;
 				cf = n;
+				n->next = 0x0;
 			}
 		}
 	}
