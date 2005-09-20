@@ -1,4 +1,13 @@
-$Amigan: fakedbfs/README,v 1.1 2005/08/29 07:58:17 dcp1990 Exp $
+$Amigan: fakedbfs/README,v 1.2 2005/09/20 02:14:15 dcp1990 Exp $
 
 This is the fakedbfs distribution, version 1.0 (Steely Dan). See the contents of
 doc/ for more information.
+
+TO BUILD:
+
+make
+
+Make Options:
+
+-DMALLOC
+	builds with dmalloc support; you obviously need it installed.
