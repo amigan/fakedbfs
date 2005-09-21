@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.21 2005/09/21 00:15:43 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.22 2005/09/21 03:35:41 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.21 2005/09/21 00:15:43 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.22 2005/09/21 03:35:41 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -234,6 +234,16 @@ qreg_t* qreg_compile(regex, colname, case_insens, errmsg)
 	}
 
 	return new;
+}
+
+void regex_func(ctx, i, sqval)
+	sqlite3_context *ctx;
+	int i;
+	sqlite3_value **sqval;
+{
+	/* look at (fdbfs_t*)userdata->cquery, search for the regex argument and compare if you find an OP_REGEXP. if they match,
+	 * execute the regex and go from there...
+	 */
 }
 
 void qreg_destroy(q)

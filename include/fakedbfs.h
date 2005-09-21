@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.33 2005/09/20 01:40:28 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.34 2005/09/21 03:35:41 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -171,6 +171,7 @@ typedef struct FDBFS {
 	sqlite3 *db;
 	error_t error;
 	config_t conf;
+	query_t *curq; /* current query; must be reset on each exec/step */
 	struct Plugin *plugins;
 	void (*debugfunc)(char*, enum ErrorAction);
 	answer_t *(*askfieldfunc) AFFPROTO; /* returns status: 0 means no change, 1 means change, -1 means error */
