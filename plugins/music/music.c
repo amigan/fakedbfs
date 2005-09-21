@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.4 2005/08/25 19:02:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.5 2005/09/21 03:35:04 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.4 2005/08/25 19:02:11 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.5 2005/09/21 03:35:04 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
@@ -65,6 +65,8 @@ struct PluginInfo plugin_inf = {
 int plugin_init(errmsg)
 	char **errmsg;
 {
+	void *asd;
+	asd = (void*)ID3_v1_genre_description; /* stupid unused warning */
 	/* do nothing */
 	return 1;
 }
