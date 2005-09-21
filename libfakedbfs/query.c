@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.20 2005/09/20 02:09:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.21 2005/09/21 00:15:43 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.20 2005/09/20 02:09:11 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.21 2005/09/21 00:15:43 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -301,6 +301,7 @@ int qi(q, opcode, op1, op2, op3, used)
 		q->lastinst = new;
 	} else {
 		q->lastinst->next = new;
+		new->last = q->lastinst;
 		q->lastinst = new;
 	}
 
