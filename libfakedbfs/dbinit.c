@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.28 2005/09/22 21:25:05 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.29 2005/09/22 21:42:35 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.28 2005/09/22 21:25:05 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.29 2005/09/22 21:42:35 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -323,6 +323,10 @@ char* construct_subelem_field(h)
 		size += number_size(c->value);
 	}
 	buf = malloc(size);
+	if(buf == NULL) {
+		printf("malloc error: %s\n", strerror(errno));
+		return NULL;
+	}
 	*buf = '\0'; /* so we can use strlcat() for everything */
 
 	/* actual traversing */
