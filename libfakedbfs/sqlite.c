@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.14 2005/09/22 00:38:29 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.15 2005/09/22 21:55:25 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.14 2005/09/22 00:38:29 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.15 2005/09/22 21:55:25 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -245,11 +245,13 @@ int add_to_field_desc(f, tablename, name, alias, type, typen)
 {
 	char *sql, *emsg, *othna;
 	int rc;
+	short int dyna = 0;
 	if(type == oenum) {
 		size_t len = strlen(name) + strlen(OTHER_ELEM_PREFIX) + 1;
 		othna = malloc(sizeof(char) * len);
 		strlcpy(othna, OTHER_ELEM_PREFIX, len);
 		strlcat(othna, name, len);
+		dyna = 1;
 	} else
 		othna = "NULL";
 	sql = sqlite3_mprintf("INSERT OR REPLACE INTO %s (fieldname, alias, datatype,"
@@ -265,7 +267,7 @@ int add_to_field_desc(f, tablename, name, alias, type, typen)
 		sqlite3_free(emsg);
 		return 0;
 	}
-	if(type == oenum)
+	if(type == oenum && dyna)
 		free(othna);
 	return 1;
 }
