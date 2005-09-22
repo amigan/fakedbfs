@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.25 2005/09/22 18:56:15 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.26 2005/09/22 21:25:05 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.25 2005/09/22 18:56:15 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.26 2005/09/22 21:25:05 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -288,9 +288,9 @@ void free_inst(e)
 {
 	if(e->opcode == OP_REGEXP)
 		qreg_destroy(e->ops.o3);
-	else if(e->ops.used & US_DYNA)
+	else if(e->ops.used & US_DYNA) {
 		free(e->ops.o3);
-	else if(e->ops.used & US_FILE) {
+	} else if(e->ops.used & US_FILE) {
 #ifdef HAVE_MMAP
 		munmap(e->ops.o3);
 #endif
@@ -532,7 +532,7 @@ int query_init_exec(q)
 	int opengrps = 0, ended = 0;
 	int ec = 0;
 	short int saw_operan = 0;
-	short int saw_operat = 0;
+	short int saw_operat = 0, saw_not = 0;
 	const char *tail;
 	int indcounter = 1;
 	short int foundselcn = 0;
@@ -689,6 +689,9 @@ int query_init_exec(q)
 
 	for(c = q->insthead; c != NULL && ec == 0; c = c->next) {
 		ec = 0;
+		if(c->opcode != OPL_NOT) {
+			saw_not = 0;
+		}
 		switch(c->opcode) {
 			case OP_BEGIN_GRP:
 				strlcat(qusql, "(", query_len);
@@ -715,7 +718,11 @@ int query_init_exec(q)
 				strlcat(qusql, "||", query_len);
 				break;
 			case OPL_NOT:
-				/* XXX: check for previous occurance */
+				if(saw_not) {
+					ec = Q_DOUBLE_OPERAND;
+					break;
+				}
+				saw_not = 1;
 				strlcat(qusql, "!", query_len);
 				break;
 			case OPL_EQUAL:
