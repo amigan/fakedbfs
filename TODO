@@ -1,7 +1,6 @@
-$Amigan: fakedbfs/TODO,v 1.9 2005/09/22 18:44:29 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.10 2005/09/22 19:15:20 dcp1990 Exp $
 
 TODO as of 1.0 (double stars means "must do before release"):
-**Handle backslash escapes in qtokeniser
 *Mucho memory leaks. Some kind soul should run valgrind and fix them. I don't have the time; I will when
 	I port to amiga. (dmalloc helps greatly)
 *Add support for ogg to the music plugin
