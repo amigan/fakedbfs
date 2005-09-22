@@ -9,7 +9,7 @@ CFLAGS+=$(CPPFLAGS)
 .if defined(DMALLOC)
 DMALLOC=yes
 CPPFLAGS+=-DDMALLOC
-LIBS=-ldmalloc
+LIBS+=-ldmalloc
 .endif
 
 all: .depend music.so
