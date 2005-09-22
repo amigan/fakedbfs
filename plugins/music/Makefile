@@ -6,6 +6,11 @@ LIBS=-lid3 -lstdc++ -lz
 SRCS=music.c
 OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'
 CFLAGS+=$(CPPFLAGS)
+.if defined(DMALLOC)
+DMALLOC=yes
+CPPFLAGS+=-DDMALLOC
+LIBS=-ldmalloc
+.endif
 
 all: .depend music.so
 .depend: $(SRCS)
