@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.3 2005/09/22 00:38:29 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.4 2005/09/22 03:53:45 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -193,6 +193,8 @@ size_t toktl(cp, tval)
 
 			if(c)
 				i++;
+			l += i - 1;
+
 			*tval = REGEXP;
 			break;
 		case ',':
@@ -257,6 +259,7 @@ int extract_token_data(cp, t, len, toke)
 
 	switch(t) {
 		case STRING:
+		case REGEXP:
 			ocp = *(cp + (len - 1));
 			*(cp + (len - 1)) = '\0';
 			toke->str = strdup(cp + 1);
