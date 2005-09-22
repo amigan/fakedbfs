@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.4 2005/09/22 00:38:29 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.5 2005/09/22 18:44:29 dcp1990 Exp $ */
 %name {QParse}
 %include {
 #include <sqlite3.h>
@@ -35,7 +35,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.4 2005/09/22 00:38:29 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.5 2005/09/22 18:44:29 dcp1990 Exp $")
 }
 %token_type {Toke}
 %nonassoc ASSIGN BW_OR BW_AND ILLEGAL SPACE.
@@ -145,14 +145,14 @@ floatp ::= FLOAT(A). {
 		qi(q, OP_FLOAT, 0x0, 0x0, A.flt, USED_O3 | US_DYNA);
 	}
 
-regex ::= colname REGEQU REGEXP(B) flags(C). {
+regex ::= colname REGEQU REGEXP(A) flags(B). {
 		qreg_t *qr;
 		char *ems;
 
-		if((qr = qreg_compile(B.str, C.num, &ems)) == NULL) {
-			ferr(q->f, die, "Error compiling regex %s: %s", B.str, ems);
+		if((qr = qreg_compile(A.str, B.num, &ems)) == NULL) {
+			ferr(q->f, die, "Error compiling regex %s: %s", A.str, ems);
 			free(ems);
-			free(B.str);
+			free(A.str);
 			return;
 		}
 

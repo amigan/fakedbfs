@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.23 2005/09/22 00:38:29 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.24 2005/09/22 18:44:29 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.23 2005/09/22 00:38:29 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.24 2005/09/22 18:44:29 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -227,6 +227,7 @@ qreg_t* qreg_compile(regex, case_insens, errmsg)
 		*errmsg = malloc(128);
 		regerror(rc, &(new->re), *errmsg, 127);
 		regfree(&(new->re));
+		free(new->tregex);
 		free(new);
 		return NULL;
 	}
