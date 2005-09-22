@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/query.h,v 1.11 2005/09/21 00:15:43 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/query.h,v 1.12 2005/09/22 00:38:29 dcp1990 Exp $ */
 #ifndef HAVE_QUERY_H
 #define HAVE_QUERY_H 1
 #ifndef _REGEX_H_
@@ -130,5 +130,6 @@ typedef struct {
 typedef struct {
 	regex_t re;
 	char *colname;
+	char *tregex;
 } qreg_t;
 #endif

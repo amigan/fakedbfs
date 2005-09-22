@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.2 2005/09/19 00:21:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.3 2005/09/22 00:38:29 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -181,10 +181,19 @@ size_t toktl(cp, tval)
 			}
 			break;
 		case '/':
-			*tval = REGSTART;
-			break;
-		case '\\':
-			*tval = REGEND;
+			tdel = *cp;
+			for(i = 1; (c = *(cp + i)) != '\0'; i++) {
+				if(c == tdel) {
+					if(cp[i + 1] == tdel) {
+						i++;
+					} else
+						break;
+				}
+			}
+
+			if(c)
+				i++;
+			*tval = REGEXP;
 			break;
 		case ',':
 			*tval = COMMA;

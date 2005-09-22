@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.34 2005/09/21 03:35:41 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.35 2005/09/22 00:38:29 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -292,13 +292,14 @@ int push3(query_t *q, void *o3); /* we could use macros for push*(), but oh well
 int qne(query_t *q);
 int query_step(query_t *q);
 int query_init_exec(query_t *q);
-qreg_t* qreg_compile(char *regex, char *colname, int case_insens, char **errmsg);
+qreg_t* qreg_compile(char *regex, int case_insens, char **errmsg);
 void qreg_destroy(qreg_t *q);
 void free_inst(inst_t *e);
 void* read_file(fdbfs_t *f, char *fn);
 size_t toktl(char *cp, int *tval);
 int extract_token_data(char *cp, int t, size_t len, Toke *toke);
 int qtok(char **cp, int *tval, Toke *toke, char *ctok /* MUST be a buffer at least 512b long */);
+void regex_func(sqlite3_context *ctx, int i, sqlite3_value **sqval);
 char* query_error(int rc);
 
 /* application interfaces */

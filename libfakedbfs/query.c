@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.22 2005/09/21 03:35:41 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.23 2005/09/22 00:38:29 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.22 2005/09/21 03:35:41 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.23 2005/09/22 00:38:29 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -213,9 +213,8 @@ query_t* new_query(f, stacksize)
 	return n;
 }
 
-qreg_t* qreg_compile(regex, colname, case_insens, errmsg)
+qreg_t* qreg_compile(regex, case_insens, errmsg)
 	char *regex;
-	char *colname;
 	int case_insens;
 	char **errmsg;
 {
@@ -223,12 +222,11 @@ qreg_t* qreg_compile(regex, colname, case_insens, errmsg)
 	qreg_t *new;
 
 	new = allocz(sizeof(*new));
-	new->colname = strdup(colname);
+	new->tregex = strdup(regex);
 	if((rc = regcomp(&(new->re), regex, REG_EXTENDED | REG_NOSUB | (case_insens ? REG_ICASE : 0))) != 0) {
 		*errmsg = malloc(128);
 		regerror(rc, &(new->re), *errmsg, 127);
 		regfree(&(new->re));
-		free(new->colname);
 		free(new);
 		return NULL;
 	}
@@ -241,16 +239,46 @@ void regex_func(ctx, i, sqval)
 	int i;
 	sqlite3_value **sqval;
 {
-	/* look at (fdbfs_t*)userdata->cquery, search for the regex argument and compare if you find an OP_REGEXP. if they match,
-	 * execute the regex and go from there...
-	 */
+	fdbfs_t *f = (fdbfs_t*)sqlite3_user_data(ctx);
+	inst_t *h = f->curq->insthead;
+	inst_t *c;
+	qreg_t *oqr;
+	const char *regexp;
+	const char *string;
+	int rc, orc = 0;;
+
+	regexp = sqlite3_value_text(sqval[0]);
+	if(regexp == NULL) {
+		sqlite3_result_int(ctx, 0);
+		return;
+	}
+
+	string = sqlite3_value_text(sqval[1]);
+	if(regexp == NULL) {
+		sqlite3_result_int(ctx, 0);
+		return;
+	}
+
+	for(c = h; c != NULL; c = c->next) {
+		if(c->opcode == OP_REGEXP) {
+			oqr = (qreg_t*)c->ops.o3;
+			if(strcmp(regexp, oqr->tregex) == 0) {
+				rc = regexec(&oqr->re, string, 0, NULL, 0);
+				if(rc == 0)
+					orc = 1;
+				break;
+			}
+		}
+	}
+
+	sqlite3_result_int(ctx, orc);
 }
 
 void qreg_destroy(q)
 	qreg_t *q;
 {
 	regfree(&(q->re));
-	free(q->colname);
+	free(q->tregex);
 	free(q);
 }
 
@@ -354,6 +382,8 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 		return Q_FINISHED;
 	if(q->exec_state == init && q->catalogue == NULL)
 		return Q_STEP_ON_UNINIT;
+
+	q->f->curq = q;
 
 
 	rc = sqlite3_step(q->cst);
@@ -512,6 +542,8 @@ int query_init_exec(q)
 	short int col_sel_init = 0;
 	size_t query_len = sizeof("SELECT  FROM c_ WHERE ") + 7;
 
+	q->f->curq = q;
+
 	for(c = q->insthead; c != NULL; c = c->next) {
 		if(ended)
 			return Q_INST_AFTER_END;
@@ -609,6 +641,7 @@ int query_init_exec(q)
 					return Q_MISSING_OPERAND;
 				if(c->ops.o3 == NULL)
 					return Q_INVALID_O3;
+				query_len += strlen(((qreg_t*)c->ops.o3)->tregex) + 4; /* spaces and quotes */
 				break;
 			case OP_ENDQ:
 				ended = 1;
@@ -711,6 +744,17 @@ int query_init_exec(q)
 				saw_operat = 0;
 				saw_operan = 1;
 				strlcat(qusql, c->ops.o3, query_len);
+				break;
+			case OP_REGEXP:
+				if(!saw_operan) {
+					ec = Q_OPERATION_WITHOUT_OPERANDS;
+					break;
+				}
+				saw_operat = saw_operan = 0; /* like =~ whatever */
+				strlcat(qusql, " REGEXP '", query_len);
+				strlcat(qusql,  ((qreg_t*)c->ops.o3)->tregex, query_len); /* this could be done more efficiently, such as passing
+											     a special ID instead of an RE string, but oh well */
+				strlcat(qusql, "'", query_len);
 				break;
 			case OP_INT:
 			case OP_FLOAT:
