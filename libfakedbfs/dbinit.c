@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.31 2005/09/22 22:00:48 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.32 2005/09/22 22:05:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.31 2005/09/22 22:00:48 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.32 2005/09/22 22:05:26 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -295,17 +295,13 @@ int init_db_tables(f)
 size_t number_size(n)
 	unsigned int n;
 {
-	if(n == 0)
-		return 1;
-	return floor(log10(n)) + 1;
+	return (n == 0) ? 1 : floor(log10(n)) + 1;
 }
 
 size_t signed_size(n)
 	int n;
 {
-	if(n == 0)
-		return 1;
-	return floor(log10(n)) + (n < 0 ? 2 : 1); /* sign */
+	return (n == 0) ? 1 : floor(log10(n)) + (n < 0 ? 2 : 1); /* sign */
 }
 
 char* construct_subelem_field(h)
