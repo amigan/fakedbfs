@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.5 2005/09/22 04:08:32 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.6 2005/09/22 18:56:15 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -263,7 +263,12 @@ int extract_token_data(cp, t, len, toke)
 		case REGEXP:
 			ocp = *(cp + (len - 1));
 			*(cp + (len - 1)) = '\0';
-			toke->str = strdup(cp + 1);
+			if(strlen(cp + 1) < 1) {
+				*(cp + (len - 1)) = ocp;
+				return -2;
+			} else {
+				toke->str = strdup(cp + 1);
+			}
 			*(cp + (len - 1)) = ocp;
 			break;
 		case UQSTRING:

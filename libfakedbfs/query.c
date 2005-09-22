@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.24 2005/09/22 18:44:29 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.25 2005/09/22 18:56:15 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.24 2005/09/22 18:44:29 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.25 2005/09/22 18:56:15 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -864,6 +864,7 @@ int query_parse(q, qstr)
 	char **cptr = &cp;
 	void *pa;
 	int token;
+	int trc;
 	Toke to;
 	char ctb[513];
 
@@ -871,9 +872,14 @@ int query_parse(q, qstr)
 
 	memset(ctb, 0, sizeof(ctb));
 
-	while(qtok(cptr, &token, &to, ctb) != 0) {
+	while((trc = qtok(cptr, &token, &to, ctb)) != 0) {
 		if(token == SPACE)
 			continue;
+		if(trc == -2) {
+			ferr(q->f, die, "NULL regexp in %s!", qstr);
+			QParseFree(pa, free);
+			return 0;
+		}
 		q->yytext = ctb;
 		QParse(pa, token, to, q);
 		if(q->f->error.emsg != NULL || q->error) {
