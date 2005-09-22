@@ -1,7 +1,7 @@
-# $Amigan: fakedbfs/globals.mk,v 1.7 2005/09/22 21:25:05 dcp1990 Exp $
+# $Amigan: fakedbfs/globals.mk,v 1.8 2005/09/22 23:21:34 caelian Exp $
 CC=cc
 CPPFLAGS=-I../include -I/usr/local/include -DUNIX
-CFLAGS+=-g -Wall -ggdb
+CFLAGS+=-g -Wall -ggdb -fPIC
 # -ansi
 LDFLAGS=-L/usr/local/lib
 .if defined(DMALLOC)

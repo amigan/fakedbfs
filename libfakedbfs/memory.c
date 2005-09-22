@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.15 2005/09/22 22:15:29 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.16 2005/09/22 23:21:34 caelian Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -42,7 +42,7 @@
 #include <lexdefines.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.15 2005/09/22 22:15:29 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.16 2005/09/22 23:21:34 caelian Exp $")
 
 
 #ifdef NO_CALLOC
@@ -74,9 +74,10 @@ void free_enum_sub_elem_list(head, allsub)
 	struct EnumSubElem *head;
 	short int allsub;
 {
-	struct EnumSubElem *c, *next;
-	for(c = head; c != NULL; c = next) {
-		next = free_enum_sub_elem(c, allsub);
+	struct EnumSubElem *c = head;
+
+	while (c != NULL) {
+	    c = free_enum_sub_elem(c, allsub);
 	}
 }
 
@@ -99,9 +100,9 @@ struct EnumElem* free_enum_elem(e)
 void free_enum_elem_list(head)
 	struct EnumElem *head;
 {
-	struct EnumElem *c, *next;
-	for(c = head; c != NULL; c = next) {
-		next = free_enum_elem(c);
+	struct EnumElem *c = head;
+	while (c != NULL) {
+		c = free_enum_elem(c);
 	}
 }
 
@@ -120,11 +121,10 @@ struct EnumHead* free_enum_head(e)
 void free_enum_head_list(head)
 	struct EnumHead *head;
 {
-	struct EnumHead *c, *next;
-	for(c = head; c != NULL; c = next) {
-		next = free_enum_head(c);
-		if(next == 0x0)
-			break;
+	struct EnumHead *c = head;
+	
+	while (c != NULL) {
+		c = free_enum_head(c);
 	}
 }
 
@@ -148,9 +148,10 @@ struct CatElem* free_cat_elem(e)
 void free_cat_elem_list(head)
 	struct CatElem *head;
 {
-	struct CatElem *c, *next;
-	for(c = head; c != NULL; c = next) {
-		next = free_cat_elem(c);
+	struct CatElem *c = head;
+
+	while (c != NULL) {
+		c = free_cat_elem(c);
 	}
 }
 
@@ -173,9 +174,10 @@ struct CatalogueHead* free_cat_head(e)
 void free_cat_head_list(head)
 	struct CatalogueHead *head;
 {
-	struct CatalogueHead *c, *next;
-	for(c = head; c != NULL; c = next) {
-		next = free_cat_head(c);
+	struct CatalogueHead *c = head;
+
+	while (c != NULL) {
+		c = free_cat_head(c);
 	}
 }
 
@@ -201,9 +203,9 @@ struct Plugin* destroy_plugin(e)
 void destroy_plugin_list(h)
 	struct Plugin *h;
 {
-	struct Plugin *c, *next;
-	for(c = h; c != NULL; c = next) {
-		next = destroy_plugin(c);
+	struct Plugin *c = h;
+	while (c != NULL) {
+		c = destroy_plugin(c);
 	}
 }
 
@@ -236,9 +238,10 @@ fields_t* free_field(e)
 void free_field_list(h)
 	fields_t *h;
 {
-	fields_t *c, *next;
-	for(c = h; c != NULL; c = next) {
-		next = free_field(c);
+	fields_t *c = h;
+
+	while (c != NULL) {
+		c = free_field(c);
 	}
 }
 
