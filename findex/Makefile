@@ -1,7 +1,7 @@
-# $Amigan: fakedbfs/findex/Makefile,v 1.3 2005/09/19 22:23:37 dcp1990 Exp $
+# $Amigan: fakedbfs/findex/Makefile,v 1.4 2005/09/22 19:14:56 dcp1990 Exp $
 include ../globals.mk
 LDFLAGS+=-L../libfakedbfs
-LIBS+=-lfakedbfs
+LIBS+=-lfakedbfs $(DMLIB)
 SRCS=findex.c
 OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'
 CFLAGS+=-ansi $(CPPFLAGS) # why?
