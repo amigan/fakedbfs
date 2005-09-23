@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.20 2005/09/19 00:21:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.21 2005/09/23 18:53:00 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.20 2005/09/19 00:21:11 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.21 2005/09/23 18:53:00 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 extern char *yytext;
 }
@@ -189,8 +189,7 @@ subelement(A) ::= subelem(B). {
 		}
 		if(heads->subelhead == NULL) {
 			heads->subelhead = A.subelem;
-			if(B.num != 2)
-				heads->lastsubel = A.subelem;
+			heads->lastsubel = A.subelem;
 		} else if(B.num != 2) {
 			if(heads->lastsubel != NULL)
 				heads->lastsubel->next = A.subelem;
@@ -198,6 +197,9 @@ subelement(A) ::= subelem(B). {
 		}
 		A.subelem->next = heads->curenumh->allsubs; /* this should be null if
 								none defined */
+#ifdef FREEDEBUG
+		printf("allocated %p (%s) - %x %d\n", A.subelem, A.subelem->name, A.subelem->flags, B.num);
+#endif
 	}
 subelem(A) ::= sedirective(B). {A.num = B.num; A.str = B.str;}
 subelem(A) ::= STRING(B). {A.num = 0; A.str = B.str;}
