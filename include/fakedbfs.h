@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.36 2005/09/22 21:25:05 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.37 2005/09/23 00:04:22 dcp1990 Exp $ */
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -65,7 +65,7 @@
 #endif
 
 #define FLOATTYPE double
-#ifndef ISLEX
+#if !defined(ISLEX) && defined(FREEDEBUG)
 #define free(x)		printf("fr %p (%s:%d)\n", x, __FILE__, __LINE__); free(x)
 #endif
 

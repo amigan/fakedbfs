@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.32 2005/09/22 22:05:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.33 2005/09/23 00:04:22 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.32 2005/09/22 22:05:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.33 2005/09/23 00:04:22 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -482,7 +482,6 @@ int make_tables_from_spec(f, sfile, h)
 	struct CatalogueHead *cch;
 	struct EnumHead *ceh;
 
-	dump_enum_head_list(h->enumhead);
 	/* enums */
 	for(ceh = h->enumhead; ceh != NULL; ceh = ceh->next) {
 		if(!new_enum(f, sfile, ceh)) {
