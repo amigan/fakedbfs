@@ -1,4 +1,4 @@
-# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.16 2005/09/22 23:21:34 caelian Exp $
+# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.17 2005/09/23 00:27:35 dcp1990 Exp $
 CC=cc
 LDFLAGS=-L/usr/local/lib
 CPPFLAGS=-I../include -I/usr/local/include -DYY_NO_UNPUT $(PDEBUG) -DUNIX
@@ -10,6 +10,9 @@ OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'
 CPPFLAGS+=-DDMALLOC
 LIBS+=-ldmalloc
 DMALLOC=yes
+.endif
+.if defined(FREEDEBUG)
+CPPFLAGS+=-DFREEDEBUG
 .endif
 CFLAGS+=$(CPPFLAGS) # why?
 #OBJS=sqlite.o dbspec.o dbinit.o lex.yy.o memory.o error.o indexing.o
