@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.16 2005/09/22 23:21:34 caelian Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.17 2005/09/23 00:02:08 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -42,7 +42,7 @@
 #include <lexdefines.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.16 2005/09/22 23:21:34 caelian Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.17 2005/09/23 00:02:08 dcp1990 Exp $")
 
 
 #ifdef NO_CALLOC
@@ -111,8 +111,8 @@ struct EnumHead* free_enum_head(e)
 {
 	struct EnumHead *nx;
 	free(e->name);
-	free_enum_sub_elem_list(e->allsubs, 1);
 	free_enum_elem_list(e->headelem);
+	free_enum_sub_elem_list(e->allsubs, 1);
 	nx = e->next;
 	free(e);
 	return nx;
