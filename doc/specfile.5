@@ -1,6 +1,6 @@
 .\" El manpage-o for the specfile format
 .\" (C)2005, Dan Ponte
-.\" $Amigan: fakedbfs/doc/specfile.5,v 1.2 2005/08/14 08:24:22 dcp1990 Exp $
+.\" $Amigan: fakedbfs/doc/specfile.5,v 1.3 2005/09/24 17:01:56 dcp1990 Exp $
 .Dd August 13, 2005
 .Dt SPECFILE 5
 .Os
@@ -10,7 +10,7 @@
 .Xr libfakedbfs 3 .
 .Sh SYNOPSIS
 #include <dbspecdata.h>
-
+.Pp
 int parse_definition(fdbfs_t *f, char *filename);
 .Sh DESCRIPTION
 .Nm
@@ -77,6 +77,7 @@ it would be referred to as
 Note that
 .Em sameas
 is not available for ALLSUB() blocks.
+.El
 .Sh CATALOGUE DECLARATION FORMAT
 Catalogues are the lifeblood of the fakedbfs system. They store all information
 about the class of files, and allow the user to add to them (via the
@@ -95,7 +96,7 @@ CATALOGUE <catalogue_name> {
 .Ar catalogue_name
 is an arbitrary string describing the catalogue. Element names are also
 arbitrary strings, but note that they cannot be any of the following:
-.Bl -tag -width 4n -offset indent -compact
+.Bl -tag -width 4n -compact
 .It id
 .It file
 .It lastupdate
@@ -116,7 +117,7 @@ capitalise the first letter using the
 routine. The alias is used for human-friendly display of fields.
 .Sh DATATYPES
 The library supports a number of datatypes. Currently, they include
-.Bl -tag -width 4n offset indent -compact
+.Bl -tag -width 4n -compact
 .It Sy string
 simple character string
 .It Sy number
