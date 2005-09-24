@@ -1,0 +1,44 @@
+.\" El manpage-o for the specfile format
+.\" (C)2005, Dan Ponte
+.\" $Amigan: fakedbfs/doc/libfakedbfs.3,v 1.1 2005/09/24 21:48:28 dcp1990 Exp $
+.Dd September 24, 2005
+.Dt LIBFAKEDBFS 3
+.Os
+.Sh NAME
+.Nm libfakedbfs
+.Nd the main library of the Fake Database Filesystem
+.Sh SYNOPSIS
+#include <fakedbfsapps.h>
+.Pp
+#include <fakedbfs.h>
+.Pp
+fdbfs_t* new_fdbfs(char *dbfile, char **error, void (*debugf)(char *,
+enum ErrorAction), int useplugins);
+.Pp
+int destroy_fdbfs(fdbfs_t *f);
+.Sh DESCRIPTION
+.Nm
+is the main library used by the
+.Em fakedbfs
+distribution. The main utilities,
+.Xr fcreatedb 1 ,
+.Xr findex 1 ,
+and
+.Xr fquery 1
+all use it.
+.Sh API FUNCTIONS
+The main functions that most apps will use include:
+.Bl -tag
+.It Xr parse_definition 3
+.It Xr start_db 3
+.El
+.Sh SEE ALSO
+.Xr libfakedbfs 3 ,
+.Xr fcreatedb 5 , 
+.Xr findex 1 ,
+.Xr fedit 1 ,
+.Xr fquery 1
+.Sh AUTHOR
+Dan Ponte <dcp1990@neptune.atopia.net>
+.Pp
+Web: http://www.theamigan.net/fakedbfs/
