@@ -17,6 +17,15 @@ proc platform {pf} {
 	}
 }
 
+proc pcre {} {
+	global platf
+	global mfh
+	global chfh
+	puts $mfh "CPPEXT+=`pcre-config --cflags`"
+	puts $mfh "LIBEXT+=`pcre-config --libs`"
+	puts $chfh "#define USEPCRE 1"
+}
+
 proc dmalloc {} {
 	global mfh
 	global chfh
