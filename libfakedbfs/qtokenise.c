@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.6 2005/09/22 18:56:15 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.7 2005/10/02 15:13:07 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 /* us */
 #include <query.h>
 
-#include "../fdbfsconfig.h"
+#include <fdbfsconfig.h>
 
 #include "queryparser.h"
 #include <fakedbfs.h>
