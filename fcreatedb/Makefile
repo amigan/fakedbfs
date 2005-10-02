@@ -1,7 +1,8 @@
-# $Amigan: fakedbfs/fcreatedb/Makefile,v 1.6 2005/09/22 19:14:56 dcp1990 Exp $
+# $Amigan: fakedbfs/fcreatedb/Makefile,v 1.7 2005/10/02 16:43:09 dcp1990 Exp $
+include ../config.mk
 include ../globals.mk
 LDFLAGS+=-L../libfakedbfs
-LIBS=-lfakedbfs $(DMLIB)
+LIBS=-lfakedbfs $(LIBEXT)
 SRCS=fcreatedb.c
 OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'
 CFLAGS+=-ansi $(CPPFLAGS) # why?

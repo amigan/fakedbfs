@@ -1,0 +1,6 @@
+# $Amigan: fakedbfs/fdbfsconfig,v 1.1 2005/10/02 16:43:06 dcp1990 Exp $
+# this is for Unix...
+platform unix
+prefix /usr/local
+# no dmalloc...
+#dmalloc

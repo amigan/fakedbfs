@@ -27,7 +27,8 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.37 2005/09/23 00:04:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.38 2005/10/02 16:43:14 dcp1990 Exp $ */
+#include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
 #endif
@@ -37,7 +38,7 @@
 #ifndef HAVE_QUERY_H
 #include <query.h>
 #endif
-#ifdef DMALLOC
+#if defined(DMALLOC) && !defined(NODMALLOC)
 #include "dmalloc.h"
 #endif
 #define ERR(act, fmt, ...) ferr(f, act, fmt, __VA_ARGS__)

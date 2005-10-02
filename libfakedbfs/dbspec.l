@@ -1,13 +1,13 @@
 %{
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.12 2005/09/22 21:25:05 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.13 2005/10/02 16:43:15 dcp1990 Exp $ */
 #include <stdio.h>
 #include <string.h>
 #include "dbspec.h"
 #include <lexdefines.h>
-#undef DMALLOC
+#define NODMALLOC 1
 #define ISLEX	1
 #include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.12 2005/09/22 21:25:05 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.13 2005/10/02 16:43:15 dcp1990 Exp $")
 int chrcnt = 0, lincnt = 1; /* not thread-safe, I know */
 %}
 %s comment

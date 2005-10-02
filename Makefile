@@ -1,19 +1,21 @@
 # BSD make makefile for the fakedbfs distribution
 # (C)2005, Dan Ponte
-# $Amigan: fakedbfs/Makefile,v 1.7 2005/09/19 22:23:37 dcp1990 Exp $
+# $Amigan: fakedbfs/Makefile,v 1.8 2005/10/02 16:43:06 dcp1990 Exp $
 include globals.mk
 COMPONENTS=buildtools libfakedbfs fcreatedb findex fquery plugins
-COMPSUF=${COMPONENTS:S/$/_cmp/}
-CMPSCLEAN=${COMPONENTS:S/$/_cl/}
-CLEANFILES=.config
-all: ${COMPSUF}
-${COMPSUF}: .config
-	cd ${@:S/_cmp$//} && $(MAKE) $(.MAKEFLAGS)
-clean: ${CMPSCLEAN} ourclean
-${CMPSCLEAN}:
-	cd ${@:S/_cl$//} && $(MAKE) clean
+CLEANFILES=
+all: .config all-rec
+clean: clean-rec
+all-rec:
+	@for i in $(COMPONENTS) ; do make -C $$i ; done
+clean-rec:
+	@for i in $(COMPONENTS) ; do make -C $$i clean ; done
 #nothing yet...
 .config:
-	touch .config
-ourclean:
-	rm -f ${CLEANFILES}
+	@echo "ERROR: run config.sh first!"
+	@exit 1
+#ourclean:
+#	rm -f ${CLEANFILES}
+configclean:
+	rm -f .config config.h config.mk
+allclean: clean configclean

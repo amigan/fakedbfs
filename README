@@ -1,13 +1,25 @@
-$Amigan: fakedbfs/README,v 1.2 2005/09/20 02:14:15 dcp1990 Exp $
+$Amigan: fakedbfs/README,v 1.3 2005/10/02 16:43:06 dcp1990 Exp $
 
 This is the fakedbfs distribution, version 1.0 (Steely Dan). See the contents of
 doc/ for more information.
 
 TO BUILD:
 
+vim fdbfsconfig
 make
+./config.sh tclsh8.4
+(replace tclsh8.4 with the name of tclsh on your system)
 
-Make Options:
+Make targets include all, clean, configclean (removes only config files), and allclean (clean and configclean)
 
--DMALLOC
-	builds with dmalloc support; you obviously need it installed.
+
+fdbfsconfig options:
+
+platform <unix|amiga|win32>
+	selects target/build platform. This MUST be present.
+
+prefix path
+	sets prefix to whatever (default .)
+
+dmalloc
+	if you want to build with dmalloc, set this
