@@ -12,6 +12,9 @@ proc platform {pf} {
 	}
 	set platf $pf
 	puts $mfh [join [list "CPPOPTS+=-D" [string toupper $pf]] "" ]
+	if {$pf == "win32"} {
+		puts $mfh "LDEXT+=-mno-cygwin -L/mingw/lib"
+	}
 }
 
 proc dmalloc {} {
