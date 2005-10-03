@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fdbfsregex.h,v 1.1 2005/10/03 20:52:49 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fdbfsregex.h,v 1.2 2005/10/03 20:56:23 dcp1990 Exp $ */
 #ifndef HAVE_FDBRE_H
 #define HAVE_FDBRE_H 1
 #include <fdbfsconfig.h>
@@ -35,7 +35,9 @@
 #ifdef USE_PCRE
 #include <pcre.h>
 #else
+#ifndef _REGEX_H_
 #include <regex.h>
+#endif
 #endif
 
 #ifdef USE_PCRE
