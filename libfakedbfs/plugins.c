@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.6 2005/10/02 15:13:07 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.7 2005/10/03 21:05:51 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdio.h>
@@ -47,7 +47,7 @@
 #include <fdbfsconfig.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.6 2005/10/02 15:13:07 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.7 2005/10/03 21:05:51 dcp1990 Exp $")
 
 #define LIBERR(sym) { \
 		debug_info(f, error, "probe_plugin: symbol referece %s failed in %s: %s", sym, fpth, dlerror()); \
@@ -132,6 +132,9 @@ struct Plugin* probe_plugin(f, dirpath, filename, last)
 	free(fpth);
 	
 	return n;
+#else
+#	warning "No plugin code on this platform"
+	return NULL;
 #endif
 }
 
@@ -176,6 +179,9 @@ struct Plugin* search_plugs(f, plugins, path)
 	closedir(d);
 
 	return lp;
+#else
+#	warning "No plugin code on this platform"
+	return NULL;
 #endif
 }
 	
