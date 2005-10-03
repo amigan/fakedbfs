@@ -27,14 +27,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.30 2005/09/19 22:31:40 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.31 2005/10/03 20:52:51 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
 #include <errno.h>
-#include <regex.h>
 #include <stdio.h>
 
 #ifdef UNIX
@@ -46,9 +45,10 @@
 /* other libraries */
 #include <sqlite3.h>
 /* us */
+#include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.30 2005/09/19 22:31:40 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.31 2005/10/03 20:52:51 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -765,12 +765,11 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re) /* this has no prot
 		int useplugs;
 		FTSENT *list;
 		int options;
-		regex_t *re;
+		freg_t *re;
 {
 	int rc;
 	FTSENT *c;
 	char *fpth;
-	char *emsg;
 
 	for(c = list; c; c = c->fts_link) {
 		if(c->fts_info == FTS_ERR || c->fts_info == FTS_NS) {
@@ -781,15 +780,12 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re) /* this has no prot
 		if(c->fts_info == FTS_D) /* no directories */
 			continue;
 		if(re != NULL) {
-			rc = regexec(re, c->fts_name, 0, NULL, 0);
-			if(rc == REG_NOMATCH) {
+			rc = fregexec(re, c->fts_name);
+			if(rc == FREG_NOMATCH) {
 				continue;
-			}
-			else if(rc != 0) {
-				emsg = malloc(128);
-				regerror(rc, re, emsg, 127);
-				ERR(die, "index_dir: error executing regex: %s", emsg);
-				free(emsg);
+			} else if(rc != 0) {
+				ERR(die, "index_dir: error executing regex: %d - %s", rc, re->errmsg);
+				frerrfree(re);
 				return 0;
 			}
 
@@ -855,18 +851,19 @@ int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse)
 #if defined(UNIX)
 	FTS *fpt;
 	FTSENT *p, *chp;
-	char *emsg;
+	char emsg[128];
 	int rc = 1;
-	regex_t tre;
+	freg_t *tre = NULL;
 
 	if(re != NULL) {
-		rc = regcomp(&tre, re, REG_EXTENDED | REG_NOSUB | (nocase ? REG_ICASE : 0));
-		if(rc != 0) {
-			emsg = malloc(128);
-			regerror(rc, &tre, emsg, 127);
-			regfree(&tre);
-			ERR(die, "index_dir: error compiling regex (rc %d) '%s': %s", rc, re, emsg);
-			free(emsg);
+		tre = new_freg(emsg, sizeof(emsg));
+		if(tre == NULL) {
+			ERR(die, "index_dir: error allocating regex: %s", emsg);
+			return 0;
+		}
+		if((rc = fregcomp(tre, re, (nocase ? FREG_NOCASE : 0))) != 0) {
+			ERR(die, "index_dir: error compiling regex (rc %d) '%s': %s", rc, re, tre->errmsg);
+			destroy_freg(tre);
 			return 0;
 		}
 	}
@@ -877,11 +874,11 @@ int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse)
 
 	chp = fts_children(fpt, 0);
 	if (chp != NULL)
-		rc = cindexer_dir(f, cat, batch, useplugs, chp, 0, re != NULL ? &tre : NULL);
+		rc = cindexer_dir(f, cat, batch, useplugs, chp, 0, re != NULL ? tre : NULL);
 
 	if(f == NULL) {
 		ERR(die, "index_dir: cannot open director{y,ies} because of %s", strerror(errno));
-		regfree(&tre);
+		destroy_freg(tre);
 		return 0;
 	}
 
@@ -897,7 +894,7 @@ int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse)
 			case FTS_D:
 				/* directory */
 				chp = fts_children(fpt, 0);
-				rc = cindexer_dir(f, cat, batch, useplugs, chp, 0, re != NULL ? &tre : NULL);
+				rc = cindexer_dir(f, cat, batch, useplugs, chp, 0, re != NULL ? tre : NULL);
 
 				if(!rc)
 					break;
@@ -912,7 +909,7 @@ int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse)
 
 	fts_close(fpt);
 	if(re != NULL)
-		regfree(&tre);
+		destroy_freg(tre);
 #else
 #	error "Code not written for index_dir under this OS"
 #endif

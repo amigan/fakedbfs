@@ -28,14 +28,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.27 2005/10/02 15:13:07 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.28 2005/10/03 20:52:51 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
 #include <errno.h>
-#include <regex.h>
 #include <stdio.h>
 #include <float.h>
 
@@ -47,6 +46,7 @@
 #include <fdbfsconfig.h>
 #include "queryparser.h"
 #include <fakedbfs.h>
+#include <fdbfsregex.h>
 
 #ifdef UNIX
 #	include <sys/mman.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.27 2005/10/02 15:13:07 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.28 2005/10/03 20:52:51 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -219,14 +219,21 @@ qreg_t* qreg_compile(regex, case_insens, errmsg)
 	char **errmsg;
 {
 	int rc;
+	char emsg[128];
 	qreg_t *new;
 
 	new = allocz(sizeof(*new));
 	new->tregex = strdup(regex);
-	if((rc = regcomp(&(new->re), regex, REG_EXTENDED | REG_NOSUB | (case_insens ? REG_ICASE : 0))) != 0) {
-		*errmsg = malloc(128);
-		regerror(rc, &(new->re), *errmsg, 127);
-		regfree(&(new->re));
+	new->re = new_freg(emsg, sizeof(emsg));
+	if(new->re == NULL) {
+		*errmsg = strdup(emsg);
+		free(new->tregex);
+		free(new);
+		return NULL;
+	}
+	if((rc = fregcomp(new->re, regex, (case_insens ? FREG_NOCASE : 0))) != 0) {
+		*errmsg = strdup(new->re->errmsg);
+		destroy_freg(new->re);
 		free(new->tregex);
 		free(new);
 		return NULL;
@@ -264,7 +271,7 @@ void regex_func(ctx, i, sqval)
 		if(c->opcode == OP_REGEXP) {
 			oqr = (qreg_t*)c->ops.o3;
 			if(strcmp(regexp, oqr->tregex) == 0) {
-				rc = regexec(&oqr->re, string, 0, NULL, 0);
+				rc = fregexec(oqr->re, (char*)string);
 				if(rc == 0)
 					orc = 1;
 				break;
@@ -278,7 +285,7 @@ void regex_func(ctx, i, sqval)
 void qreg_destroy(q)
 	qreg_t *q;
 {
-	regfree(&(q->re));
+	destroy_freg(q->re);
 	free(q->tregex);
 	free(q);
 }

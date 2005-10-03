@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/README,v 1.3 2005/10/02 16:43:06 dcp1990 Exp $
+$Amigan: fakedbfs/README,v 1.4 2005/10/03 20:52:47 dcp1990 Exp $
 
 This is the fakedbfs distribution, version 1.0 (Steely Dan). See the contents of
 doc/ for more information.
@@ -23,3 +23,7 @@ prefix path
 
 dmalloc
 	if you want to build with dmalloc, set this
+
+pcre pcre-config_path
+	Use libpcre instead of POSIX regexs. pcre-config path is the directory where pcre-config is contianed.
+	ex: pcre /usr/local/bin

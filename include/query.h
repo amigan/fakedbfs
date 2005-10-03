@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/query.h,v 1.12 2005/09/22 00:38:29 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/query.h,v 1.13 2005/10/03 20:52:49 dcp1990 Exp $ */
 #ifndef HAVE_QUERY_H
 #define HAVE_QUERY_H 1
 #ifndef _REGEX_H_
@@ -36,6 +36,7 @@
 #ifndef HAVE_DBSPECDATA_H
 #include <dbspecdata.h>
 #endif
+#include <fdbfsregex.h>
 
 /* See doc/QUERY_OPCODES for how these are used */
 #define OP_BEGINQ	0x1
@@ -128,7 +129,7 @@ typedef struct {
 } query_t;
 
 typedef struct {
-	regex_t re;
+	freg_t *re;
 	char *colname;
 	char *tregex;
 } qreg_t;
