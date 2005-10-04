@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.38 2005/10/02 16:43:14 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.39 2005/10/04 20:26:40 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -50,6 +50,10 @@
 
 #define FAKEDBFSVER "1.0.0" /* major changes with major incompat changes, minor with minor incompat, micro with additions, bugfixes, and security fixes */
 #define VERNAME "Steely Dan" /* this changes for each release */
+#define FAKEDBFSMAJOR	1
+#define FAKEDBFSMINOR	0
+#define FAKEDBFSMICRO	0
+
 
 #ifndef lint
 #define RCSID(str) static const char _cvsid[] __unused = str;
