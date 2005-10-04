@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.32 2005/10/04 17:09:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.33 2005/10/04 20:52:42 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.32 2005/10/04 17:09:11 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.33 2005/10/04 20:52:42 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -725,7 +725,7 @@ int file_has_changed(f, cat, filename, statstruct)
 	upd = (time_t)get_lastupdate(f, cat, filename);
 
 	if(upd == -1) { /*error*/
-		CERR(die, "get_lsatupdate errored. ", NULL);
+		CERR(die, "get_lastupdate errored. ", NULL);
 		return -1;
 	} else if(upd == -2) {
 		return 1;
@@ -854,9 +854,6 @@ int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse)
 	char emsg[128];
 	int rc = 1;
 	freg_t *tre = NULL;
-
-	if(strlen(*dirs) == 0)
-		return 1;
 
 	if(re != NULL) {
 		tre = new_freg(emsg, sizeof(emsg));

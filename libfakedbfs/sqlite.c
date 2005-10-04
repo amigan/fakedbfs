@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.16 2005/09/22 22:08:28 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.17 2005/10/04 20:52:42 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.16 2005/09/22 22:08:28 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.17 2005/10/04 20:52:42 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -96,6 +96,38 @@ int table_exists(f, tname)
 	sqlite3_finalize(cst);
 	return 0;
 }
+
+int cat_exists(f, cat)
+	fdbfs_t *f;
+	char *cat;
+{
+	const char *tail;
+	sqlite3_stmt *cst;
+	char* sql;
+	int num = 0;
+	int rc;
+
+	sql = sqlite3_mprintf("SELECT name FROM cat_list WHERE name='%q'", cat);
+	if((rc = sqlite3_prepare(f->db, sql, strlen(sql), &cst, &tail)) != SQLITE_OK) {
+		ERR(die, "cat_exists(f, \"%s\"): SQLite error after prepare %s", cat, sqlite3_errmsg(f->db));
+		sqlite3_free(sql);
+		return -1;
+	}
+	sqlite3_free(sql);
+	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
+		num = 1;
+		break;
+	}
+
+	if(rc != SQLITE_OK && rc != SQLITE_DONE && rc != SQLITE_ROW) {
+		ERR(die, "cat_exists(f, \"%s\"): SQLite error after step: %s", cat, sqlite3_errmsg(f->db));
+		sqlite3_finalize(cst);
+		return -1;
+	}
+	sqlite3_finalize(cst);
+	return num;
+}
+
 
 int create_table(f, tname, tspec)
 	fdbfs_t *f;

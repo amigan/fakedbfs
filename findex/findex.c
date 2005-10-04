@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/findex/findex.c,v 1.15 2005/09/19 22:31:40 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.16 2005/10/04 20:52:42 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -48,7 +48,7 @@
 #define FINDEXVER "0.1"
 #define MAXPLEN 1023
 
-RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.15 2005/09/19 22:31:40 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.16 2005/10/04 20:52:42 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int recurse = 0;
@@ -113,7 +113,7 @@ int main(argc, argv)
 	int argc;
 	char *argv[];
 {
-	int c, i;
+	int c, i, rc;
 	char *estr, *pname, *cat, *cf;
 	char *tnl;
 
@@ -225,6 +225,27 @@ int main(argc, argv)
 		return -1;
 	}
 
+	if((rc = cat_exists(f, cat)) != 1) {
+		switch(rc) {
+			case 0:
+				fprintf(stderr, "Catalogue %s doesn't exist!\n", cat);
+				free(dbf);
+				free(cat);
+				if(regex != NULL) free(regex);
+				destroy_fdbfs(f);
+				return -2;
+			case -1:
+			default:
+				fprintf(stderr, "error checking if catalogue exists: %s\n", f->error.emsg);
+				estr_free(&f->error);
+				free(dbf);
+				free(cat);
+				if(regex != NULL) free(regex);
+				destroy_fdbfs(f);
+				return -1;
+		}
+	}
+
 	
 	for(i = 0; i < argc; i++) {
 		cf = strdup(argv[i]);
@@ -237,7 +258,8 @@ int main(argc, argv)
 
 	if(readstd)
 		while(!feof(stdin)) {
-			fgets(tbfr, MAXPLEN, stdin);
+			if(fgets(tbfr, MAXPLEN, stdin) == NULL)
+				break;
 			if((tnl = strrchr(tbfr, '\n')) != NULL)
 				*tnl = '\0';
 			if(!idxus(tbfr, cat))
