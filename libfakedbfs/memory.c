@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.19 2005/10/03 21:05:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.20 2005/10/04 17:04:03 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #include <lexdefines.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.19 2005/10/03 21:05:51 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.20 2005/10/04 17:04:03 dcp1990 Exp $")
 
 
 #ifdef NO_CALLOC
@@ -65,7 +65,9 @@ struct EnumSubElem* free_enum_sub_elem(e, allsub) /* returns next */
 #ifdef FREEDEBUG
 	printf("se %p %s a %s p %s\n", e, e->name, e->flags & SUBE_IS_SAMEAS ? "sameas" : "", e->flags & SUBE_IS_SELF ? "self" : "");
 #endif
-	if((e->flags & SUBE_IS_ALLSUB) && !allsub) return NULL;
+	if((e->flags & SUBE_IS_ALLSUB) && !allsub) {
+		return NULL;
+	}
 	if(!(e->flags & SUBE_IS_SAMEAS) && e->name != NULL) {
 		free(e->name);
 		e->name = NULL; /* maybe we need this */

@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.21 2005/09/23 18:53:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.22 2005/10/04 17:04:02 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.21 2005/09/23 18:53:00 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.22 2005/10/04 17:04:02 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 extern char *yytext;
 }
@@ -185,18 +185,21 @@ subelement(A) ::= subelem(B). {
 			if(heads->lastsubel != NULL)
 				heads->lastsubel->next = A.subelem;
 			heads->lastsubel = las;
+			las->next = heads->curenumh->allsubs;
 			free(B.str); /* must do when done */
 		}
 		if(heads->subelhead == NULL) {
 			heads->subelhead = A.subelem;
 			heads->lastsubel = A.subelem;
+			A.subelem->next = heads->curenumh->allsubs; /* this should be null if
+								none defined */
 		} else if(B.num != 2) {
 			if(heads->lastsubel != NULL)
 				heads->lastsubel->next = A.subelem;
 			heads->lastsubel = A.subelem;
-		}
-		A.subelem->next = heads->curenumh->allsubs; /* this should be null if
+			A.subelem->next = heads->curenumh->allsubs; /* this should be null if
 								none defined */
+		}
 #ifdef FREEDEBUG
 		printf("allocated %p (%s) - %x %d\n", A.subelem, A.subelem->name, A.subelem->flags, B.num);
 #endif

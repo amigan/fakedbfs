@@ -26,6 +26,11 @@ proc pcre {pcreconfpath} {
 	puts $chfh "#define USE_PCRE 1"
 }
 
+proc freedebug {} {
+	global chfh
+	puts $chfh "#define FREEDEBUG 1"
+}
+
 proc dmalloc {} {
 	global mfh
 	global chfh

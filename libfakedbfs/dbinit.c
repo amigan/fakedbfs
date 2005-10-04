@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.33 2005/09/23 00:04:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.34 2005/10/04 17:04:02 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.33 2005/09/23 00:04:22 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.34 2005/10/04 17:04:02 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -259,19 +259,24 @@ struct EnumSubElem* copy_sub_list(from, to, fajah, lastval)
 	c = from;
 	tc = to;
 	memcpy(tc, c, sizeof(*c));
-	tc->value = *lastval++;
+	tc->value = *(lastval)++;
 	tc->father = fajah;
 	tc->flags |= SUBE_IS_SAMEAS;
 	tc->next = NULL;
 	tlast = tc;
 	for(c = c->next; c != NULL; c = c->next) {
+		if(c->flags & SUBE_IS_ALLSUB)
+			continue;
 		tc = allocz(sizeof(*c));
 		tlast->next = tc;
 		memcpy(tc, c, sizeof(*c));
-		tc->value = *lastval++;
+		tc->value = (*lastval)++;
 		tc->father = fajah;
 		tc->flags |= SUBE_IS_SAMEAS;
 		tc->next = NULL;
+#ifdef FREEDEBUG
+		printf("nam %s %p\n", tc->name, tc);
+#endif
 		tlast = tc;
 	}
 	return tlast;
