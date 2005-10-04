@@ -1,0 +1,48 @@
+.\" El manpage-o for the specfile format
+.\" (C)2005, Dan Ponte
+.\" $Amigan: fakedbfs/doc/query.5,v 1.1 2005/10/04 22:06:40 dcp1990 Exp $
+.Dd October 4, 2005
+.Dt QUERY 5
+.Os
+.Sh NAME
+.Nm query
+.Nd how fakedbfs queries the database
+.Sh SYNOPSIS
+#include <query.h>
+.Pp
+#include <fakedbfs.h>
+.Sh DESCRIPTION
+A
+.Nm
+is the method of querying the database used by
+.Em fakedbfs .
+.Xr fquery 1
+is normally how one would use it.
+.Sh FORMAT
+An example query would be:
+.Bd -literal
+QUERY FROM music WHERE artist == 'Electric Light Orchestra'
+.Ed
+.Pp
+.Dq QUERY FROM
+always appears, and the name of the catalogue follows it (
+.Dw music
+in this case.) After that, you have a
+.Dq WHERE
+clause, which only selects elements matching the criteria following it.
+.Pp
+The criteria can include literal matching or regular expressions. Regular expressions are
+used as follows:
+.Bd -literal
+QUERY FROM music WHERE artist =~ /.*Light Or[cg]es.*/
+.Ed
+.Sh COMING SOON
+Negation is currently not supported by the query parser grammar (though the query VM does support it
+somewhat.) Other operators are also expected.
+.Sh SEE ALSO
+.Xr libfakedbfs 3 ,
+.Xr fquery 1
+.Sh AUTHOR
+Dan Ponte <dcp1990@neptune.atopia.net>
+.Pp
+Web: http://www.theamigan.net/fakedbfs/
