@@ -1,0 +1,9 @@
+$Amigan: fakedbfs/CHANGELOG,v 1.1 2005/10/07 20:55:42 dcp1990 Exp $
+
+Changelog
+
+v1.1.0 ("Bodhisattva")
+*Makefiles should work with gmake
+
+v1.0.0 ("Steely Dan")
+*Initial Release
