@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.40 2005/10/04 20:52:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.41 2005/10/07 20:56:57 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -48,10 +48,10 @@
 #define MAJOR_API_VERSION 1
 #define MINOR_API_VERSION 0
 
-#define FAKEDBFSVER "1.0.0" /* major changes with major incompat changes, minor with minor incompat, micro with additions, bugfixes, and security fixes */
-#define VERNAME "Steely Dan" /* this changes for each release */
+#define FAKEDBFSVER "1.1.0" /* major changes with major incompat changes, minor with minor incompat, micro with additions, bugfixes, and security fixes */
+#define VERNAME "Bodhisattva" /* this changes for each release */
 #define FAKEDBFSMAJOR	1
-#define FAKEDBFSMINOR	0
+#define FAKEDBFSMINOR	1
 #define FAKEDBFSMICRO	0
 
 
