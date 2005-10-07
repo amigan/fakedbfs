@@ -5,13 +5,9 @@ LDFLAGS=-L/usr/local/lib
 CPPFLAGS+=-I../../include
 LIBS=-lid3 -lstdc++ -lz $(LIBEXT)
 SRCS=music.c
-OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'
+OBJS=music.o
+#OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'
 CFLAGS+=$(CPPFLAGS)
-.if defined(DMALLOC)
-DMALLOC=yes
-CPPFLAGS+=-DDMALLOC
-LIBS+=-ldmalloc
-.endif
 
 all: .depend music.so
 .depend: $(SRCS)

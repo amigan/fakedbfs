@@ -1,4 +1,4 @@
-# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.20 2005/10/07 20:42:18 dcp1990 Exp $
+# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.21 2005/10/07 20:51:18 dcp1990 Exp $
 include ../config.mk
 include ../globals.mk
 CC=cc
@@ -6,9 +6,9 @@ CPPFLAGS+=-DYY_NO_UNPUT
 LIBS=-lsqlite3 -lfl -lm $(LIBEXT)
 CFLAGS+=-ansi
 SRCS=libfakedbfs.c sqlite.c dbspec.c dbinit.c lex.yy.c memory.c error.c indexing.c debug.c plugins.c query.c queryparser.c qtokenise.c fregex.c
-OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'
+OBJS=libfakedbfs.o sqlite.o dbspec.o dbinit.o lex.yy.o memory.o error.o indexing.o debug.o plugins.o query.o queryparser.o qtokenise.o fregex.o
+#OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'
 CFLAGS+=$(CPPFLAGS) # why?
-#OBJS=sqlite.o dbspec.o dbinit.o lex.yy.o memory.o error.o indexing.o
 all: .depend libfakedbfs.so libfakedbfs.a
 .depend: $(SRCS)
 	mkdep $(CPPFLAGS) $(SRCS)

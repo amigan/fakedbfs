@@ -1,10 +1,11 @@
-# $Amigan: fakedbfs/fquery/Makefile,v 1.6 2005/10/07 20:42:18 dcp1990 Exp $
+# $Amigan: fakedbfs/fquery/Makefile,v 1.7 2005/10/07 20:51:18 dcp1990 Exp $
 include ../config.mk
 include ../globals.mk
 LDFLAGS+=-L../libfakedbfs
 LIBS+=-lfakedbfs $(LIBEXT)
 SRCS=fquery.c
-OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'
+OBJS=fquery.o
+#OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'
 CFLAGS+=-ansi $(CPPFLAGS) # why?
 #OBJS=sqlite.o dbspec.o dbinit.o lex.yy.o memory.o error.o indexing.o
 all: .depend fquery
