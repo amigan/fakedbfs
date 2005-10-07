@@ -1,4 +1,4 @@
-# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.19 2005/10/03 20:52:51 dcp1990 Exp $
+# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.20 2005/10/07 20:42:18 dcp1990 Exp $
 include ../config.mk
 include ../globals.mk
 CC=cc
@@ -24,7 +24,7 @@ libfakedbfs.a: $(OBJS)
 	ar rc libfakedbfs.a $(OBJS)
 	ranlib libfakedbfs.a
 %.o: %.c
-	$(CC) $(CFLAGS) -c ${.SOURCE}
+	$(CC) $(CFLAGS) -c $<
 lint:
 	lint -s $(CPPFLAGS) $(SRCS)
 install: all

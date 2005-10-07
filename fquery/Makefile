@@ -1,4 +1,4 @@
-# $Amigan: fakedbfs/fquery/Makefile,v 1.5 2005/10/02 16:43:12 dcp1990 Exp $
+# $Amigan: fakedbfs/fquery/Makefile,v 1.6 2005/10/07 20:42:18 dcp1990 Exp $
 include ../config.mk
 include ../globals.mk
 LDFLAGS+=-L../libfakedbfs
@@ -13,6 +13,6 @@ all: .depend fquery
 fquery: $(OBJS)
 	$(CC) $(LDFLAGS) -o fquery ${OBJS} $(LIBS)
 %.o: %.c
-	$(CC) $(CFLAGS) -c ${.SOURCE}
+	$(CC) $(CFLAGS) -c $<
 clean:
 	rm -f *.core *.o *~ .depend fquery

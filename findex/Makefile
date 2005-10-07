@@ -1,4 +1,4 @@
-# $Amigan: fakedbfs/findex/Makefile,v 1.5 2005/10/02 16:43:10 dcp1990 Exp $
+# $Amigan: fakedbfs/findex/Makefile,v 1.6 2005/10/07 20:42:18 dcp1990 Exp $
 include ../config.mk
 include ../globals.mk
 LDFLAGS+=-L../libfakedbfs
@@ -13,6 +13,6 @@ all: .depend findex
 findex: $(OBJS)
 	$(CC) $(LDFLAGS) -o findex ${OBJS} $(LIBS)
 %.o: %.c
-	$(CC) $(CFLAGS) -c ${.SOURCE}
+	$(CC) $(CFLAGS) -c $<
 clean:
 	rm -f *.core *.o *~ .depend findex

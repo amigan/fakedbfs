@@ -1,4 +1,4 @@
-# $Amigan: fakedbfs/fcreatedb/Makefile,v 1.7 2005/10/02 16:43:09 dcp1990 Exp $
+# $Amigan: fakedbfs/fcreatedb/Makefile,v 1.8 2005/10/07 20:42:18 dcp1990 Exp $
 include ../config.mk
 include ../globals.mk
 LDFLAGS+=-L../libfakedbfs
@@ -13,6 +13,6 @@ all: .depend fcreatedb
 fcreatedb: $(OBJS)
 	$(CC) $(LDFLAGS) -o fcreatedb ${OBJS} $(LIBS)
 %.o: %.c
-	$(CC) $(CFLAGS) -c ${.SOURCE}
+	$(CC) $(CFLAGS) -c $<
 clean:
 	rm -f *.core *.o *~ .depend fcreatedb

@@ -19,6 +19,6 @@ all: .depend music.so
 music.so: $(OBJS)
 	cc -shared -o music.so $(LDFLAGS) $(OBJS) $(LIBS)
 %.o: %.c
-	cc $(CFLAGS) -c $(.SOURCE)
+	cc $(CFLAGS) -c $<
 clean:
 	rm -f $(OBJS) *.core *~ music.so .depend
