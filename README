@@ -1,7 +1,7 @@
-$Amigan: fakedbfs/README,v 1.6 2005/10/07 20:57:35 dcp1990 Exp $
+$Amigan: fakedbfs/README,v 1.7 2005/10/07 20:59:27 dcp1990 Exp $
 
 This is the fakedbfs distribution, version 1.1.0-RELEASE (Bodhisattva). See the contents of
-doc/ for more information. I know API docs suck now...I plan on changing this with 1.1-RELEASE.
+doc/ for more information. I know API docs suck now...I plan on changing this with this release.
 Feel free to email me at <dcp1990@neptune.atopia.net> if you have any questions.
 
 
@@ -16,8 +16,8 @@ it may have problems building on systems such as Linux or Solaris. Please, mail 
 TO BUILD:
 
 vim fdbfsconfig
-make
 sh config.sh tclsh8.4
+make
 (replace tclsh8.4 with the name of tclsh on your system)
 
 Currently, there are no installation procedures. I will have these next release.
