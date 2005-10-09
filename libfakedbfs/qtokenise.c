@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.8 2005/10/03 20:52:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.9 2005/10/09 07:47:12 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,6 +47,8 @@
 
 #include "queryparser.h"
 #include <fakedbfs.h>
+
+RCSID("$Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.9 2005/10/09 07:47:12 dcp1990 Exp $")
 
 
 /* from SQLite... */

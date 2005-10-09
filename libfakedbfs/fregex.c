@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.1 2005/10/03 20:53:03 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.2 2005/10/09 07:47:12 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,6 +45,8 @@
 #include <fdbfsconfig.h>
 #include <fakedbfs.h>
 #include <fdbfsregex.h>
+
+RCSID("$Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.2 2005/10/09 07:47:12 dcp1990 Exp $")
 
 int frinitialise(fr)
 	freg_t *fr;
