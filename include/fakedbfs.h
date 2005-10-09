@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.44 2005/10/09 07:47:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.45 2005/10/09 07:50:24 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -197,6 +197,13 @@ typedef struct {
 #endif
 } file_id_t;
 
+typedef struct {
+	struct CrawlFrame *topframe;
+	fdbfs_t *f;
+	int maxlevels;
+	int mlbefdep; /* max levels before we just start doing a depth traversal rather than a breadth */
+} crawl_t;
+
 typedef struct CrawlFrame {
 	struct CrawlFrame *stack; /* this should be an array here, but oh well */
 	struct CrawlFrame *sp;
@@ -206,12 +213,6 @@ typedef struct CrawlFrame {
 	crawl_t *fajah;
 } crawlframe_t;
 
-typedef struct {
-	crawlframe_t *topframe;
-	fdbfs_t *f;
-	int maxlevels;
-	int mlbefdep; /* max levels before we just start doing a depth traversal rather than a breadth */
-} crawl_t;
 /* end crawler */
 
 #ifdef NO_CALLOC
