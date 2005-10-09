@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.34 2005/10/04 17:04:02 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.35 2005/10/09 04:30:52 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.34 2005/10/04 17:04:02 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.35 2005/10/09 04:30:52 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -258,6 +258,9 @@ struct EnumSubElem* copy_sub_list(from, to, fajah, lastval)
 	if(from == NULL) return NULL;
 	c = from;
 	tc = to;
+#ifdef FREEDEBUG
+	printf("to %p\n", tc);
+#endif
 	memcpy(tc, c, sizeof(*c));
 	tc->value = *(lastval)++;
 	tc->father = fajah;
