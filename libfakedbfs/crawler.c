@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.1 2005/10/09 07:47:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.2 2005/10/10 12:44:49 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.1 2005/10/09 07:47:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.2 2005/10/10 12:44:49 dcp1990 Exp $")
 
 crawl_t* new_crawler(f, mlevels, mlbd)
 	fdbfs_t *f;
@@ -62,4 +62,10 @@ crawl_t* new_crawler(f, mlevels, mlbd)
 	new->f = f;
 
 	return new;
+}
+
+int crawl_dir(dir)
+	char *dir;
+{
+	return 1;
 }
