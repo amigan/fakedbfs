@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.33 2005/10/04 20:52:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.34 2005/10/14 21:15:20 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.33 2005/10/04 20:52:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.34 2005/10/14 21:15:20 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -790,10 +790,12 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re) /* this has no prot
 			}
 
 #if 0
+			char cwdbf[1024];
 			fplen = strlen(c->fts_path) + 1 /* null */ + strlen(c->fts_name);
 			fpth = malloc(fplen * sizeof(char));
 			strlcpy(fpth, c->fts_path, fplen);
 			strlcat(fpth, c->fts_name, fplen);
+			printf(" cwd %s path == '%s', name == '%s', accpath == '%s'\n", getcwd(cwdbf, 1023), c->fts_path, c->fts_name, c->fts_accpath);
 #endif
 			fpth = strdup(c->fts_name);
 
@@ -814,6 +816,9 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re) /* this has no prot
 			} else
 				free(fpth);
 		} else {
+#if 0
+			printf("path == '%s', name == '%s', accpath == '%s'\n", c->fts_path, c->fts_name, c->fts_accpath);
+#endif
 			fpth = strdup(c->fts_name);
 
 			rc = file_has_changed(f, cat, fpth, c->fts_statp);

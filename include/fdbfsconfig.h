@@ -1,5 +1,5 @@
 /* configuration header */
-/* $Amigan: fakedbfs/include/fdbfsconfig.h,v 1.2 2005/10/02 16:43:14 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fdbfsconfig.h,v 1.3 2005/10/14 21:15:20 dcp1990 Exp $ */
 
 #ifndef HAVE_FDBFSCONFIG_H
 
@@ -27,4 +27,8 @@
 #define DEFAULT_STACKSIZE	30 /* don't make this less than the max. number of fields you have, plus others,
 				      plus at least 1 for the fields_t* after a step (maybe more if you're lazy and
 				      don't pop it off right after! */
+
+#define CRAWLFRAME_MAX		20 /* this takes a LOT of memory...this many crawlframe_t's per directory frame...it's just a tradeoff between being able to
+				      crawl more directories or using less memory....once the hybrid system is finished (depth and breadth), this will be
+				      less of an issue */
 #endif

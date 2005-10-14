@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.45 2005/10/09 07:50:24 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.46 2005/10/14 21:15:20 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -192,9 +192,8 @@ typedef struct {
 #if defined(UNIX)
 	int filenum;
 	int devnum;
-#elif defined(WIN32) || defined(AMIGA)
-	char *filename;
 #endif
+	char *filename;
 } file_id_t;
 
 typedef struct {
@@ -208,8 +207,11 @@ typedef struct CrawlFrame {
 	struct CrawlFrame *stack; /* this should be an array here, but oh well */
 	struct CrawlFrame *sp;
 	struct CrawlFrame *stop;
+	int maxelements;
+	int cindex;
 	file_id_t oid;
 	int level;
+	struct CrawlFrame *parent;
 	crawl_t *fajah;
 } crawlframe_t;
 
@@ -339,6 +341,16 @@ int extract_token_data(char *cp, int t, size_t len, Toke *toke);
 int qtok(char **cp, int *tval, Toke *toke, char *ctok /* MUST be a buffer at least 512b long */);
 void regex_func(sqlite3_context *ctx, int i, sqlite3_value **sqval);
 char* query_error(int rc);
+
+/* crawl stuff */
+crawl_t* new_crawler(fdbfs_t *f, int mlevels, int mlbd);
+void destroy_crawler(crawl_t *cr);
+int push_frame(crawlframe_t *dst, crawlframe_t *obj);
+int pop_frame(crawlframe_t *src, crawlframe_t *dst);
+crawlframe_t* create_frame(crawl_t *cr, size_t size, crawlframe_t *parent, file_id_t *fid, int level);
+void destroy_frame(crawlframe_t *cf);
+void traverse_and_free(crawlframe_t *cf);
+int crawl_dir(crawl_t *cr, char *dir); /* simply adds dir to the base frame */
 
 /* application interfaces */
 int parse_definition(fdbfs_t *f, char *filename);
