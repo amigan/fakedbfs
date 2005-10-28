@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/TODO,v 1.15 2005/10/19 19:46:52 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.16 2005/10/28 19:02:16 dcp1990 Exp $
 
 TODO as of 1.1-RELEASE (double stars means "must do before release of 1.1-RELEASE"):
 *Mucho memory leaks. Some kind soul should run valgrind and fix them. I don't have the time; I will when
@@ -20,3 +20,4 @@ TODO as of 1.1-RELEASE (double stars means "must do before release of 1.1-RELEAS
 Wishlist for 1.2/2.0:
 *Build in Unix-specific stuff for platforms that don't have it (such as FTS)
 *Implement some VFS stuff (FUSE, the new thing for SoC, Tcl VFS)
+*Use Ficl as an interpreter for FORTH-based plugins (and add a fakedbfs dictionary)
