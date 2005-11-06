@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.46 2005/10/14 21:15:20 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.47 2005/11/06 22:59:11 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -198,22 +198,39 @@ typedef struct {
 
 typedef struct {
 	struct CrawlFrame *topframe;
+	struct CrawlFrame *curframe;
 	fdbfs_t *f;
 	int maxlevels;
 	int mlbefdep; /* max levels before we just start doing a depth traversal rather than a breadth */
 } crawl_t;
 
+struct DirState {
+#if defined(UNIX) && defined(HAVE_DIR_H)
+	DIR *dir;
+#endif
+};
+
 typedef struct CrawlFrame {
-	struct CrawlFrame *stack; /* this should be an array here, but oh well */
-	struct CrawlFrame *sp;
-	struct CrawlFrame *stop;
+	struct CrawlFrame **stack; /* this is stack of POINTERS to crawlframes, not of crawlframes themselves! */
+	struct CrawlFrame **sp; /* *sp is the object, sp is what we deal with */
+	struct CrawlFrame **stop;
 	int maxelements;
 	int cindex;
 	file_id_t oid;
+	struct DirState ds;
 	int level;
 	struct CrawlFrame *parent;
 	crawl_t *fajah;
 } crawlframe_t;
+
+#define CRAWL_ERROR	0x0 /* error; curframe null? */
+#define CRAWL_FILE	0x1 /* found a file; act upon it */
+#define CRAWL_DIR	0x2 /* found a directory; rerun crawl_go() to find the next entry */
+#define CRAWL_FINISHED	0x3 /* we've hit the bottom; give up */
+
+/* flags */
+#define CRAWL_DIE_ON_ERROR	0x1
+
 
 /* end crawler */
 
@@ -346,7 +363,7 @@ char* query_error(int rc);
 crawl_t* new_crawler(fdbfs_t *f, int mlevels, int mlbd);
 void destroy_crawler(crawl_t *cr);
 int push_frame(crawlframe_t *dst, crawlframe_t *obj);
-int pop_frame(crawlframe_t *src, crawlframe_t *dst);
+crawlframe_t *pop_frame(crawlframe_t *src);
 crawlframe_t* create_frame(crawl_t *cr, size_t size, crawlframe_t *parent, file_id_t *fid, int level);
 void destroy_frame(crawlframe_t *cf);
 void traverse_and_free(crawlframe_t *cf);

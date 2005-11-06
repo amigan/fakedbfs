@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.3 2005/10/14 21:15:20 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.4 2005/11/06 22:59:11 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -40,6 +40,7 @@
 #	include <sys/types.h>
 #	include <sys/stat.h>
 #	include <dirent.h>
+#	define HAVE_DIR_H 1
 #endif
 /* other libraries */
 #include <sqlite3.h>
@@ -48,12 +49,13 @@
 #include <fdbfsconfig.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.3 2005/10/14 21:15:20 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.4 2005/11/06 22:59:11 dcp1990 Exp $")
 
 crawl_t* new_crawler(f, mlevels, mlbd)
 	fdbfs_t *f;
 	int mlevels; /* max levels to traverse; spew errors after this */
-	int mlbd; /* max levels before depth traversal....might not be used, oh well */
+	int mlbd; /* max levels before depth traversal....might not be used, oh well
+		   * set to 1 for depth-only traversal, 0 for no depth traversal at all */
 {
 	crawl_t *new;
 
@@ -79,42 +81,36 @@ int push_frame(dst, obj)
 	if(dst->cindex >= dst->maxelements)
 		return 0;
 
-	dst->sp += dst->cindex == 0 ? 0 : sizeof(*dst->sp);
+	dst->sp += dst->cindex == 0 ? 0 : 1; /* hope this works */
 	if(dst->cindex != 0)
 		dst->cindex++;
 
-	memcpy(dst->sp, obj, sizeof(*dst->sp));
+	*dst->sp = obj;
 
 	return 1;
 }
 
-int pop_frame(src, dst)
+crawlframe_t *pop_frame(src)
 	crawlframe_t *src;
-	crawlframe_t *dst;
 {
 	if(src->cindex <= 0)
-		return 0;
+		return NULL;
 
-	src->sp -= sizeof(*src->sp);
 	src->cindex--;
 
-	memcpy(src->sp, dst, sizeof(*dst));
-
-	return 1;
+	return *(src->sp--);
 }
 
 void traverse_and_free(cf)
 	crawlframe_t *cf;
 {
-	crawlframe_t *tf = malloc(sizeof(crawlframe_t)); /* keep stack usage low; this gets recursive */
+	crawlframe_t *tf;
 	if(cf->cindex == 0)
 		return;
 
-	while(pop_frame(cf, tf)) {
+	while((tf = pop_frame(cf)) != NULL) {
 		destroy_frame(tf);
 	}
-
-	free(tf);
 }
 
 void destroy_frame(cf)
@@ -122,6 +118,11 @@ void destroy_frame(cf)
 {
 	traverse_and_free(cf);
 	free(cf->stack);
+	/*
+	 * CAVEAT EMPTOR:
+	 * cf->oid.filename is *NOT* freed here; we assume that the application doing crawl_go() will
+	 * use it and free when done. This may not be the case.
+	 */
 	free(cf);
 }
 
@@ -163,6 +164,7 @@ int crawl_dir(cr, dir) /* simply adds dir to the base frame */
 			cferr(cr->f, die, "Error creating toplevel stackframe. ");
 			return 0;
 		}
+		cr->curframe = cr->topframe;
 	}
 
 	nfi.filename = strdup(dir);
@@ -184,4 +186,50 @@ int crawl_dir(cr, dir) /* simply adds dir to the base frame */
 
 
 	return 1;
+}
+
+int setup_dir(cr, ds, oid)
+	crawl_t *cr;
+	struct DirState *ds;
+	file_id_t *oid;
+{
+	/* TODO: implement this for each platform */
+	return 1;
+}
+int crawl_go(cr, flags, fid)
+	crawl_t *cr;
+	int flags;
+	file_id_t *fid; /* copy to */
+{
+	crawlframe_t *c;
+	
+	if(cr->curframe == NULL)
+		return CRAWL_ERROR;
+
+
+	if((c = pop_frame(cr->curframe)) == NULL) {
+		crawlframe_t *t;
+
+		t = cr->curframe->parent;
+
+		destroy_frame(t);
+
+		if((cr->curframe = t) == NULL) {
+			return CRAWL_FINISHED; /* we've hit the bottom; all done */
+		}
+
+		return crawl_go(cr, flags, fid); /* cascade down until we don't see anything */
+	}
+
+	if(!setup_dir(cr, &c->ds, &c->oid)) {
+		if(flags & CRAWL_DIE_ON_ERROR)
+			return CRAWL_ERROR;
+	}
+
+	memcpy(fid, &c->oid, sizeof(file_id_t));
+
+	/* be sure to open the DIR handle in this function when you see one, and close the most recent one when
+	 * dropping down on the stack frame list!
+	 */
+	return CRAWL_DIR;
 }
