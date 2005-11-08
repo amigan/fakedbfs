@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/README,v 1.7 2005/10/07 20:59:27 dcp1990 Exp $
+$Amigan: fakedbfs/README,v 1.8 2005/11/08 04:54:06 dcp1990 Exp $
 
 This is the fakedbfs distribution, version 1.1.0-RELEASE (Bodhisattva). See the contents of
 doc/ for more information. I know API docs suck now...I plan on changing this with this release.
@@ -40,5 +40,5 @@ freedebug
 	for free() debugging....useful for debugging memory leaks within the dbinit subsystem
 
 pcre pcre-config_path
-	Use libpcre instead of POSIX regexs. pcre-config path is the directory where pcre-config is contianed.
+	Use libpcre instead of POSIX regexs. pcre-config path is the directory where pcre-config is contained.
 	example: pcre /usr/local/bin
