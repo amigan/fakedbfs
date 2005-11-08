@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.47 2005/11/06 22:59:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.48 2005/11/08 04:21:14 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -307,7 +307,7 @@ void free_answer_t(answer_t *e);
 fields_t* fill_in_fields(fdbfs_t *f, char *filename);
 fields_t* ask_for_fields(fdbfs_t *f, char *filen, char *cat, fields_t *defs);
 int index_file(fdbfs_t *f, char *filename, char *cat, int batch, int useplugs, int forceupdate, fields_t *fields);
-int index_dir(fdbfs_t *f, char **dirs, char *cat, int useplugs, int batch, int nocase, char *re, int recurse);
+int index_dir(fdbfs_t *f, char **dirs, char *cat, int useplugs, int batch, int nocase, char *re, int recurse, fields_t *defs);
 char* get_enum_string_by_value(struct EnumElem *h, unsigned int val, short int fmted);
 char* get_enum_sub_string_by_value(struct EnumSubElem *h, unsigned int val);
 answer_t* askfunc_std AFFPROTO;

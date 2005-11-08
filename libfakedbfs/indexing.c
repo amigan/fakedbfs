@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.34 2005/10/14 21:15:20 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.35 2005/11/08 04:21:14 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.34 2005/10/14 21:15:20 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.35 2005/11/08 04:21:14 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -758,7 +758,7 @@ int file_has_changed(f, cat, filename, statstruct)
 
 #if defined(UNIX)
 /* all FTS stuff was heavily inspired by FreeBSD's /usr/src/bin/ls/ls.c */
-int cindexer_dir(f, cat, batch, useplugs, list, options, re) /* this has no prototype in fakedbfs.h; it's less ugly this way. */
+int cindexer_dir(f, cat, batch, useplugs, list, options, re, defs) /* this has no prototype in fakedbfs.h; it's less ugly this way. */
 		fdbfs_t *f;
 		char *cat;
 		int batch;
@@ -766,6 +766,7 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re) /* this has no prot
 		FTSENT *list;
 		int options;
 		freg_t *re;
+		fields_t *defs;
 {
 	int rc;
 	FTSENT *c;
@@ -804,7 +805,7 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re) /* this has no prot
 				free(fpth);
 				continue;
 			} else if(rc == 1) {
-				index_file(f, fpth, cat, batch, useplugs, 2, NULL);
+				index_file(f, fpth, cat, batch, useplugs, 2, defs);
 				free(fpth);
 			} else if(rc == -2) { /* is a directory */
 				/* this does nothing; all directories are handled by index_dir() */
@@ -826,7 +827,7 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re) /* this has no prot
 				free(fpth);
 				continue;
 			} else if(rc == 1) {
-				index_file(f, fpth, cat, batch, useplugs, 2, NULL);
+				index_file(f, fpth, cat, batch, useplugs, 2, defs);
 				free(fpth);
 			} else if(rc == -2) { /* is a directory */
 				free(fpth);
@@ -843,7 +844,7 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re) /* this has no prot
 #endif
 
 	
-int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse)
+int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse, defs)
 	fdbfs_t *f;
 	char **dirs;
 	char *cat;
@@ -852,6 +853,7 @@ int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse)
 	int nocase;
 	char *re;
 	int recurse;
+	fields_t *defs;
 {
 #if defined(UNIX)
 	FTS *fpt;
@@ -879,7 +881,7 @@ int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse)
 
 	chp = fts_children(fpt, 0);
 	if (chp != NULL)
-		rc = cindexer_dir(f, cat, batch, useplugs, chp, 0, re != NULL ? tre : NULL);
+		rc = cindexer_dir(f, cat, batch, useplugs, chp, 0, re != NULL ? tre : NULL, defs);
 
 	if(f == NULL) {
 		ERR(die, "index_dir: cannot open director{y,ies} because of %s", strerror(errno));
@@ -899,7 +901,7 @@ int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse)
 			case FTS_D:
 				/* directory */
 				chp = fts_children(fpt, 0);
-				rc = cindexer_dir(f, cat, batch, useplugs, chp, 0, re != NULL ? tre : NULL);
+				rc = cindexer_dir(f, cat, batch, useplugs, chp, 0, re != NULL ? tre : NULL, defs);
 
 				if(!rc)
 					break;

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/findex/findex.c,v 1.16 2005/10/04 20:52:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.17 2005/11/08 04:21:14 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -44,11 +44,11 @@
 #include <sys/stat.h>
 #endif
 
-#define ARGSPEC "vhrfsd:ice:"
+#define ARGSPEC "vhrfsd:ice:u:"
 #define FINDEXVER "0.1"
 #define MAXPLEN 1023
 
-RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.16 2005/10/04 20:52:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.17 2005/11/08 04:21:14 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int recurse = 0;
@@ -74,7 +74,7 @@ void usage(pn)
 	char *pn;
 {
 	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] [-i|-s] [-r] [-c] [-f] "
-			"[-e regex] <catalogue name> [file/dir ... (if not -s, required)]\n",
+			"[-e regex] [-u values] <catalogue name> [file/dir ... (if not -s, required)]\n",
 			pn, pn);
 }
 
@@ -98,7 +98,7 @@ int idxus(cf, cat)
 	char *cat;
 {
 	char *cps[] = {cf, NULL}; /* hack, oh well */
-	if(!index_dir(f, cps, cat, 1, (interactive ? 0 : 1), nocase, regex, recurse)) {
+	if(!index_dir(f, cps, cat, 1, (interactive ? 0 : 1), nocase, regex, recurse, NULL)) {
 		fprintf(stderr, "Error in index_dir: %s\n", f->error.emsg);
 		estr_free(&f->error);
 		return 0;
