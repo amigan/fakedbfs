@@ -1,14 +1,15 @@
-$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.5 2005/09/16 21:06:26 dcp1990 Exp $
+$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.6 2005/11/08 04:47:30 dcp1990 Exp $
 
 Query opcodes
 	By Dan Ponte
 
 The fakedbfs query virtual machine is modelled in part on that of the VDBE driver used by SQLite.
-Like VBDE, each operation has 3 operands, the first being a signed integer, the second being
+Like VDBE, each operation has 3 operands, the first being a signed integer, the second being
 unsigned, and the third being a pointer. These are named O1, O2, and O3, respectively.
 There is also a stack. All pointers to objects must be dynamically allocated using malloc(3).
 
-After each row, a pointer to the head of a fields_t is pushed to the stack. Pop it off to conserve stack entries.
+After each row, a pointer to the head of a fields_t is pushed to the stack. Pop it off to conserve stack entries. (we use a fixed stack for speed
+and effeciency.)
 
 Here is a list of opcodes:
 ========================================================================================================================================|
