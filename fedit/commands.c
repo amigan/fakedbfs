@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fedit/commands.c,v 1.1 2005/11/19 17:09:36 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fedit/commands.c,v 1.2 2005/11/19 19:12:23 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -38,10 +38,12 @@
 #include <signal.h>
 
 #include <fakedbfsapps.h>
+RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.2 2005/11/19 19:12:23 dcp1990 Exp $")
 
 #define COMMFLAG_MIN	0x1 /* at least this many args */
 #define COMMFLAG_MAX	0x2 /* at most this many args */
 #define COMMFLAG_EQU	0x3 /* exactly this many args */
+
 
 enum command_n {
 	REMOVE_CAT, /* remove entire catalogue */
@@ -75,6 +77,86 @@ struct command cmds[] = {
 	{"dumpspecs", EXPORT_CSPECS, 1, COMMFLAG_MAX /* if given, arg is file, stdout otherwise */},
 	{"rmenum", REMOVE_ENUM, 1, COMMFLAG_MIN /* arg is list of enum names to remove; this will break other cats! */},
 	{"editenum", EDIT_ENUM, 0, COMMFLAG_EQU /* implemented when EDIT_CSPEC is */},
-	{"lscats", LIST_CATS, 1, COMMFLAG_MIN /* list names of cats */}
+	{"lscats", LIST_CATS, 1, COMMFLAG_MIN /* list names of cats */},
+	{NULL, 0, 0, 0} /* terminator */
 };
+
+int find_cmd(argc, argv)
+	int argc;
+	char **argv;
+{
+	struct command *cp;
+
+	for(cp = cmds; cp->commandname != NULL && cp != NULL; cp++) {
+		if(strcmp(*argv, cp->commandname) == 0) {
+			switch(cp->commflag) {
+				case COMMFLAG_MIN:
+					if(argc < cp->nargs) {
+						fprintf(stderr, "%s: wrong number of arguments!\n", *argv);
+						return -1;
+					}
+					break;
+				case COMMFLAG_MAX:
+					if(argc > cp->nargs) {
+						fprintf(stderr, "%s: wrong number of arguments!\n", *argv);
+						return -1;
+					}
+					break;
+				case COMMFLAG_EQU:
+					if(argc != cp->nargs) {
+						fprintf(stderr, "%s: wrong number of arguments!\n", *argv);
+						return -1;
+					}
+					break;
+			}
+			return cp->comm;
+		}
+	}
+
+	fprintf(stderr, "no such command '%s'\n", *argv);
+
+	return -1;
+}
+
+int exec_command(cm, argc, argv)
+	int cm;
+	int argc;
+	char **argv;
+{
+	int i;
+
+	switch(cm) {
+		case REMOVE_CAT:
+			for(i = 1; i <= argc; i++)
+				if(!rm_catalogue(f, argv[i])) {
+					fprintf(stderr, "error removing catalogue '%s': %s\n", argv[i], f->error.emsg);
+					return 0;
+				}
+			break;
+		default:
+			fprintf(stderr, "command not implemented!\n");
+			return 0;
+	}
+
+	return 1;
+}
+
+
+int do_commands(argc, argv)
+	int argc;
+	char **argv;
+{
+	int cm;
+	int rc;
+
+	cm = find_cmd(argc, argv);
+
+	if(cm == -1) {
+		return 0;
+	}
+
+	rc = exec_command(cm, argc, argv);
+
+	return rc;
+}
 
