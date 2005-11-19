@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fedit/commands.c,v 1.2 2005/11/19 19:12:23 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fedit/commands.c,v 1.3 2005/11/19 19:14:18 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -38,11 +38,14 @@
 #include <signal.h>
 
 #include <fakedbfsapps.h>
-RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.2 2005/11/19 19:12:23 dcp1990 Exp $")
+#include <fakedbfs.h>
+RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.3 2005/11/19 19:14:18 dcp1990 Exp $")
 
 #define COMMFLAG_MIN	0x1 /* at least this many args */
 #define COMMFLAG_MAX	0x2 /* at most this many args */
 #define COMMFLAG_EQU	0x3 /* exactly this many args */
+
+extern fdbfs_t *f;
 
 
 enum command_n {
