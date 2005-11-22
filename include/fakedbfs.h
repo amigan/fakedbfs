@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.50 2005/11/19 23:36:24 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.51 2005/11/22 00:29:36 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -222,6 +222,16 @@ typedef struct CrawlFrame {
 	struct CrawlFrame *parent;
 	crawl_t *fajah;
 } crawlframe_t;
+
+typedef struct DSPData {
+	fdbfs_t *f;
+	char *yytext;
+	int error;
+	struct CatalogueHead *cat;
+	fields_t *fhead;
+	fields_t *lastf;
+	fields_t *cf;
+} dspdata_t;
 
 #define CRAWL_ERROR	0x0 /* error; curframe null? */
 #define CRAWL_FILE	0x1 /* found a file; act upon it */
