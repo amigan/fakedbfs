@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.17 2005/10/04 20:52:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.18 2005/11/24 02:24:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.17 2005/10/04 20:52:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.18 2005/11/24 02:24:26 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -349,7 +349,7 @@ int bind_field(f, count, type, value, len, stmt)
 	fdbfs_t *f;
 	int *count;
 	enum DataType type;
-	void *value; /* value will ALWAYS be a _pointer_ to something; there will be no value-casting. */
+	void *value; /* value will ALWAYS be a _pointer_ to something; there will be no value-casting. If it's null, it means (int)0x0 */
 	size_t len; /* only for stuff that uses BLOB; for text, we will use strlen() */
 	sqlite3_stmt *stmt;
 {
@@ -358,7 +358,7 @@ int bind_field(f, count, type, value, len, stmt)
 		case boolean:
 		case oenum:
 		case oenumsub:
-			if(sqlite3_bind_int(stmt, (*count)++, *(int*)value) != SQLITE_OK) {
+			if(sqlite3_bind_int(stmt, (*count)++, value != NULL ? *(int*)value : 0x0) != SQLITE_OK) {
 				return ERR(die, "bind_int: %s", sqlite3_errmsg(f->db));
 			}
 			break;

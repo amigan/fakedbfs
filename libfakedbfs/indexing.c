@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.35 2005/11/08 04:21:14 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.36 2005/11/24 02:24:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.35 2005/11/08 04:21:14 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.36 2005/11/24 02:24:26 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -382,6 +382,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 	short int dialoguemode = 0;
 	short int i, hasoth = 0; /* inaccurate var names */
 	short int otherm = 0;
+	int zero = 0;
 	fields_t *c = NULL /*, *h = NULL, *n = NULL*/;
 
 	cans = f->askfieldfunc(NULL, NULL, NULL, NULL, NULL, 0x0, NULL, NULL);
@@ -392,7 +393,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 		return NULL;
 	}
 
-#define cval (hasoth ? c->otherval : c->val)
+#define cval (hasoth ? c->otherval : (c->val != NULL ? c->val : &zero))
 #define clen (hasoth ? c->othlen : c->len)
 #define ctype (hasoth ? c->othtype : c->type)
 	if(dialoguemode) {
@@ -504,15 +505,21 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 					case number:
 					case boolean:
 						if(hasoth) {
+							if(c->otherval != NULL)
+								free(c->otherval);
 							c->otherval = malloc(sizeof(int));
 							*(int*)c->otherval = cta.integer;
 						} else {
 							hasoth = 0;
+							if(c->val != NULL)
+								free(c->val);
 							c->val = malloc(sizeof(int));
 							*(int*)c->val = cta.integer;
 						}
 						break;
 					case string:
+						if(c->val != NULL)
+							free(c->val);
 						if(hasoth)
 							c->otherval = strdup(cta.string);
 						else
@@ -520,9 +527,13 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 						break;
 					case fp:
 						if(hasoth) {
+							if(c->otherval != NULL)
+								free(c->otherval);
 							c->otherval = malloc(sizeof(FLOATTYPE));
 							*(FLOATTYPE*)c->otherval = cta.fp;
 						} else {
+							if(c->val != NULL)
+								free(c->val);
 							c->val = malloc(sizeof(FLOATTYPE));
 							*(FLOATTYPE*)c->val = cta.fp;
 						}
@@ -530,9 +541,13 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 					case image:
 					case binary:
 						if(!hasoth) {
+							if(c->val != NULL)
+								free(c->val);
 							c->val = malloc(cta.len);
 							memcpy(c->val, cta.vd, cta.len);
 						} else {
+							if(c->otherval != NULL)
+								free(c->otherval);
 							c->otherval = malloc(cta.len);
 							memcpy(c->otherval, cta.vd, cta.len);
 						}
@@ -616,8 +631,12 @@ int complete_fields_from_db(f, cat, h)
 			new->fieldname = strdup(cc->name);
 			new->fmtname = strdup(cc->alias);
 			new->type = cc->type;
-			new->val = allocz(sizeof(int));
-			*(int*)new->val = 0;
+			/* this seems like a memory leak waiting to happen...make it null and add some logic
+			 * to the field filling in code:
+				new->val = allocz(sizeof(int));
+				*(int*)new->val = 0;
+			*/
+			new->val = NULL;
 			new->len = 1;
 			if(new->type == oenum) {
 				new->ehead = cc->enumptr;
@@ -625,6 +644,7 @@ int complete_fields_from_db(f, cat, h)
 			if(new->type == oenum && cc->enumptr->otherelem != NULL) {
 				new->othtype = cc->enumptr->otherelem->othertype;
 				new->otherval = allocz(sizeof(int));
+				new->val = allocz(sizeof(int));
 				*(int*)new->val = 0;
 				new->othlen = 1;
 			}
