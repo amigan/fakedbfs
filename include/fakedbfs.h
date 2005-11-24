@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.51 2005/11/22 00:29:36 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.52 2005/11/24 02:41:56 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -95,6 +95,7 @@ typedef enum coltype {
 	integer,
 	blob
 } coltype_t;
+
 typedef struct Field {
 	char *fieldname;
 	char *fmtname;
@@ -109,6 +110,7 @@ typedef struct Field {
 	struct Field *subparent; /* if type == oenumsub, this points to another field_t that is where the subhead will be determined. */
 	struct Field *next;
 } fields_t;
+
 typedef struct tok {
 	char *str;
 	int num;
@@ -119,6 +121,7 @@ typedef struct tok {
 	struct EnumSubElem *subelem;
 	struct EnumHead *ehead;
 } Toke;
+
 typedef struct FConfig {
 	char *pluginpath; /* search path, delimited by pipes (``|'') */
 } config_t;

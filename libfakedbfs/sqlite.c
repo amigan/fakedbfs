@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.18 2005/11/24 02:24:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.19 2005/11/24 02:41:56 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.18 2005/11/24 02:24:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.19 2005/11/24 02:41:56 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -154,6 +154,7 @@ const char* gettype(t)
 	/* make sure you know what you're doing; we have defaults here */
 	switch(t) {
 		case number:
+		case usnumber:
 		case boolean:
 		case oenum:
 		case oenumsub:
@@ -355,6 +356,7 @@ int bind_field(f, count, type, value, len, stmt)
 {
 	switch(type) {
 		case number:
+		case usnumber:
 		case boolean:
 		case oenum:
 		case oenumsub:
