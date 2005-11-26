@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.19 2005/11/24 02:41:56 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.20 2005/11/26 21:48:12 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.19 2005/11/24 02:41:56 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.20 2005/11/26 21:48:12 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -303,6 +303,45 @@ int add_to_field_desc(f, tablename, name, alias, type, typen)
 	return 1;
 }
 
+int db_delete(f, from, wherecol, wherecmp, whereval)
+	fdbfs_t *f;
+	char *from;
+	char *wherecol;
+	char *wherecmp;
+	char *whereval;
+{
+	char *sql, *emsg;
+	int rc;
+	sql = sqlite3_mprintf("DELETE FROM %s WHERE %s %s %s", from, wherecol, wherecmp, whereval);
+	rc = sqlite3_exec(f->db, sql, NULL, NULL, &emsg);
+	sqlite3_free(sql);
+	if(rc != SQLITE_OK) {
+		ERR(die, "db_delete(f, '%s', '%s', '%s', '%s'): SQLite error after exec: %s", from, wherecol,
+				wherecmp, whereval, emsg);
+		sqlite3_free(emsg);
+		return 0;
+	}
+	return 1;
+}
+
+int drop_table(f, tablename)
+	fdbfs_t *f;
+	char *tablename;
+{
+	char *sql, *emsg;
+	int rc;
+	sql = sqlite3_mprintf("DROP TABLE %s", tablename);
+	rc = sqlite3_exec(f->db, sql, NULL, NULL, &emsg);
+	sqlite3_free(sql);
+	if(rc != SQLITE_OK) {
+		ERR(die, "drop_table(f, '%s'): SQLite error after exec: %s", tablename, emsg);
+		sqlite3_free(emsg);
+		return 0;
+	}
+	return 1;
+}
+
+	
 int add_enum_elem(f, tname, name, fmtname, value, dtype, subelements)
 	fdbfs_t *f;
 	char *tname;

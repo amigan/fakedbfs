@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.36 2005/11/19 23:36:25 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.37 2005/11/26 21:48:12 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.36 2005/11/19 23:36:25 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.37 2005/11/26 21:48:12 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -825,6 +825,29 @@ int rm_catalogue(f, catname)
 	fdbfs_t *f;
 	char *catname;
 {
-	/* XXX: do stuff here */
+	char *ttbl;
+	size_t ttl;
+	if(!db_delete(f, "cat_list", "name", "==", catname)) {
+		CERR(die, "rm_catalogue: delete error", NULL);
+		return 0;
+	}
+	ttl = strlen(catname) + sizeof("cft_") + 1;
+	ttbl = malloc(ttl);
+	strlcpy(ttbl, "c_", ttl);
+	strlcat(ttbl, catname, ttl);
+	if(!drop_table(f, ttbl)) {
+		CERR(die, "rm_catalogue: table drop error", NULL);
+		free(ttbl);
+		return 0;
+	}
+	strlcpy(ttbl, "cft_", ttl);
+	strlcat(ttbl, catname, ttl);
+	if(!drop_table(f, ttbl)) {
+		CERR(die, "rm_catalogue: cft table drop error", NULL);
+		free(ttbl);
+		return 0;
+	}
+	free(ttbl);
+
 	return 1;
 }

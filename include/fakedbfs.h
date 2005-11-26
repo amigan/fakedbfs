@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.52 2005/11/24 02:41:56 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.53 2005/11/26 21:48:10 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -335,6 +335,8 @@ void list_subenum(struct EnumSubElem *h);
 char* fstrdup(const char *str);
 int cat_exists(fdbfs_t *f, char *cat);
 fields_t* fields_from_dsp(fdbfs_t *f, char *tsp);
+int db_delete(fdbfs_t *f, char *from, char *wherecol, char *wherecmp, char *whereval);
+int drop_table(fdbfs_t *f, char *tablename);
 int rm_catalogue(fdbfs_t *f, char *catname);
 
 /* plugin shiite */
