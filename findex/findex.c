@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/findex/findex.c,v 1.18 2005/11/08 04:35:57 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.19 2005/11/27 02:36:34 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -48,7 +48,7 @@
 #define FINDEXVER "0.1"
 #define MAXPLEN 1023
 
-RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.18 2005/11/08 04:35:57 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.19 2005/11/27 02:36:34 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int recurse = 0;
@@ -295,8 +295,10 @@ int main(argc, argv)
 		}
 
 
+#if 0 /* this is not needed; see indexing.c's free_field_list(h); lines */
 	if(defhead != NULL)
 		free_field_list(defhead);
+#endif
 
 	destroy_fdbfs(f);
 	free(dbf);
