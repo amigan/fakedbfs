@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fquery/fquery.c,v 1.10 2005/10/04 22:26:59 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fquery/fquery.c,v 1.11 2005/11/27 02:51:25 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -50,7 +50,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.10 2005/10/04 22:26:59 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.11 2005/11/27 02:51:25 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
@@ -93,6 +93,8 @@ int print_fields(h)
 	fields_t *h;
 {
 	fields_t *c;
+	char *tbf, *nl;
+
 	for(c = h; c != NULL; c = c->next) {
 		printf("%s (%s) = ", c->fmtname, c->fieldname);
 		switch(c->type) {
@@ -107,6 +109,13 @@ int print_fields(h)
 				break;
 			case fp:
 				printf("%g", *(FLOATTYPE*)c->val);
+				break;
+			case datime:
+				tbf = ctime((const time_t*)c->val);
+				if((nl = strrchr(tbf, '\n')) != NULL) {
+					*nl = '\0'; /* shave off the newline */
+				}
+				printf("%s (%d)", tbf, *(int*)c->val);
 				break;
 			case oenum:
 				printf("%s (%d)", get_enum_string_by_value(c->ehead->headelem, *(int*)c->val, 1), *(int*)c->val);

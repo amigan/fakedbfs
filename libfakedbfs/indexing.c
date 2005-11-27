@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.38 2005/11/27 02:37:01 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.39 2005/11/27 02:51:29 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.38 2005/11/27 02:37:01 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.39 2005/11/27 02:51:29 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -262,6 +262,7 @@ answer_t* askfunc_std(buf, def, fieldname, name, filen, dt, ehead, subhead)
 checkagain:
 	switch(dt) {
 		case number:
+		case datime: /* fugly; oh well */
 		case usnumber:
 			printf("%s [%d]> ", fieldname, def->integer);
 			break;
@@ -307,6 +308,7 @@ checkagain:
 
 	switch(dt) {
 		case number:
+		case datime:
 		case usnumber: /* incorrect! oh well...shuts the compiler up. we don't use usnumber yet anyway */
 			buf->integer = atoi(bf);
 			break;
@@ -414,6 +416,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 				def.dt = ctype;
 				switch(c->type) {
 					case number:
+					case datime:
 					case usnumber:
 					case boolean:
 					case oenum:
@@ -470,6 +473,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 			def.dt = ctype;
 			switch((hasoth ? c->othtype : c->type)) {
 				case number:
+				case datime:
 				case usnumber:
 				case boolean:
 				case oenum:
@@ -507,6 +511,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 					case oenum:
 					case oenumsub:
 					case number:
+					case datime:
 					case usnumber:
 					case boolean:
 						if(hasoth) {

@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/CHANGELOG,v 1.5 2005/11/24 02:42:25 dcp1990 Exp $
+$Amigan: fakedbfs/CHANGELOG,v 1.6 2005/11/27 02:51:23 dcp1990 Exp $
 
 Changelog
 
@@ -6,6 +6,7 @@ Changelog
 *All indexing functions now accept a last argument, def, for default fields. This is to facilitate our default spec parser for findex(1).
 *Makefiles should work with gmake
 *Introduced new usnumber element into DataType enum. This shouldn't require the database to be redone, since it's the last element.
+*Introduced time datatype for lastupdate, among other things
 *New defspec code
 
 1.0.0-RELEASE ("Steely Dan")

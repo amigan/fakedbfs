@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.28 2005/10/03 20:52:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.29 2005/11/27 02:51:29 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.28 2005/10/03 20:52:51 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.29 2005/11/27 02:51:29 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -444,7 +444,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 				n->fmtname = strdup("Filename");
 				special = 1;
 			} else if(strcmp(n->fieldname, "lastupdate") == 0) {
-				n->type = number;
+				n->type = datime;
 				n->fmtname = strdup("Last Updated");
 				special = 2;
 			} else {
