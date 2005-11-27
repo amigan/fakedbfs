@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/debug.c,v 1.2 2005/08/13 02:40:53 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/debug.c,v 1.3 2005/11/27 02:37:01 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -40,7 +40,7 @@
 #include <dbspecdata.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/debug.c,v 1.2 2005/08/13 02:40:53 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/debug.c,v 1.3 2005/11/27 02:37:01 dcp1990 Exp $")
 
 struct EnumSubElem* dump_enum_sub_elem(e, allsub) /* returns next */
 	struct EnumSubElem *e;
@@ -152,4 +152,36 @@ void dump_head_members(hd) /* only the heads contained within, not the structure
 {
 	dump_cat_head_list(hd->cathead);
 	dump_enum_head_list(hd->enumhead);
+}
+
+void dump_fields(h)
+	fields_t *h;
+{
+	fields_t *c;
+	for(c = h; c != NULL; c = c->next) {
+		printf("%s (%s) = ", c->fmtname, c->fieldname);
+		switch(c->type) {
+			case string:
+				printf("\"%s\"", (char*)c->val);
+				break;
+			case number:
+				printf("%d (%x)", *(int*)c->val, *(int*)c->val);
+				break;
+			case boolean:
+				printf("%s", *(int*)c->val ? "true" : "false");
+				break;
+			case fp:
+				printf("%g", *(FLOATTYPE*)c->val);
+				break;
+			case oenum:
+				printf("%s (%d)", get_enum_string_by_value(c->ehead->headelem, *(int*)c->val, 1), *(int*)c->val);
+				break;
+			/* TODO: handle oenumsub */
+			default:
+				break;
+		}
+		printf("\n");
+	}
+
+	printf("\n");
 }

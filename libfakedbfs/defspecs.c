@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/defspecs.c,v 1.2 2005/11/24 02:41:56 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/defspecs.c,v 1.3 2005/11/27 02:37:01 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 #include <fakedbfs.h>
 #include "dspparser.h"
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/defspecs.c,v 1.2 2005/11/24 02:41:56 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/defspecs.c,v 1.3 2005/11/27 02:37:01 dcp1990 Exp $")
 
 static const char isIdChar[] = {
 /* x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 xA xB xC xD xE xF */
@@ -283,6 +283,7 @@ fields_t* fields_from_dsp(f, tsp)
 	memset(&d, 0, sizeof(d));
 
 	d.f = f;
+	d.cat = f->heads.db_cath;
 
 	pa = DSPParseAlloc(malloc);
 

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.37 2005/11/24 02:41:56 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.38 2005/11/27 02:37:01 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.37 2005/11/24 02:41:56 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.38 2005/11/27 02:37:01 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -708,6 +708,8 @@ int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 			for(c = fields; c->next /* we want to use it */ != NULL;
 					c = c->next);
 			c->next = h;
+			h = fields;
+		} else {
 			h = fields;
 		}
 	}

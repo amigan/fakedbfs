@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.1 2005/11/24 02:41:56 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.2 2005/11/27 02:37:01 dcp1990 Exp $ */
 %name {DSPParse}
 %include {
 #include <sqlite3.h>
@@ -35,7 +35,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.1 2005/11/24 02:41:56 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.2 2005/11/27 02:37:01 dcp1990 Exp $")
 }
 %token_type {Toke}
 %nonassoc ILLEGAL SPACE.
@@ -56,8 +56,9 @@ lvalue ::= UQSTRING(B). {
 	struct CatElem *ce;
 	if((ce = find_catelem_by_name(d->cat->headelem, B.str)) == NULL) {
 		ferr(d->f, die, "No such element %s in catalogue", B.str);
-		free(B.str);
-		return;
+		d->error = 1;
+		free(B.str); /* this causes problems. */
+		break;
 	}
 	d->cf = allocz(sizeof(fields_t));
 	d->cf->fieldname = B.str;
@@ -85,7 +86,7 @@ lvalue ::= UQSTRING(B). {
 rvalue ::= SINT(A). {
 	if(d->cf->type != number) {
 		ferr(d->f, die, "Type of field '%s' is not number!", d->cf->fieldname);
-		return;
+		break;
 	}
 	d->cf->val = malloc(sizeof(int));
 	*(int *)d->cf->val = A.num;
@@ -95,7 +96,7 @@ rvalue ::= STRING(A). {
 	if(d->cf->type != string) {
 		ferr(d->f, die, "Type of field '%s' is not string!", d->cf->fieldname);
 		free(A.str);
-		return;
+		break;
 	}
 	d->cf->val = A.str;
 }
@@ -104,7 +105,7 @@ rvalue ::= FLOAT(A). {
 	if(d->cf->type != real) {
 		ferr(d->f, die, "Type of field '%s' is not float!", d->cf->fieldname);
 		free(A.flt);
-		return;
+		break;
 	}
 	d->cf->val = A.flt;
 }
@@ -112,7 +113,7 @@ rvalue ::= FLOAT(A). {
 rvalue ::= boolean(A). {
 	if(d->cf->type != boolean && d->cf->type != number) {
 		ferr(d->f, die, "Type of field '%s' is not boolean or number!", d->cf->fieldname);
-		return;
+		break;
 	}
 	d->cf->val = malloc(sizeof(int));
 	*(int *)d->cf->val = A.num;

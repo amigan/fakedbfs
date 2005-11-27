@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.20 2005/11/26 21:48:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.21 2005/11/27 02:37:01 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.20 2005/11/26 21:48:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.21 2005/11/27 02:37:01 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -393,6 +393,8 @@ int bind_field(f, count, type, value, len, stmt)
 	size_t len; /* only for stuff that uses BLOB; for text, we will use strlen() */
 	sqlite3_stmt *stmt;
 {
+	double tval = 0.0;
+	int istrans = 0;
 	switch(type) {
 		case number:
 		case usnumber:
@@ -404,17 +406,33 @@ int bind_field(f, count, type, value, len, stmt)
 			}
 			break;
 		case string:
-			if(sqlite3_bind_text(stmt, (*count)++, (const char*)value, strlen((char*)value), SQLITE_STATIC /* not really, but as far as sqlite is concerned... */) !=
+			if(value == NULL) {
+				value = "";
+				istrans = 1;
+			}
+			if(sqlite3_bind_text(stmt, (*count)++, (const char*)value, strlen((char*)value),
+						istrans ? SQLITE_TRANSIENT : SQLITE_STATIC
+						/* not really, but as far as sqlite is concerned... */) !=
 					SQLITE_OK)
 				return ERR(die, "bind_text: %s", sqlite3_errmsg(f->db));
 			break;
 		case fp:
+			if(value == NULL) {
+				value = &tval;
+			}
 			if(sqlite3_bind_double(stmt, (*count)++, *(double*)value) != SQLITE_OK)
 				return ERR(die, "bind_double(c = %x): %s", *count, sqlite3_errmsg(f->db));
 			break;
 		case image:
 		case binary:
-			if(sqlite3_bind_blob(stmt, (*count)++, (const char*)value, len, SQLITE_STATIC /* not really, but as far as sqlite is concerned... */) != SQLITE_OK)
+			if(value == NULL) {
+				value = "";
+				len = 1;
+				istrans = 1;
+			}
+			if(sqlite3_bind_blob(stmt, (*count)++, (const char*)value, len,
+						istrans ? SQLITE_TRANSIENT : SQLITE_STATIC
+						/* not really, but as far as sqlite is concerned... */) != SQLITE_OK)
 				return ERR(die, "bind_blob(%d): %s", *count, sqlite3_errmsg(f->db));
 			break;
 	}
