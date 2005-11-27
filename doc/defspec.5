@@ -1,0 +1,39 @@
+.\" El manpage-o for the defspec format
+.\" (C)2005, Dan Ponte
+.\" $Amigan: fakedbfs/doc/defspec.5,v 1.1 2005/11/27 03:15:09 dcp1990 Exp $
+.Dd November 26, 2005
+.Dt DEFSPEC 5
+.Os
+.Sh NAME
+.Nm defspec
+.Nd the format of default values in fakedbfs
+.Xr libfakedbfs 3 .
+.Sh SYNOPSIS
+#include <fakedbfs.h>
+.Pp
+fields_t* fields_from_dsp(fdbfs_t *f, char *tsp);
+.Sh DESCRIPTION
+.Nm
+is the format of default values, usually used with the
+.Xr findex 1
+utility. They are very much like C variable assignments.
+.Sh EXAMPLE
+.Bd -literal
+findex -u 'artist = "Steely Dan"; year = 1974; compilation = false;' music ~/music/Steely\ Dan\ -\ Pretzel\ Logic*
+.Ed
+.Pp
+As you can see from the example, strings are enclosed in double quotes (single quotes may also be used). Integers
+and floating point numbers are specified exactly as one would expect, and the keywords
+.Em true
+and
+.Em false
+are recognised.
+.Sh SEE ALSO
+.Xr libfakedbfs 3 ,
+.Xr findex 1 ,
+.Xr fedit 1 ,
+.Xr fquery 1
+.Sh AUTHOR
+Dan Ponte <dcp1990@neptune.atopia.net>
+.Pp
+Web: http://www.theamigan.net/fakedbfs/

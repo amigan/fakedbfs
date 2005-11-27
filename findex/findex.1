@@ -1,7 +1,7 @@
 .\" El manpage-o for findex
 .\" (C)2005, Dan Ponte
-.\" $Amigan: fakedbfs/findex/findex.1,v 1.5 2005/09/24 21:36:13 dcp1990 Exp $
-.Dd August 24, 2005
+.\" $Amigan: fakedbfs/findex/findex.1,v 1.6 2005/11/27 03:15:10 dcp1990 Exp $
+.Dd November 26, 2005
 .Dt FINDEX 1
 .Os
 .Sh NAME
@@ -12,17 +12,20 @@
 .Op Fl hvrcf
 .Op Fl d Ar dbfile
 .Op Fl e Ar regex
+.Op Fl u Ar defspec
 .Ar file/dir1 .. file/dirN
 .Nm
 .Op Fl hvrcf
 .Op Fl d Ar dbfile
 .Op Fl e Ar regex
+.Op Fl u Ar defspec
 .Fl i
 .Ar file/dir1 .. file/dirN
 .Nm
 .Op Fl hvrcf
 .Op Fl d Ar dbfile
 .Op Fl e Ar regex
+.Op Fl u Ar defspec
 .Fl s
 .Op Ar file/dir1 .. file/dirN
 .Sh DESCRIPTION
@@ -120,6 +123,12 @@ utility version, and other information.
 Use
 .Ar dbfile
 as the database instead of the default.
+.It Fl u Ar defspec
+Set field default values using
+.Ar defspec .
+See
+.Xr defspec 5
+for more information.
 .El
 .Sh DIAGNOSTICS
 The
@@ -143,9 +152,10 @@ default database file
 .Xr libfakedbfs 3 ,
 .Xr fcreatedb 1 ,
 .Xr fedit 1 ,
-.Xr fquery 1
-.Xr index_file 3
-.Xr index_dir 3
+.Xr fquery 1 ,
+.Xr index_file 3 ,
+.Xr index_dir 3 ,
+.Xr defspec 5
 .Sh HISTORY
 The
 .Nm
