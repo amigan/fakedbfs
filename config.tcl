@@ -6,12 +6,16 @@ set prefset NOTSET
 proc platform {pf} {
 	global platf
 	global mfh
+	global chfh
 	if {[string compare $pf unix] != 0 && [string compare $pf win32] != 0 && [string compare $pf amiga] != 0} {
 		puts "Error: Platform not one of unix|win32|amiga"
 		exit 1
 	}
 	set platf $pf
 	puts $mfh [join [list "CPPOPTS+=-D" [string toupper $pf]] "" ]
+	if {$pf == "unix"} {
+		puts $chfh "#define HAVE_MMAP 1"
+	}
 	if {$pf == "win32"} {
 		puts $mfh "LDEXT+=-mno-cygwin -L/mingw/lib"
 	}

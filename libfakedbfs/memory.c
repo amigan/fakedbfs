@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.21 2005/10/09 04:30:52 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.22 2005/11/27 03:55:33 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -37,6 +37,7 @@
 #include <ctype.h>
 #ifdef UNIX
 #include <dlfcn.h> /* for dlclose */
+#include <sys/mman.h>
 #endif
 #include "dbspec.h"
 /* us */
@@ -44,7 +45,7 @@
 #include <lexdefines.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.21 2005/10/09 04:30:52 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.22 2005/11/27 03:55:33 dcp1990 Exp $")
 
 
 #ifdef NO_CALLOC
@@ -243,8 +244,12 @@ fields_t* free_field(e)
 		free(e->fieldname);
 	if(e->fmtname != NULL)
 		free(e->fmtname);
-	if(e->val != NULL)
+	if(e->val != NULL && !(e->flags & FIELDS_FLAG_MMAPED))
 		free(e->val);
+#ifdef HAVE_MMAP
+	if(e->flags & FIELDS_FLAG_MMAPED)
+		munmap(e->val, e->len);
+#endif
 	if(e->otherval != NULL)
 		free(e->otherval);
 	nx = e->next;

@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.29 2005/11/27 02:51:29 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.30 2005/11/27 03:55:33 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.29 2005/11/27 02:51:29 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.30 2005/11/27 03:55:33 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -299,7 +299,7 @@ void free_inst(e)
 		free(e->ops.o3);
 	} else if(e->ops.used & US_FILE) {
 #ifdef HAVE_MMAP
-		munmap(e->ops.o3);
+		munmap(e->ops.o3, e->ops.o2);
 #endif
 	}
 

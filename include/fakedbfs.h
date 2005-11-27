@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.54 2005/11/27 02:36:43 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.55 2005/11/27 03:55:30 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -107,9 +107,12 @@ typedef struct Field {
 	struct EnumSubElem *subhead;
 	size_t len;
 	size_t othlen;
+	int flags;
 	struct Field *subparent; /* if type == oenumsub, this points to another field_t that is where the subhead will be determined. */
 	struct Field *next;
 } fields_t;
+
+#define FIELDS_FLAG_MMAPED	0x1	/* set if we need to do an mmap (only for stuff that supports this! */
 
 typedef struct tok {
 	char *str;

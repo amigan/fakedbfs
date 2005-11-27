@@ -27,15 +27,22 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.2 2005/11/27 02:37:01 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.3 2005/11/27 03:55:33 dcp1990 Exp $ */
 %name {DSPParse}
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
+#ifdef UNIX
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#endif
 #include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.2 2005/11/27 02:37:01 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.3 2005/11/27 03:55:33 dcp1990 Exp $")
 }
 %token_type {Toke}
 %nonassoc ILLEGAL SPACE.
@@ -84,7 +91,7 @@ lvalue ::= UQSTRING(B). {
 }
 
 rvalue ::= SINT(A). {
-	if(d->cf->type != number) {
+	if(d->cf->type != number && d->cf->type != datime /* for now */) {
 		ferr(d->f, die, "Type of field '%s' is not number!", d->cf->fieldname);
 		break;
 	}
@@ -118,6 +125,52 @@ rvalue ::= boolean(A). {
 	d->cf->val = malloc(sizeof(int));
 	*(int *)d->cf->val = A.num;
 }
+
+rvalue ::= BINARY OPAREN STRING(A) CPAREN. {
+	char *fn = A.str;
+#ifdef HAVE_MMAP
+	int fd, rc;
+	struct stat sst;
+#endif
+	if(d->cf->type != binary) {
+		ferr(d->f, die, "Type of field '%s' is not binary!", d->cf->fieldname);
+		free(A.str);
+		break;
+	}
+#ifdef HAVE_MMAP
+	fd = open(fn, O_RDONLY);
+	if(fd < 0) {
+		ferr(d->f, die, "Error opening %s: %s", fn, strerror(errno));
+		free(fn);
+		break;
+	}
+
+	if((rc = fstat(fd, &sst)) == -1) {
+		ferr(d->f, die, "Couldn't stat fd: %s", strerror(errno));
+		free(fn);
+		close(fd);
+		break;
+	}
+
+	if((d->cf->val = mmap(NULL, sst.st_size, PROT_READ, 0, fd, 0)) == MAP_FAILED) {
+		ferr(d->f, die, "Couldn't mmap: %s", strerror(errno));
+		d->cf->val = NULL;
+		free(fn);
+		close(fd);
+		break;
+	}
+	d->cf->len = sst.st_size;
+	d->cf->flags |= FIELDS_FLAG_MMAPED;
+
+	close(fd);
+	free(fn);
+#else
+	ferr(d->f, die, "Error opening %s: feature not implemented on this OS", fn);
+	free(A.str);
+	break;
+#endif
+}
+
 
 boolean(A) ::= B_TRUE. {
 	A.num = 1;
