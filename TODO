@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/TODO,v 1.17 2005/11/08 04:41:06 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.18 2005/11/27 02:36:24 dcp1990 Exp $
 
 TODO as of 1.1-RELEASE (double stars means "must do before release of 1.1-RELEASE"):
 *Mucho memory leaks. Some kind soul should run valgrind and fix them. I don't have the time; I will when
@@ -17,6 +17,7 @@ TODO as of 1.1-RELEASE (double stars means "must do before release of 1.1-RELEAS
 *Amiga port
 **Add installation features to the build process (Makefile, etc)
 **Fix build system such that we link against the freshly-built library and not one in /usr/local/lib if it's there
+**Find out why and fix the querying subsystem's tendency to forget some fields (ex. compilation in music spec)
 
 Wishlist for 1.2/2.0:
 *Build in Unix-specific stuff for platforms that don't have it (such as FTS)
