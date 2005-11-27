@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.3 2005/11/27 03:55:33 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.4 2005/11/27 03:58:43 dcp1990 Exp $ */
 %name {DSPParse}
 %include {
 #include <sqlite3.h>
@@ -42,11 +42,11 @@
 #include <sys/mman.h>
 #endif
 #include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.3 2005/11/27 03:55:33 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.4 2005/11/27 03:58:43 dcp1990 Exp $")
 }
 %token_type {Toke}
 %nonassoc ILLEGAL SPACE.
-%nonassoc IMAGE BINFILE ENUM ENSUB CPAREN OPAREN COMMA UINT.
+%nonassoc ENUM ENSUB COMMA UINT.
 %extra_argument {dspdata_t *d}
 %syntax_error {
 	ferr(d->f, die, "Defspec Syntax error near '%s'", d->yytext);
@@ -126,14 +126,14 @@ rvalue ::= boolean(A). {
 	*(int *)d->cf->val = A.num;
 }
 
-rvalue ::= BINARY OPAREN STRING(A) CPAREN. {
+rvalue ::= bintype OPAREN STRING(A) CPAREN. {
 	char *fn = A.str;
 #ifdef HAVE_MMAP
 	int fd, rc;
 	struct stat sst;
 #endif
-	if(d->cf->type != binary) {
-		ferr(d->f, die, "Type of field '%s' is not binary!", d->cf->fieldname);
+	if(d->cf->type != binary && d->cf->type != image) {
+		ferr(d->f, die, "Type of field '%s' is not binary or image!", d->cf->fieldname);
 		free(A.str);
 		break;
 	}
@@ -171,6 +171,9 @@ rvalue ::= BINARY OPAREN STRING(A) CPAREN. {
 #endif
 }
 
+
+bintype ::= BINFILE.
+bintype ::= IMAGE.
 
 boolean(A) ::= B_TRUE. {
 	A.num = 1;
