@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.4 2005/11/27 03:58:43 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.5 2005/11/28 00:46:53 dcp1990 Exp $ */
 %name {DSPParse}
 %include {
 #include <sqlite3.h>
@@ -42,7 +42,7 @@
 #include <sys/mman.h>
 #endif
 #include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.4 2005/11/27 03:58:43 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.5 2005/11/28 00:46:53 dcp1990 Exp $")
 }
 %token_type {Toke}
 %nonassoc ILLEGAL SPACE.
@@ -71,6 +71,7 @@ lvalue ::= UQSTRING(B). {
 	d->cf->fieldname = B.str;
 	d->cf->fmtname = strdup(ce->alias);
 	d->cf->type = ce->type;
+	d->cf->next = 0x0;
 	if(d->cf->type == oenum) {
 		d->cf->ehead = ce->enumptr;
 	}
