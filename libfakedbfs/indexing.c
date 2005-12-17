@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.40 2005/12/17 22:26:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.41 2005/12/17 22:59:27 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.40 2005/12/17 22:26:51 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.41 2005/12/17 22:59:27 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -107,6 +107,9 @@ int add_file(f, file, catalogue, fields)
 	
 	sql = sqlite3_mprintf("INSERT OR REPLACE INTO %s (file, lastupdate %s) VALUES('%q', %d %s);",
 			tablename, sqlkeys, file, time(NULL), sqlvals);
+#ifdef INDEX_SQL_DEBUG
+	printf("SQL in indexer: %s\n", sql);
+#endif
 	rc = sqlite3_prepare(f->db, sql, strlen(sql), &stmt, &tail);
 
 	sqlite3_free(sql);
@@ -121,6 +124,9 @@ int add_file(f, file, catalogue, fields)
 
 
 	for(c = fields; c != NULL; c = c->next) {
+#ifdef INDEX_SQL_DEBUG
+		printf("binding field '%s' val ", c->fieldname);
+#endif
 		if(!bind_field(f, &fieldcount, c->type, c->val, c->len, stmt))
 			return CERR(die, "add_file(\"%s\"): bind error. ", file);
 	}
@@ -676,6 +682,20 @@ int complete_fields_from_db(f, cat, h)
 	return 1;
 }
 
+static void erase_fields(h, fields)
+	fields_t *h;
+	fields_t *fields;
+{
+	fields_t *c;
+	if(fields != NULL && h != fields) /* this is to remove fields from the list, since it's the caller's responsibility to free their own defaults */
+		for(c = h; c != NULL; c = c->next) {
+			if(c->next == fields) {
+				c->next = NULL;
+				break;
+			}
+		}
+}
+
 int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 	fdbfs_t *f;
 	char *filename;
@@ -721,16 +741,9 @@ int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 
 	rc = complete_fields_from_db(f, cat, &h); /* fill out any others so the askfunc will ask the user */
 
-	if(fields != NULL && h != fields)
-		for(c = h; c != NULL; c = c->next) {
-			if(c->next == fields) {
-				c->next = NULL;
-				break;
-			}
-		}
-
 	if(!rc) {
 		CERR(die, "complete fields failed. ", NULL);
+		erase_fields(h, fields);
 		free_field_list(h);
 		return 0;
 	}
@@ -742,10 +755,13 @@ int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 	rc = add_file(f, filename, cat, h);
 	if(!rc) {
 		CERR(die, "error indexing file %s. ", filename);
+		erase_fields(h, fields);
 		free_field_list(h);
 		return 0;
 	}
 	
+	erase_fields(h, fields);
+
 	if(h != fields)
 		free_field_list(h);
 

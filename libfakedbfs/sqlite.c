@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.22 2005/11/27 02:51:29 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.23 2005/12/17 22:59:27 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.22 2005/11/27 02:51:29 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.23 2005/12/17 22:59:27 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -403,6 +403,9 @@ int bind_field(f, count, type, value, len, stmt)
 		case oenum:
 		case datime:
 		case oenumsub:
+#ifdef INDEX_SQL_DEBUG
+			printf("int %d\n", value != NULL ? *(int*)value : 0x0);
+#endif
 			if(sqlite3_bind_int(stmt, (*count)++, value != NULL ? *(int*)value : 0x0) != SQLITE_OK) {
 				return ERR(die, "bind_int: %s", sqlite3_errmsg(f->db));
 			}
@@ -412,6 +415,9 @@ int bind_field(f, count, type, value, len, stmt)
 				value = "";
 				istrans = 1;
 			}
+#ifdef INDEX_SQL_DEBUG
+			printf("string '%s'\n", (char*)value);
+#endif
 			if(sqlite3_bind_text(stmt, (*count)++, (const char*)value, strlen((char*)value),
 						istrans ? SQLITE_TRANSIENT : SQLITE_STATIC
 						/* not really, but as far as sqlite is concerned... */) !=
@@ -422,6 +428,9 @@ int bind_field(f, count, type, value, len, stmt)
 			if(value == NULL) {
 				value = &tval;
 			}
+#ifdef INDEX_SQL_DEBUG
+			printf("float %f\n", *(double*)value);
+#endif
 			if(sqlite3_bind_double(stmt, (*count)++, *(double*)value) != SQLITE_OK)
 				return ERR(die, "bind_double(c = %x): %s", *count, sqlite3_errmsg(f->db));
 			break;
@@ -432,6 +441,9 @@ int bind_field(f, count, type, value, len, stmt)
 				len = 1;
 				istrans = 1;
 			}
+#ifdef INDEX_SQL_DEBUG
+			printf("bin %p\n", value);
+#endif
 			if(sqlite3_bind_blob(stmt, (*count)++, (const char*)value, len,
 						istrans ? SQLITE_TRANSIENT : SQLITE_STATIC
 						/* not really, but as far as sqlite is concerned... */) != SQLITE_OK)
