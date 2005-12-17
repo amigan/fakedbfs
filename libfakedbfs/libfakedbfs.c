@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.16 2005/10/14 21:20:49 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.17 2005/12/17 23:35:50 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -40,7 +40,7 @@
 
 
 #ifndef lint
-RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.16 2005/10/14 21:20:49 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.17 2005/12/17 23:35:50 dcp1990 Exp $")
 const char *fakedbfsver _unused = FAKEDBFSVER;
 const char *fakedbfsvname _unused = VERNAME;
 const char *fakedbfscopyright _unused = "libfakedbfs (C)2005, Dan Ponte. Under the BSD license.";
@@ -59,7 +59,7 @@ fdbfs_t *new_fdbfs(dbfile, error, debugf, useplugins)
 	int rc;
 	f = malloc(sizeof(*f));
 	memset(f, 0, sizeof(*f));
-	f->dbname = dbfile;
+	f->dbname = strdup(dbfile);
 	f->debugfunc = debugf;
 	rc = open_db(f);
 	if(!rc) {
@@ -87,6 +87,7 @@ int destroy_fdbfs(f)
 		free(f);
 		return 0;
 	}
+	free(f->dbname);
 	destroy_plugin_list(f->plugins);
 	if(f->heads.db_enumh != NULL)
 		free_enum_head_list(f->heads.db_enumh);
