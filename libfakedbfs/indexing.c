@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.39 2005/11/27 02:51:29 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.40 2005/12/17 22:26:51 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.39 2005/11/27 02:51:29 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.40 2005/12/17 22:26:51 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -612,7 +612,7 @@ int complete_fields_from_db(f, cat, h)
 	if(*h == NULL)
 		last = NULL;
 	else {
-		for(c = *h; c->next != NULL; c = c->next);
+		for(c = *h; c->next != NULL; c = c->next) ;
 		last = c;
 	}
 
@@ -709,17 +709,26 @@ int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 	}
 
 	if(fields != NULL) {
+		/* when we free our field list after this, we MUSTN'T free fields! */
 		if(h != NULL) {
-			for(c = fields; c->next /* we want to use it */ != NULL;
+			for(c = h; c->next /* we want to use it */ != NULL;
 					c = c->next);
-			c->next = h;
-			h = fields;
+			c->next = fields;
 		} else {
 			h = fields;
 		}
 	}
 
 	rc = complete_fields_from_db(f, cat, &h); /* fill out any others so the askfunc will ask the user */
+
+	if(fields != NULL && h != fields)
+		for(c = h; c != NULL; c = c->next) {
+			if(c->next == fields) {
+				c->next = NULL;
+				break;
+			}
+		}
+
 	if(!rc) {
 		CERR(die, "complete fields failed. ", NULL);
 		free_field_list(h);
@@ -737,7 +746,8 @@ int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 		return 0;
 	}
 	
-	free_field_list(h);
+	if(h != fields)
+		free_field_list(h);
 
 	return 1;
 }

@@ -1,14 +1,14 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.22 2005/10/04 17:04:02 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.23 2005/12/17 22:26:51 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.22 2005/10/04 17:04:02 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.23 2005/12/17 22:26:51 dcp1990 Exp $")
 extern int chrcnt, lincnt;
 extern char *yytext;
 }
@@ -201,7 +201,7 @@ subelement(A) ::= subelem(B). {
 								none defined */
 		}
 #ifdef FREEDEBUG
-		printf("allocated %p (%s) - %x %d\n", A.subelem, A.subelem->name, A.subelem->flags, B.num);
+		printf("allocated %p (%s) - %x %%d\n", A.subelem, A.subelem->name, A.subelem->flags, B.num);
 #endif
 	}
 subelem(A) ::= sedirective(B). {A.num = B.num; A.str = B.str;}

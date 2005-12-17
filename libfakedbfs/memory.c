@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.22 2005/11/27 03:55:33 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.23 2005/12/17 22:26:51 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #include <lexdefines.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.22 2005/11/27 03:55:33 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.23 2005/12/17 22:26:51 dcp1990 Exp $")
 
 
 #ifdef NO_CALLOC
@@ -54,6 +54,9 @@ void* allocz(size)
 {
 	void *p = malloc(size);
 	memset(p, 0, size);
+#ifdef AZ_DEBUG
+	printf("p is %p\n", p);
+#endif
 	return p;
 }
 #endif
