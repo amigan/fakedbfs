@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.41 2005/12/17 22:59:27 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.42 2005/12/17 23:32:56 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.41 2005/12/17 22:59:27 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.42 2005/12/17 23:32:56 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -682,15 +682,19 @@ int complete_fields_from_db(f, cat, h)
 	return 1;
 }
 
-static void erase_fields(h, fields)
-	fields_t *h;
+static void erase_fields(h, fields, oh)
+	fields_t **h;
 	fields_t *fields;
+	fields_t *oh;
 {
 	fields_t *c;
-	if(fields != NULL && h != fields) /* this is to remove fields from the list, since it's the caller's responsibility to free their own defaults */
-		for(c = h; c != NULL; c = c->next) {
-			if(c->next == fields) {
+
+	if(fields != NULL) /* this is to remove fields from the list, since it's the caller's responsibility to free their own defaults */
+		for(c = *h; c != NULL; c = c->next) {
+			if(c->flags & FIELDS_FLAG_LASTDEF) {
 				c->next = NULL;
+				c->flags &= ~FIELDS_FLAG_LASTDEF;
+				*h = oh;
 				break;
 			}
 		}
@@ -706,7 +710,7 @@ int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 	fields_t *fields;
 {
 	int rc = 0;
-	fields_t *c = NULL, *h = NULL;
+	fields_t *c = NULL, *h = NULL, *oh = NULL;
 
 	if(rc != 2) {
 		rc = file_has_changed(f, cat, filename, NULL);
@@ -731,39 +735,48 @@ int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 	if(fields != NULL) {
 		/* when we free our field list after this, we MUSTN'T free fields! */
 		if(h != NULL) {
-			for(c = h; c->next /* we want to use it */ != NULL;
+			for(c = fields; c->next /* we want to use it */ != NULL;
 					c = c->next);
-			c->next = fields;
+			c->next = h;
+			c->flags |= FIELDS_FLAG_LASTDEF;
+			oh = h;
+			h = fields;
 		} else {
+			for(c = fields; c->next /* we want to use it */ != NULL;
+					c = c->next);
+			c->flags |= FIELDS_FLAG_LASTDEF;
 			h = fields;
 		}
 	}
 
-	rc = complete_fields_from_db(f, cat, &h); /* fill out any others so the askfunc will ask the user */
-
-	if(!rc) {
-		CERR(die, "complete fields failed. ", NULL);
-		erase_fields(h, fields);
-		free_field_list(h);
-		return 0;
-	}
-
 	if(!batch) {
+		rc = complete_fields_from_db(f, cat, &h); /* fill out any others so the askfunc will ask the user */
+
+		for(c = h; c != NULL; c = c->next) {
+			if(c->flags & FIELDS_FLAG_LASTDEF)
+				oh = c->next;
+		}
+		
+		if(!rc) {
+			CERR(die, "complete fields failed. ", NULL);
+			erase_fields(&h, fields, oh);
+			free_field_list(h);
+			return 0;
+		}
+
 		ask_for_fields(f, filename, cat, h); /* we can only change existing stuff now anyway...this appends to h for us */
 	}	
 
 	rc = add_file(f, filename, cat, h);
 	if(!rc) {
 		CERR(die, "error indexing file %s. ", filename);
-		erase_fields(h, fields);
+		erase_fields(&h, fields, oh);
 		free_field_list(h);
 		return 0;
 	}
 	
-	erase_fields(h, fields);
-
-	if(h != fields)
-		free_field_list(h);
+	erase_fields(&h, fields, oh);
+	free_field_list(h);
 
 	return 1;
 }

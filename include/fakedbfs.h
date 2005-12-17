@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.55 2005/11/27 03:55:30 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.56 2005/12/17 23:32:56 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -113,6 +113,7 @@ typedef struct Field {
 } fields_t;
 
 #define FIELDS_FLAG_MMAPED	0x1	/* set if we need to do an mmap (only for stuff that supports this! */
+#define FIELDS_FLAG_LASTDEF	0x2	/* used in the indexer to keep track of what it can and cannot free */
 
 typedef struct tok {
 	char *str;
