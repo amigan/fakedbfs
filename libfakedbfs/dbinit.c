@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.37 2005/11/26 21:48:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.38 2005/12/19 23:17:12 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.37 2005/11/26 21:48:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.38 2005/12/19 23:17:12 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -589,6 +589,7 @@ struct EnumElem* enumelems_from_dbtab(f, table, e)
 	
 	if((rc = sqlite3_prepare(f->db, sql, strlen(sql), &cst, NULL)) !=
 			SQLITE_OK) {
+		sqlite3_free(sql);
 		ERR(die, "enums_from_dbtab(): error in prepare: %s", sqlite3_errmsg(f->db));
 		return NULL;
 	}
@@ -707,6 +708,7 @@ struct CatElem* catelems_from_dbtab(f, table, enumhead)
 	
 	if((rc = sqlite3_prepare(f->db, sql, strlen(sql), &cst, NULL)) !=
 			SQLITE_OK) {
+		sqlite3_free(sql);
 		ERR(die, "catelems_from_dbtab(): error in prepare: %s", sqlite3_errmsg(f->db));
 		return NULL;
 	}
