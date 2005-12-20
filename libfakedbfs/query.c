@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.33 2005/12/20 21:34:19 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.34 2005/12/20 22:38:43 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.33 2005/12/20 21:34:19 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.34 2005/12/20 22:38:43 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -625,11 +625,20 @@ int query_init_exec(q)
 				query_len += strlen(q->catalogue);
 				break;
 			case OPL_AND:
+				query_len++;
 			case OPL_OR:
+				query_len += 4;
+				break;
 			case OPL_EQUAL:
+			case OPL_NEQU:
+			case OPL_GTHEQU:
+			case OPL_LTHEQU:
 				query_len += 2;
 				break;
 			case OPL_NOT:
+				query_len++;
+			case OPL_GTHAN:
+			case OPL_LTHAN:
 				query_len++;
 				break;
 			case OP_STRING:
@@ -758,7 +767,7 @@ int query_init_exec(q)
 				}
 				saw_operat = 1;
 				saw_operan = 0;
-				strlcat(qusql, "&&", query_len);
+				strlcat(qusql, " AND ", query_len);
 				break;
 			case OPL_OR:
 				if(!saw_operan) {
@@ -767,7 +776,7 @@ int query_init_exec(q)
 				}
 				saw_operat = 1;
 				saw_operan = 0;
-				strlcat(qusql, "||", query_len);
+				strlcat(qusql, " OR ", query_len);
 				break;
 			case OPL_NOT:
 				if(saw_not) {
@@ -775,7 +784,7 @@ int query_init_exec(q)
 					break;
 				}
 				saw_not = 1;
-				strlcat(qusql, "!", query_len);
+				strlcat(qusql, "! ", query_len);
 				break;
 			case OPL_EQUAL:
 				if(!saw_operan) {
@@ -785,6 +794,37 @@ int query_init_exec(q)
 				saw_operat = 1;
 				saw_operan = 0;
 				strlcat(qusql, "==", query_len);
+				break;
+			case OPL_NEQU:
+				if(!saw_operan) {
+					ec = Q_OPERATION_WITHOUT_OPERANDS;
+					break;
+				}
+				saw_operat = 1;
+				saw_operan = 0;
+				strlcat(qusql, "!=", query_len);
+				break;
+			case OPL_GTHAN:
+			case OPL_LTHAN:
+				if(!saw_operan) {
+					ec = Q_OPERATION_WITHOUT_OPERANDS;
+					break;
+				}
+				saw_operat = 1;
+				saw_operan = 0;
+				strlcat(qusql, c->opcode == OPL_GTHAN ? ">" : "<",
+						query_len);
+				break;
+			case OPL_GTHEQU:
+			case OPL_LTHEQU:
+				if(!saw_operan) {
+					ec = Q_OPERATION_WITHOUT_OPERANDS;
+					break;
+				}
+				saw_operat = 1;
+				saw_operan = 0;
+				strlcat(qusql, c->opcode == OPL_GTHEQU ? ">=" : "<=",
+						query_len);
 				break;
 			case OP_UINT:
 				if(saw_operan) {

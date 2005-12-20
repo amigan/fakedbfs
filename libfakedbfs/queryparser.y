@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.5 2005/09/22 18:44:29 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.6 2005/12/20 22:38:43 dcp1990 Exp $ */
 %name {QParse}
 %include {
 #include <sqlite3.h>
@@ -35,10 +35,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.5 2005/09/22 18:44:29 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.6 2005/12/20 22:38:43 dcp1990 Exp $")
 }
 %token_type {Toke}
 %nonassoc ASSIGN BW_OR BW_AND ILLEGAL SPACE.
+%left B_OR.
+%left B_AND.
 %extra_argument {query_t *q}
 %syntax_error {
 	fdbfs_t *in = (fdbfs_t *)q->f;
@@ -76,26 +78,45 @@ catname ::= UQSTRING(A). {
 
 cexp ::= en.
 
-en ::= rlgr.
-en ::= en boolop.
+en ::= en op val.
+en ::= regex.
+en ::= val.
 en ::= oparen en cparen.
 en ::= .
 
 
-rlgr ::= lval compop rval.
-rlgr ::= regex.
+op ::= andop.
+op ::= orop.
+op ::= notop.
+op ::= equop.
+op ::= nequop.
+op ::= gtop.
+op ::= ltop.
+op ::= gteop.
+op ::= lteop.
 
-lval ::= colname.
-boolop ::= andop.
-boolop ::= orop.
-boolop ::= notop.
-compop ::= equop.
-rval ::= null.
-rval ::= integer.
-rval ::= eqstring.
-rval ::= voidfile.
-rval ::= floatp.
+val ::= colname.
+val ::= null.
+val ::= integer.
+val ::= eqstring.
+val ::= voidfile.
+val ::= floatp.
 
+gteop ::= GTEQU. {
+		qi(q, OPL_GTHEQU, 0x0, 0x0, NULL, 0x0);
+	}
+lteop ::= LTEQU. {
+		qi(q, OPL_LTHEQU, 0x0, 0x0, NULL, 0x0);
+	}
+ltop ::= LT. {
+		qi(q, OPL_LTHAN, 0x0, 0x0, NULL, 0x0);
+	}
+gtop ::= GT. {
+		qi(q, OPL_GTHAN, 0x0, 0x0, NULL, 0x0);
+	}
+nequop ::= NEQU. {
+		qi(q, OPL_NEQU, 0x0, 0x0, NULL, 0x0);
+	}
 oparen ::= OPAR. {
 		qi(q, OP_BEGIN_GRP, 0x0, 0x0, NULL, 0x0);
 	}

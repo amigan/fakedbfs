@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.10 2005/12/20 00:33:20 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.11 2005/12/20 22:38:43 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 #include "queryparser.h"
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.10 2005/12/20 00:33:20 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.11 2005/12/20 22:38:43 dcp1990 Exp $")
 
 
 /* from SQLite... */
@@ -164,8 +164,30 @@ size_t toktl(cp, tval)
 				*tval = ASSIGN;
 			}
 		case '!':
-			*tval = B_NOT;
+			if(nc == '=') {
+				*tval = NEQU;
+				l++;
+			} else {
+				*tval = B_NOT;
+			}
 			break;
+		case '>':
+			if(nc == '=') {
+				*tval = GTEQU;
+				l++;
+			} else {
+				*tval = GT;
+			}
+			break;
+		case '<':
+			if(nc == '=') {
+				*tval = LTEQU;
+				l++;
+			} else {
+				*tval = LT;
+			}
+			break;
+
 		case '|':
 			if(nc == '|') {
 				*tval = B_OR;

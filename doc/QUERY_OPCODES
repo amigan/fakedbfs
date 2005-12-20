@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.6 2005/11/08 04:47:30 dcp1990 Exp $
+$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.7 2005/12/20 22:38:43 dcp1990 Exp $
 
 Query opcodes
 	By Dan Ponte
@@ -39,6 +39,11 @@ OPCODE	|Name		|Description										|Accepts:		|
 0x13	|OP_REGEXP	|Regular expression, implemented using regex(3).  O3 is a pointer to a compiled qreg_t	|	|	|X	|
 	|		|structure; see below for more info on this.						|	|	|	|
 0x14	|OP_NULL	|NULL. No operands.									|	|	|	|
+0x15	|OPL_NEQU	|Not equals. No operands.								|	|	|	|
+0x16	|OPL_GTHAN	|Greater than. No operands.								|	|	|	|
+0x17	|OPL_LTHAN	|Less than. No operands.								|	|	|	|
+0x18	|OPL_GTHEQU	|Greater than or equals. No operands.							|	|	|	|
+0x19	|OPL_LTHEQU	|Less than or equals. No operands.							|	|	|	|
 ========================================================================================================================================|
 
 NOTE AS PROMISED:
