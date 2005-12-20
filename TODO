@@ -1,9 +1,8 @@
-$Amigan: fakedbfs/TODO,v 1.19 2005/12/20 00:53:25 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.20 2005/12/20 22:39:45 dcp1990 Exp $
 
 TODO as of 1.1-RELEASE (double stars means "must do before release of 1.1-RELEASE"):
 *Mucho memory leaks. Some kind soul should run valgrind and fix them. I don't have the time; I will when
 	I port to amiga. (dmalloc helps greatly)
-**improve querying facilities
 **portable findex indexer (in addition to FTS)
 **feditdb utility
 *Add support for ogg to the music plugin
