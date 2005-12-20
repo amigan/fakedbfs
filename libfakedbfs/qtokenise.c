@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.9 2005/10/09 07:47:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.10 2005/12/20 00:33:20 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,7 +48,7 @@
 #include "queryparser.h"
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.9 2005/10/09 07:47:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.10 2005/12/20 00:33:20 dcp1990 Exp $")
 
 
 /* from SQLite... */
@@ -96,6 +96,8 @@ static int uqstrtok(cp, len)
 		return CATALOGUE;
 	} else if(strncasecmp(cp, "WHERE", len) == 0) {
 		return COND;
+	} else if(strncasecmp(cp, "COLS", len) == 0) {
+		return COLS;
 	} else if(strncmp(cp, "vfile", len) == 0) {
 		return VFILE;
 	} else {

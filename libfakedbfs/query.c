@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.30 2005/11/27 03:55:33 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.31 2005/12/20 00:33:20 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.30 2005/11/27 03:55:33 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.31 2005/12/20 00:33:20 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -384,6 +384,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 	size_t len = 0;
 	void *val = NULL;
 	const void *tvd = NULL;
+	const char *colname;
 	fields_t *h = NULL, *cf = NULL, *n = NULL, *lastoth = NULL;
 
 	if(q->exec_state == finished)
@@ -418,14 +419,25 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 		}
 
 	colcount = sqlite3_column_count(q->cst);
+#ifdef QUERY_DEBUG
+	printf("counted %d columns...\n", colcount);
+#endif
 
 	/* this won my "most absurd ternary" contest in ##freebsd */
 	for(i = (q->allcols ? 1 /* no id */ : colcount); (q->allcols ? (i < colcount) : (i > 0)); (q->allcols ? i++ : i--)) {
-		if(strcmp("id", sqlite3_column_name(q->cst, i)) == 0)
-				continue;
+		colname = sqlite3_column_name(q->cst, i);
+#ifdef QUERY_DEBUG
+		printf("sqlite column name came out to %p ('%s')\n", colname, colname != NULL ? colname : "");
+#endif
+		if(q->allcols) /* a terrible, terrible hack; why does sqlite3_column_name() return null?! check that the counter var is correct when q->allcols */
+			if(strcmp("id", colname) == 0)
+					continue;
 		if(lastoth != NULL) {
-			if(strncmp(sqlite3_column_name(q->cst, i), "oth_", 4) == 0) {
-				if(strcmp(sqlite3_column_name(q->cst, i) + 4, lastoth->fieldname) == 0) {
+			if(strncmp(colname, OTHER_ELEM_PREFIX, 4) == 0) {
+				if(strcmp(colname + 4, lastoth->fieldname) == 0) {
+#ifdef QUERY_DEBUG
+					printf("other colname is the same as the last one!\n");
+#endif
 					n = lastoth;
 					lastoth = NULL;
 					special = 3;
@@ -433,7 +445,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 			}
 		} else {
 			n = allocz(sizeof(*n));
-			n->fieldname = strdup(sqlite3_column_name(q->cst, i));
+			n->fieldname = strdup(colname);
 		}
 		if(!q->allcols) {
 			pop3(q, (void**)&pname); /* we're supposed to do something with this */
@@ -449,7 +461,11 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 				special = 2;
 			} else {
 				cel = find_catelem_by_name(q->ourcat->headelem, n->fieldname);
+				/* for some reason our ehead comes out weird (ex. with music dbspec, the type elem has music_type instead of medium_type as its parent enum) */
 				if(cel == NULL) {
+#ifdef QUERY_DEBUG
+					printf("No such element named %s\n", n->fieldname);
+#endif
 					toret = Q_NO_SUCH_CELEM;
 					break;
 				}
@@ -458,6 +474,9 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 				switch(n->type) {
 					case oenum:
 						n->ehead = cel->enumptr;
+#ifdef QUERY_DEBUG
+						printf("otherelem for (%p - %s) %s is %p\n", n->ehead, n->ehead->name, n->fieldname, n->ehead->otherelem);
+#endif
 						if(n->ehead->otherelem != NULL) {
 							n->othtype = n->ehead->otherelem->othertype;
 							lastoth = n;
@@ -502,12 +521,13 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 		if(special == 0 && n->type == oenumsub) {
 			/* we better hope that cel is what it should be */
 			if(cel != NULL)
-				n->subhead = get_subhead_by_enval(cel->enumptr->headelem, *(unsigned int*)val);
+				n->subhead = get_subhead_by_enval(cel->subcatel->enumptr->headelem, *(unsigned int*)val);
 		}
 
 		if(special == 3) {
 			n->otherval = val;
 			n->othlen = len;
+			special = 0;
 		} else {
 			n->val = val;
 			n->len = len;
@@ -792,6 +812,9 @@ int query_init_exec(q)
 		return ec;
 	}
 
+#ifdef QUERY_DEBUG
+	printf("Query SQL: '%s'\n", qusql);
+#endif
 	ec = sqlite3_prepare(q->f->db, qusql, strlen(qusql), &q->cst, &tail);
 	if(ec != SQLITE_OK) {
 		ferr(q->f, die, "prepare of \"%s\": %s", qusql, sqlite3_errmsg(q->f->db));
@@ -802,28 +825,50 @@ int query_init_exec(q)
 	free(qusql);
 	
 
+#ifdef QUERY_DEBUG
+	printf("bind ");
+#endif
 	for(c = q->insthead; c != NULL; c = c->next) {
 		ec = SQLITE_OK;
 		switch(c->opcode) {
 			case OP_INT:
+#ifdef QUERY_DEBUG
+				printf("int %d, ", c->ops.o1);
+#endif
 				ec = sqlite3_bind_int(q->cst, indcounter++, c->ops.o1);
 				break;
 			case OP_FLOAT:
+#ifdef QUERY_DEBUG
+				printf("float %f, ", *(FLOATTYPE*)c->ops.o3);
+#endif
 				ec = sqlite3_bind_double(q->cst, indcounter++, *(FLOATTYPE*)c->ops.o3);
 				break;
 			case OP_STRING:
+#ifdef QUERY_DEBUG
+				printf("str '%s', ", (char*)c->ops.o3);
+#endif
 				ec = sqlite3_bind_text(q->cst, indcounter++, (const char*)c->ops.o3, strlen((char*)c->ops.o3), SQLITE_STATIC);
 				break;
 			case OP_VOID:
+#ifdef QUERY_DEBUG
+				printf("void %p, ", c->ops.o3);
+#endif
 				ec = sqlite3_bind_blob(q->cst, indcounter++, c->ops.o3, c->ops.o2, SQLITE_STATIC);
 				break;
 			case OP_NULL:
+#ifdef QUERY_DEBUG
+				printf("null, ");
+#endif
 				ec = sqlite3_bind_null(q->cst, indcounter++);
 				break;
 		}
 		if(ec != SQLITE_OK)
 			break; /* so c stays the same */
 	}
+
+#ifdef QUERY_DEBUG
+	printf(" --ebinds\n");
+#endif
 
 	if(ec != SQLITE_OK) {
 		ferr(q->f, die, "bind of index %d (opcode %x): %s", indcounter, c->opcode, sqlite3_errmsg(q->f->db));
