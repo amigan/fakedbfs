@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/CHANGELOG,v 1.7 2005/11/27 03:15:08 dcp1990 Exp $
+$Amigan: fakedbfs/CHANGELOG,v 1.8 2005/12/20 00:53:25 dcp1990 Exp $
 
 Changelog
 
@@ -9,6 +9,7 @@ Changelog
 *Introduced time datatype for lastupdate, along with support for it in fquery(1)
 *Added -u option to findex(1) for defspecs
 *New defspec code
+*Fixed various querying bugs (choking on the oth_ stuff when an enum didn't have an oth_ field, for example)
 
 1.0.0-RELEASE ("Steely Dan")
 *Initial Release
