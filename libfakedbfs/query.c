@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.31 2005/12/20 00:33:20 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.32 2005/12/20 00:43:05 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.31 2005/12/20 00:33:20 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.32 2005/12/20 00:43:05 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -516,6 +516,11 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 				val = NULL;
 				len = 0;
 				break;
+		}
+
+		if(val == NULL) {
+			val = malloc(sizeof(unsigned int)); /* hopefully this will become n->val and be freed at a later date */
+			*(unsigned int*)val = 0x0;
 		}
 
 		if(special == 0 && n->type == oenumsub) {
