@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.42 2005/12/17 23:32:56 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.43 2005/12/20 00:52:35 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -41,6 +41,7 @@
 #	include <sys/stat.h>
 #	include <dirent.h>
 #	include <fts.h>
+#	include <sys/param.h>
 #endif
 /* other libraries */
 #include <sqlite3.h>
@@ -48,7 +49,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.42 2005/12/17 23:32:56 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.43 2005/12/20 00:52:35 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -711,6 +712,15 @@ int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 {
 	int rc = 0;
 	fields_t *c = NULL, *h = NULL, *oh = NULL;
+#ifdef UNIX
+	char respath[PATH_MAX];
+#endif
+
+#ifdef UNIX
+	if(realpath(filename, respath) != NULL) {
+		filename = respath;
+	}
+#endif
 
 	if(rc != 2) {
 		rc = file_has_changed(f, cat, filename, NULL);
