@@ -52,4 +52,4 @@ ansi.o: ficlplatform/ansi.c $(HEADERS)
 #       generic cleanup code
 #
 clean:
-	rm -f *.o *.a libficl.*
+	rm -f *.o *.a libficl.* ficl
