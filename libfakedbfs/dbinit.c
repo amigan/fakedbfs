@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.38 2005/12/19 23:17:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.39 2005/12/20 00:32:54 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.38 2005/12/19 23:17:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.39 2005/12/20 00:32:54 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -432,8 +432,8 @@ int new_catalog(f, specfile, h)
 	for(c = h->headelem; c != NULL; c = c->next) {
 		tds += strlen(c->name) + 1 /* comma */
 		       	+ strlen(gettype(c->type) /* gettype includes the space */);
-		if(c->type == oenum)
-			tds += strlen(c->name) + strlen(OTHER_ELEM_PREFIX) + 1 + strlen(c->enumptr->otherelem != NULL ?
+		if(c->type == oenum && c->enumptr->otherelem != NULL)
+			tds += strlen(c->name) + strlen(OTHER_ELEM_PREFIX) + 1 + strlen(c->enumptr->otherelem != NULL ? /* why is this ternary here? */
 					gettype(c->enumptr->otherelem->othertype) : " BLOB" /*universal */);
 	}
 	tds += strlen(tdescpref);
@@ -444,7 +444,7 @@ int new_catalog(f, specfile, h)
 	for(c = h->headelem; c != NULL; c = c->next) {
 		snprintf(ilbuffer, sizeof(ilbuffer), ",%s%s", c->name, gettype(c->type));
 		strlcat(tdesc, ilbuffer, tds);
-		if(c->type == oenum) {
+		if(c->type == oenum && c->enumptr->otherelem != NULL) {
 			snprintf(ilbuffer, sizeof(ilbuffer), ",%s%s%s", OTHER_ELEM_PREFIX, c->name, c->enumptr->otherelem != NULL ?
 				gettype(c->enumptr->otherelem->othertype) : " BLOB");
 			strlcat(tdesc, ilbuffer, tds);
@@ -610,8 +610,15 @@ struct EnumElem* enumelems_from_dbtab(f, table, e)
 		n->other = (oth == oenum ? 0 : 1);
 		n->othertype = oth;
 		n->subhead = subelements_from_field(f, n, subs);
-		if(oth != oenum)
+#ifdef QUERY_DEBUG
+		printf("oth of %s is %d (%s)\n", n->name, oth, oth == oenum ? "oenum" : "not oenum");
+#endif
+		if(oth != oenum) {
+#ifdef QUERY_DEBUG
+			printf("oth of eh %p is not oenum\n", e);
+#endif
 			e->otherelem = n;
+		}
 		if(subs != NULL)
 			free(subs);
 		
