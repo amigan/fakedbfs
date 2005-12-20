@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.32 2005/12/20 00:43:05 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.33 2005/12/20 21:34:19 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.32 2005/12/20 00:43:05 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.33 2005/12/20 21:34:19 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -372,6 +372,24 @@ int qne(q) /* Query Next/Execute */
 }
 
 
+static const char* q_colname(q, ind)
+	query_t *q;
+	int ind;
+{
+	inst_t *c;
+	int i = 0;
+
+	for(c = q->insthead; c != NULL; c = c->next) {
+		if(c->opcode == OP_SELCN && c->ops.used & USED_O3) {
+		       if(i++ == ind) {
+			       return (const char*)c->ops.o3;
+		       }
+		}
+	}
+
+	return NULL;
+}
+
 int query_step(q) /* a pointer to the head of a fields_t list is pushed to the stack by this. */
 	query_t *q;
 {
@@ -423,11 +441,14 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 	printf("counted %d columns...\n", colcount);
 #endif
 
-	/* this won my "most absurd ternary" contest in ##freebsd */
-	for(i = (q->allcols ? 1 /* no id */ : colcount); (q->allcols ? (i < colcount) : (i > 0)); (q->allcols ? i++ : i--)) {
-		colname = sqlite3_column_name(q->cst, i);
+	for(i = 0; i < colcount; i++) {
+		if(q->allcols) {
+			colname = sqlite3_column_name(q->cst, i);
+		} else {
+			colname = q_colname(q, i);
+		}
 #ifdef QUERY_DEBUG
-		printf("sqlite column name came out to %p ('%s')\n", colname, colname != NULL ? colname : "");
+		printf("sqlite column name (index %d) came out to %p ('%s')\n", i, colname, colname != NULL ? colname : "");
 #endif
 		if(q->allcols) /* a terrible, terrible hack; why does sqlite3_column_name() return null?! check that the counter var is correct when q->allcols */
 			if(strcmp("id", colname) == 0)
@@ -461,7 +482,6 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 				special = 2;
 			} else {
 				cel = find_catelem_by_name(q->ourcat->headelem, n->fieldname);
-				/* for some reason our ehead comes out weird (ex. with music dbspec, the type elem has music_type instead of medium_type as its parent enum) */
 				if(cel == NULL) {
 #ifdef QUERY_DEBUG
 					printf("No such element named %s\n", n->fieldname);
