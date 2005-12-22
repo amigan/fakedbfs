@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fedit/fedit.c,v 1.4 2005/12/20 22:44:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fedit/fedit.c,v 1.5 2005/12/22 22:22:12 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -50,14 +50,13 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/fedit/fedit.c,v 1.4 2005/12/20 22:44:51 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fedit/fedit.c,v 1.5 2005/12/22 22:22:12 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
 fdbfs_t *f;
 
-int find_cmd(int, char**);
-int exec_command(int, int, char**);
+int do_commands(int, char**);
 
 void version(void)
 {
@@ -108,7 +107,7 @@ int main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
-	if(argc != 1) {
+	if(argc < 1) {
 		usage(pname);
 		return -1;
 	}
@@ -136,13 +135,8 @@ int main(argc, argv)
 		return -1;
 	}
 
-	trc = find_cmd(argc, argv);
-	
-	if(trc != -1) {
-		exec_command(trc, argc, argv);
-	}
+	trc = do_commands(argc, argv);
 
-	
 	destroy_fdbfs(f);
 	free(dbf);
 
