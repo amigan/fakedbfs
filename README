@@ -1,6 +1,6 @@
-$Amigan: fakedbfs/README,v 1.9 2005/12/22 22:41:39 dcp1990 Exp $
+$Amigan: fakedbfs/README,v 1.10 2005/12/22 22:55:02 dcp1990 Exp $
 
-This is the fakedbfs distribution, version 1.1.0-RELEASE (Bodhisattva). See the contents of
+This is the fakedbfs distribution, version 2.0.0-RELEASE (Doctor Wu). See the contents of
 doc/ for more information. I know API docs suck now...I plan on changing this with this release.
 Feel free to email me at <dcp1990@neptune.atopia.net> if you have any questions.
 
