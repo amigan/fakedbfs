@@ -1,3 +1,4 @@
+include ../globals.mk
 OBJECTS= dictionary.o system.o fileaccess.o float.o double.o prefix.o search.o softcore.o stack.o tools.o vm.o primitives.o bit.o lzuncompress.o ansi.o utility.o hash.o callback.o word.o extras.o
 HEADERS= ficl.h ficlplatform/ansi.h
 #
@@ -5,7 +6,6 @@ HEADERS= ficl.h ficlplatform/ansi.h
 TARGET=  -ansi -DFICL_ANSI  # riscos MOTO_CPU32 
 SHFLAGS = -fPIC
 CFLAGS= -O $(SHFLAGS) $(TARGET)
-CC=gcc
 LIB = ar cr
 RANLIB = ranlib
 
