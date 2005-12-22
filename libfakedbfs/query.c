@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.34 2005/12/20 22:38:43 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.35 2005/12/22 15:23:48 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.34 2005/12/20 22:38:43 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.35 2005/12/22 15:23:48 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -571,7 +571,10 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 	}
 
 	if(toret == Q_NEXT || toret == Q_FINISHED) {
-		push3(q, h);
+		if(!push3(q, h)) {
+			toret = Q_STACK_FULL;
+		} /* if the application doesn't know what it's doing, we're fucked once we run out of
+		stack space! Make sure that anyone who uses querying knows this!! */
 	}
 
 	return toret;
@@ -1055,6 +1058,8 @@ char* query_error(rc)
 			return "No such catalogue.";
 		case Q_NO_SUCH_CELEM:
 			return "No such element/field in catalogue.";
+		case Q_STACK_FULL:
+			return "Stack full! Make sure you are popping the fields_t head off of the stack!";
 		case Q_UNKNOWNSTATE:
 			return "Query VM is in an unknown state!";
 		default:
