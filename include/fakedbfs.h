@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.56 2005/12/17 23:32:56 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.57 2005/12/22 22:14:11 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -42,7 +42,9 @@
 #include "dmalloc.h"
 #endif
 #define ERR(act, fmt, ...) ferr(f, act, fmt, __VA_ARGS__)
+#define SERR(act, fmt) ferr(f, act, fmt)
 #define CERR(act, fmt, ...) cferr(f, act, fmt, __VA_ARGS__)
+#define SCERR(act, fmt) cferr(f, act, fmt)
 #define _unused       __attribute__((__unused__))
 
 #define MAJOR_API_VERSION 1
