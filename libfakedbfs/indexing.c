@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.43 2005/12/20 00:52:35 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.44 2005/12/22 22:14:51 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -49,7 +49,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.43 2005/12/20 00:52:35 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.44 2005/12/22 22:14:51 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -85,7 +85,7 @@ int add_file(f, file, catalogue, fields)
 		if(c->fieldname == NULL) {
 			free(tablename);
 			free(fieldtable);
-			return ERR(die, "fieldname was null! Perhaps a misbehaving plugin?", NULL);
+			return SERR(die, "fieldname was null! Perhaps a misbehaving plugin?");
 		}
 		sqlkeyslen += strlen(c->fieldname) + 1 /* comma */;
 		sqlvalslen += 2; /* ",?" */
@@ -400,7 +400,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 	if(cans == (answer_t*)0x1)
 		dialoguemode = 1;
 	else if(cans == (answer_t*)-1) {
-		ERR(die, "askfieldfunc initial gave error.", NULL);
+		SERR(die, "askfieldfunc initial gave error.");
 		return NULL;
 	}
 
@@ -449,7 +449,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 																    we might provide functions to do this in the
 																    future */);
 				if(cans == (answer_t*)-1) {
-					ERR(die, "askfunc said error here (dialoguemode).", NULL);
+					SERR(die, "askfunc said error here (dialoguemode).");
 					/* clean up */
 					return NULL;
 				}
@@ -458,7 +458,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 
 		cans = f->askfieldfunc(NULL, NULL, NULL, (char*)0x1 /* before real */, NULL, 0x0, NULL, NULL);
 		if(cans == (answer_t*)-1) {
-				ERR(die, "askfunc said error here (dialoguemode - before real).", NULL);
+				SERR(die, "askfunc said error here (dialoguemode - before real).");
 				/* clean up */
 				return NULL;
 		}
@@ -506,7 +506,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 
 			cans = f->askfieldfunc(&cta, &def, c->fmtname, c->fieldname, filen, def.dt, c->ehead, c->subhead);
 			if(cans == (answer_t*)-1) {
-				ERR(die, "askfunc said error here.", NULL);
+				SERR(die, "askfunc said error here.");
 				/* clean up */
 				return NULL;
 			} else if(cans == (answer_t*)0x1) {
@@ -626,7 +626,7 @@ int complete_fields_from_db(f, cat, h)
 	hhh = f->heads.db_cath;
 
 	if(hhh == NULL) {
-		ERR(die, "list not filled in from DB! call read_specs_from_db() first.", NULL);
+		SERR(die, "list not filled in from DB! call read_specs_from_db() first.");
 		return 0;
 	}
 	
@@ -768,7 +768,7 @@ int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 		}
 		
 		if(!rc) {
-			CERR(die, "complete fields failed. ", NULL);
+			SCERR(die, "complete fields failed. ");
 			erase_fields(&h, fields, oh);
 			free_field_list(h);
 			return 0;
@@ -806,7 +806,7 @@ int file_has_changed(f, cat, filename, statstruct)
 	upd = (time_t)get_lastupdate(f, cat, filename);
 
 	if(upd == -1) { /*error*/
-		CERR(die, "get_lastupdate errored. ", NULL);
+		SCERR(die, "get_lastupdate errored. ");
 		return -1;
 	} else if(upd == -2) {
 		return 1;

@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.35 2005/12/22 15:23:48 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.36 2005/12/22 22:14:52 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.35 2005/12/22 15:23:48 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.36 2005/12/22 22:14:52 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -198,13 +198,13 @@ query_t* new_query(f, stacksize)
 	n->f = f;
 	
 	if((n->enumh = f->heads.db_enumh) == NULL) {
-		CERR(die, "No definition in the fdbfs_t structure. Have you called read_specs_from_db()? ", NULL);
+		SCERR(die, "No definition in the fdbfs_t structure. Have you called read_specs_from_db()? ");
 		free(n);
 		return NULL;
 	}
 	
 	if((n->cath = f->heads.db_cath) == NULL) {
-		CERR(die, "No definition in the fdbfs_t structure. Have you called read_specs_from_db()? ", NULL);
+		SCERR(die, "No definition in the fdbfs_t structure. Have you called read_specs_from_db()? ");
 		free(n);
 		return NULL;
 	}

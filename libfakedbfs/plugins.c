@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.7 2005/10/03 21:05:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.8 2005/12/22 22:14:52 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdio.h>
@@ -47,7 +47,7 @@
 #include <fdbfsconfig.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.7 2005/10/03 21:05:51 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.8 2005/12/22 22:14:52 dcp1990 Exp $")
 
 #define LIBERR(sym) { \
 		debug_info(f, error, "probe_plugin: symbol referece %s failed in %s: %s", sym, fpth, dlerror()); \
@@ -169,7 +169,7 @@ struct Plugin* search_plugs(f, plugins, path)
 			if((lp = probe_plugin(f, path, ce, lp)) == lpo && f->error.emsg != NULL) {
 				free(ce);
 				closedir(d);
-				CERR(die, "Error scanning directory. ", NULL);
+				SCERR(die, "Error scanning directory. ");
 				return lpo;
 			}
 			free(ce);
@@ -211,7 +211,7 @@ int init_plugins(f)
 		if(f->error.emsg != NULL) {
 			f->plugins = head;
 			free(path);
-			CERR(die, "Error searching. ", NULL);
+			SCERR(die, "Error searching. ");
 			return 0;
 		}
 	}

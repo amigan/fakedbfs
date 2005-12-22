@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.40 2005/12/22 22:06:31 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.41 2005/12/22 22:14:51 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.40 2005/12/22 22:06:31 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.41 2005/12/22 22:14:51 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -88,10 +88,10 @@ int parse_definition(f, filename)
 	h.instance = f;
 	h.db_enumh = enums_from_db(f);
 	if(h.db_enumh == NULL && f->error.emsg != NULL)
-		return CERR(die, "parse_definition: enum importation failed. ", NULL);
+		return SCERR(die, "parse_definition: enum importation failed. ");
 	h.db_cath = cats_from_db(f, h.db_enumh);
 	if(h.db_cath == NULL && f->error.emsg != NULL)
-		return CERR(die, "parse_definition: catalogue importation failed. ", NULL);
+		return SCERR(die, "parse_definition: catalogue importation failed. ");
 	if(strcmp(filename, "-") == 0)
 		tf = stdin;
 	else
@@ -632,7 +632,7 @@ struct EnumElem* enumelems_from_dbtab(f, table, e)
 		if(n->subhead == NULL && f->error.emsg != NULL) {
 			free_enum_elem_list(h);
 			sqlite3_finalize(cst);
-			CERR(die, "enumelems_from_dbtab: subelements. ", NULL);
+			SCERR(die, "enumelems_from_dbtab: subelements. ");
 			return NULL;
 		}
 	}
@@ -681,7 +681,7 @@ struct EnumHead* enums_from_db(f)
 		if(n->headelem == NULL && f->error.emsg != NULL) {
 			free_enum_head_list(h);
 			sqlite3_finalize(cst);
-			CERR(die, "enums_from_db: from dbtab error. ", NULL);
+			SCERR(die, "enums_from_db: from dbtab error. ");
 			return NULL;
 		}
 		
@@ -814,7 +814,7 @@ struct CatalogueHead* cats_from_db(f, enumhead)
 		if(n->headelem == NULL) {
 			free_cat_head_list(h);
 			sqlite3_finalize(cst);
-			CERR(die, "cats_from_db: from dbtab error. ", NULL);
+			SCERR(die, "cats_from_db: from dbtab error. ");
 			return NULL;
 		}
 		
@@ -837,7 +837,7 @@ int rm_catalogue(f, catname)
 	char *ttbl;
 	size_t ttl;
 	if(!db_delete(f, "cat_list", "name", "==", catname)) {
-		cferr(f, die, "rm_catalogue: delete error");
+		SCERR(die, "rm_catalogue: delete error");
 		return 0;
 	}
 	ttl = strlen(catname) + sizeof("cft_") + 1;
@@ -845,14 +845,14 @@ int rm_catalogue(f, catname)
 	strlcpy(ttbl, "c_", ttl);
 	strlcat(ttbl, catname, ttl);
 	if(!drop_table(f, ttbl)) {
-		CERR(die, "rm_catalogue: table drop error", NULL);
+		SCERR(die, "rm_catalogue: table drop error");
 		free(ttbl);
 		return 0;
 	}
 	strlcpy(ttbl, "cft_", ttl);
 	strlcat(ttbl, catname, ttl);
 	if(!drop_table(f, ttbl)) {
-		CERR(die, "rm_catalogue: cft table drop error", NULL);
+		SCERR(die, "rm_catalogue: cft table drop error");
 		free(ttbl);
 		return 0;
 	}
