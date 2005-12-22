@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/query.h,v 1.15 2005/12/20 22:38:43 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/query.h,v 1.16 2005/12/22 21:53:46 dcp1990 Exp $ */
 #ifndef HAVE_QUERY_H
 #define HAVE_QUERY_H 1
 #ifndef HAVE_DBSPECDATA_H
@@ -84,6 +84,7 @@
 #define Q_NO_COLUMNS 0xE
 #define Q_NO_SUCH_CAT 0xF
 #define Q_NO_SUCH_CELEM 0x10
+#define Q_STACK_FULL 0x11
 #define Q_UNKNOWNSTATE 0xFF
 
 typedef struct {
