@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.39 2005/12/20 00:32:54 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.40 2005/12/22 22:06:31 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.39 2005/12/20 00:32:54 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.40 2005/12/22 22:06:31 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -837,7 +837,7 @@ int rm_catalogue(f, catname)
 	char *ttbl;
 	size_t ttl;
 	if(!db_delete(f, "cat_list", "name", "==", catname)) {
-		CERR(die, "rm_catalogue: delete error", NULL);
+		cferr(f, die, "rm_catalogue: delete error");
 		return 0;
 	}
 	ttl = strlen(catname) + sizeof("cft_") + 1;

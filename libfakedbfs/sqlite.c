@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.23 2005/12/17 22:59:27 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.24 2005/12/22 22:06:31 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.23 2005/12/17 22:59:27 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.24 2005/12/22 22:06:31 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -313,7 +313,7 @@ int db_delete(f, from, wherecol, wherecmp, whereval)
 {
 	char *sql, *emsg;
 	int rc;
-	sql = sqlite3_mprintf("DELETE FROM %s WHERE %s %s %s", from, wherecol, wherecmp, whereval);
+	sql = sqlite3_mprintf("DELETE FROM %s WHERE %s %s '%q'", from, wherecol, wherecmp, whereval);
 	rc = sqlite3_exec(f->db, sql, NULL, NULL, &emsg);
 	sqlite3_free(sql);
 	if(rc != SQLITE_OK) {
