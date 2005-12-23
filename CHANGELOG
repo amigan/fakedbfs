@@ -1,6 +1,10 @@
-$Amigan: fakedbfs/CHANGELOG,v 1.11 2005/12/22 22:24:05 dcp1990 Exp $
+$Amigan: fakedbfs/CHANGELOG,v 1.12 2005/12/23 20:23:08 dcp1990 Exp $
 
 Changelog
+
+2.0.0-RELEASE ("Doctor Wu")
+*ficl has been imported into the tree and work started; see libfakedbfs/ficl.c
+*answer_t members have been consolidated into a union to save space. This may cause problems; we'll see
 
 1.1.0-RELEASE ("Bodhisattva")
 *All indexing functions now accept a last argument, def, for default fields. This is to facilitate our default spec parser for findex(1).
