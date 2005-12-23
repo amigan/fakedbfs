@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.58 2005/12/22 22:55:02 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.59 2005/12/23 19:56:49 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -41,6 +41,11 @@
 #if defined(DMALLOC) && !defined(NODMALLOC)
 #include "dmalloc.h"
 #endif
+
+#ifdef HAVE_FICL_H
+#include <ficl.h>
+#endif
+
 #define ERR(act, fmt, ...) ferr(f, act, fmt, __VA_ARGS__)
 #define SERR(act, fmt) ferr(f, act, fmt)
 #define CERR(act, fmt, ...) cferr(f, act, fmt, __VA_ARGS__)
@@ -194,6 +199,7 @@ typedef struct FDBFS {
 	void (*debugfunc)(char*, enum ErrorAction);
 	answer_t *(*askfieldfunc) AFFPROTO; /* returns status: 0 means no change, 1 means change, -1 means error */
 	Heads heads;
+	ficlSystem *fsys;
 } fdbfs_t;
 
 /* crawler stuff */
@@ -392,6 +398,12 @@ crawlframe_t* create_frame(crawl_t *cr, size_t size, crawlframe_t *parent, file_
 void destroy_frame(crawlframe_t *cf);
 void traverse_and_free(crawlframe_t *cf);
 int crawl_dir(crawl_t *cr, char *dir); /* simply adds dir to the base frame */
+
+/* ficl stuff */
+int ficl_init(fdbfs_t *f);
+#ifdef HAVE_FICL_H
+int ficl_addwords(fdbfs_t *f, ficlDictionary *dict);
+#endif
 
 /* application interfaces */
 int parse_definition(fdbfs_t *f, char *filename);

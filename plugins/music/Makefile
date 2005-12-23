@@ -2,7 +2,7 @@
 include ../../config.mk
 include ../../globals.mk
 LDFLAGS=-L/usr/local/lib
-CPPFLAGS+=-I../../include
+CPPFLAGS+=-I../../include -I../../ficl
 LIBS=-lid3 -lstdc++ -lz $(LIBEXT)
 SRCS=music.c
 OBJS=music.o
