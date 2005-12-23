@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.59 2005/12/23 19:56:49 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.60 2005/12/23 20:22:12 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -180,12 +180,16 @@ struct Plugin {
 #define AFFPROTO (answer_t * /* buffer */, answer_t * /* default */, char * /*fieldname*/, char * /* unformatted name */, \
 			char * /* filename */, enum DataType, struct EnumHead * /* if oenum */, struct EnumSubElem * /* if sub */)
 #define ASKFUNC_STD ((answer_t*(*)AFFPROTO)0)
-typedef struct a_t {
-	enum DataType dt;
+typedef union {
 	char *string; /* this and vd will be free()d if they aren't NULL, no exceptions. Hence, make them dynamic. */
 	int integer; /* applies to enums and subenums as well */
 	FLOATTYPE fp;
 	void *vd;
+} ansdata_t;
+
+typedef struct a_t {
+	enum DataType dt;
+	ansdata_t ad;
 	size_t len;
 } answer_t;
 

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.23 2005/12/17 22:26:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.24 2005/12/23 20:22:12 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #include <lexdefines.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.23 2005/12/17 22:26:51 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.24 2005/12/23 20:22:12 dcp1990 Exp $")
 
 
 #ifdef NO_CALLOC
@@ -294,10 +294,10 @@ char* strdupq(s)
 void free_answer_t(e)
 	answer_t *e;
 {
-	if(e->string != NULL)
-		free(e->string);
-	if(e->vd != NULL)
-		free(e->vd);
+	if(e->ad.string != NULL)
+		free(e->ad.string);
+	else if(e->ad.vd != NULL)
+		free(e->ad.vd);
 	free(e);
 }
 

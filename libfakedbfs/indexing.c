@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.44 2005/12/22 22:14:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.45 2005/12/23 20:22:12 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -49,7 +49,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.44 2005/12/22 22:14:51 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.45 2005/12/23 20:22:12 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -271,25 +271,25 @@ checkagain:
 		case number:
 		case datime: /* fugly; oh well */
 		case usnumber:
-			printf("%s [%d]> ", fieldname, def->integer);
+			printf("%s [%d]> ", fieldname, def->ad.integer);
 			break;
 		case boolean:
-			printf("%s [%s]> ", fieldname, (def->integer ? "true" : "false"));
+			printf("%s [%s]> ", fieldname, (def->ad.integer ? "true" : "false"));
 			break;
 		case oenum:
-			printf("%s [%d - '%s'] (? lists)> ", fieldname, def->integer, get_enum_string_by_value(ehead->headelem, def->integer, 1));
+			printf("%s [%d - '%s'] (? lists)> ", fieldname, def->ad.integer, get_enum_string_by_value(ehead->headelem, def->ad.integer, 1));
 			break;
 		case oenumsub:
-			es =  get_enum_sub_string_by_value(subhead, def->integer);
+			es =  get_enum_sub_string_by_value(subhead, def->ad.integer);
 			if(es == NULL)
 				return (answer_t*)0x1;
-			printf("%s sub [%d - '%s'] (? lists)> ", fieldname, def->integer, es);
+			printf("%s sub [%d - '%s'] (? lists)> ", fieldname, def->ad.integer, es);
 			break;
 		case string:
-			printf("%s ['%s']> ", fieldname, def->string);
+			printf("%s ['%s']> ", fieldname, def->ad.string);
 			break;
 		case fp:
-			printf("%s [%f]> ", fieldname, def->fp);
+			printf("%s [%f]> ", fieldname, def->ad.fp);
 			break;
 		case image:
 		case binary:
@@ -317,25 +317,25 @@ checkagain:
 		case number:
 		case datime:
 		case usnumber: /* incorrect! oh well...shuts the compiler up. we don't use usnumber yet anyway */
-			buf->integer = atoi(bf);
+			buf->ad.integer = atoi(bf);
 			break;
 		case boolean:
 			if(*bf == 't')
-				buf->integer = 1;
+				buf->ad.integer = 1;
 			else if(*bf == 'f')
-				buf->integer = 0;
+				buf->ad.integer = 0;
 			else
 				goto checkagain; /* it isn't BASIC, folks */
 			break;
 		case oenum:
 		case oenumsub:
-			buf->integer = atoi(bf);
+			buf->ad.integer = atoi(bf);
 			break;
 		case string:
-			buf->string = strdup(bf);
+			buf->ad.string = strdup(bf);
 			break;
 		case fp:
-			buf->fp = strtod(bf, NULL);
+			buf->ad.fp = strtod(bf, NULL);
 			break;
 		case image:
 		case binary:
@@ -428,17 +428,17 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 					case boolean:
 					case oenum:
 					case oenumsub:
-						def.integer = *(int*)cval;
+						def.ad.integer = *(int*)cval;
 						break;
 					case string:
-						def.string = (char*)cval;
+						def.ad.string = (char*)cval;
 						break;
 					case fp:
-						def.fp = *(FLOATTYPE *)cval;
+						def.ad.fp = *(FLOATTYPE *)cval;
 						break;
 					case image:
 					case binary:
-						def.vd = cval;
+						def.ad.vd = cval;
 						def.len = clen;
 						break;
 				}
@@ -485,17 +485,17 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 				case boolean:
 				case oenum:
 				case oenumsub:
-					def.integer = *(int*)cval;
+					def.ad.integer = *(int*)cval;
 					break;
 				case string:
-					def.string = (char*)cval;
+					def.ad.string = (char*)cval;
 					break;
 				case fp:
-					def.fp = *(FLOATTYPE *)cval;
+					def.ad.fp = *(FLOATTYPE *)cval;
 					break;
 				case image:
 				case binary:
-					def.vd = cval;
+					def.ad.vd = cval;
 					def.len = clen;
 					break;
 			}
@@ -525,34 +525,34 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 							if(c->otherval != NULL)
 								free(c->otherval);
 							c->otherval = malloc(sizeof(int));
-							*(int*)c->otherval = cta.integer;
+							*(int*)c->otherval = cta.ad.integer;
 						} else {
 							hasoth = 0;
 							if(c->val != NULL)
 								free(c->val);
 							c->val = malloc(sizeof(int));
-							*(int*)c->val = cta.integer;
+							*(int*)c->val = cta.ad.integer;
 						}
 						break;
 					case string:
 						if(c->val != NULL)
 							free(c->val);
 						if(hasoth)
-							c->otherval = strdup(cta.string);
+							c->otherval = strdup(cta.ad.string);
 						else
-							c->val = strdup(cta.string);
+							c->val = strdup(cta.ad.string);
 						break;
 					case fp:
 						if(hasoth) {
 							if(c->otherval != NULL)
 								free(c->otherval);
 							c->otherval = malloc(sizeof(FLOATTYPE));
-							*(FLOATTYPE*)c->otherval = cta.fp;
+							*(FLOATTYPE*)c->otherval = cta.ad.fp;
 						} else {
 							if(c->val != NULL)
 								free(c->val);
 							c->val = malloc(sizeof(FLOATTYPE));
-							*(FLOATTYPE*)c->val = cta.fp;
+							*(FLOATTYPE*)c->val = cta.ad.fp;
 						}
 						break;
 					case image:
@@ -561,12 +561,12 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 							if(c->val != NULL)
 								free(c->val);
 							c->val = malloc(cta.len);
-							memcpy(c->val, cta.vd, cta.len);
+							memcpy(c->val, cta.ad.vd, cta.len);
 						} else {
 							if(c->otherval != NULL)
 								free(c->otherval);
 							c->otherval = malloc(cta.len);
-							memcpy(c->otherval, cta.vd, cta.len);
+							memcpy(c->otherval, cta.ad.vd, cta.len);
 						}
 						break;
 				}
