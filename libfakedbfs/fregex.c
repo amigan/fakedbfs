@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.2 2005/10/09 07:47:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.3 2005/12/24 22:11:37 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@
 #include <fakedbfs.h>
 #include <fdbfsregex.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.2 2005/10/09 07:47:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.3 2005/12/24 22:11:37 dcp1990 Exp $")
 
 int frinitialise(fr)
 	freg_t *fr;
@@ -123,11 +123,13 @@ int fregcomp(fr, regpat, flags) /* posix regcomp semantics: rc == 0 means "ok" *
 
 	return 0;
 #else
-	int posixflags = REG_NOSUB | REG_EXTENDED;
+	int posixflags = REG_EXTENDED;
 	int rc;
 
 	if(flags & FREG_NOCASE)
 		posixflags |= REG_ICASE;
+	if(flags & FREG_NOSUB)
+		posixflags |= REG_NOSUB;
 
 	rc = regcomp(&fr->re, regpat, posixflags);
 	if(rc) {
@@ -142,43 +144,88 @@ int fregcomp(fr, regpat, flags) /* posix regcomp semantics: rc == 0 means "ok" *
 #endif
 }
 
-int fregexec(fr, str)
+int fregexec(fr, str, matches, matchsize)
 	freg_t *fr;
 	char *str;
+	fregmatch_t *matches;
+	size_t matchsize; /* number of elements */
 {
 #ifdef USE_PCRE
-	int rc;
+	int rc, i;
+	int *mats = NULL;
+	size_t nmats = 0;
+	struct PCREVecElem {
+		int st;
+		int en;
+		int work;
+	};
+	struct PCREVecElem *cv = NULL;
 
-	rc = pcre_exec(fr->re, fr->extra, str, strlen(str), 0, 0, NULL, 0);
+	if(matches != NULL) {
+		nmats = matchsize * 3;
+		mats = allocz(sizeof(*mats) * nmats);
+		cv = (struct PCREVecElem *)mats;
+	}
+
+	rc = pcre_exec(fr->re, fr->extra, str, strlen(str), 0, 0, mats, mats != NULL ? nmats : 0);
 
 	switch(rc) {
 		case PCRE_ERROR_NOMATCH:
+			if(mats != NULL)
+				free(mats);
 			return 1;
 		case 0:
+			if(mats != NULL) {
+				for(i = 0; i < matchsize; i++) {
+					matches[i].s = cv->st;
+					matches[i].e = cv->en;
+					cv++;
+				}
+				free(mats);
+			}
 			return 0;
 		default:
 			fr->errmsg = malloc(128 * sizeof(char));
 			snprintf(fr->errmsg, 128, "Error with pcre_exec. (rc = %d)", rc);
 			fr->dynamic = 1;
+			if(mats != NULL)
+				free(mats);
 			return rc;
 	}
 	/* NOTREACHED */
 
 	return rc;
 #else
+	regmatch_t *mats = NULL;
 	int rc;
+	int i;
 	
-	rc = regexec(&fr->re, str, 0, NULL, 0);
+	if(matches != NULL) {
+		mats = allocz(sizeof(*mats) * matchsize);
+	}
+
+	rc = regexec(&fr->re, str, mats != NULL ? matchsize : 0, mats, 0);
 
 	switch(rc) {
 		case REG_NOMATCH:
+			if(mats != NULL)
+				free(mats);
 			return 1;
 		case 0:
+			if(mats != NULL) {
+				for(i = 0; i < matchsize; i++) {
+					matches[i].s = mats[i].rm_so;
+					matches[i].e = mats[i].rm_eo;
+				}
+				free(mats);
+			}
 			return 0;
 		default:
 			fr->errmsg = malloc(128 * sizeof(char));
 			regerror(rc, &fr->re, fr->errmsg, 127);
 			fr->dynamic = 1;
+			if(mats != NULL)
+				free(mats);
 			return rc;
 	}
 

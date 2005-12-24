@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.36 2005/12/22 22:14:52 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.37 2005/12/24 22:11:37 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.36 2005/12/22 22:14:52 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.37 2005/12/24 22:11:37 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -231,7 +231,7 @@ qreg_t* qreg_compile(regex, case_insens, errmsg)
 		free(new);
 		return NULL;
 	}
-	if((rc = fregcomp(new->re, regex, (case_insens ? FREG_NOCASE : 0))) != 0) {
+	if((rc = fregcomp(new->re, regex, (case_insens ? FREG_NOCASE : 0) | FREG_NOSUB)) != 0) {
 		*errmsg = strdup(new->re->errmsg);
 		destroy_freg(new->re);
 		free(new->tregex);
@@ -271,7 +271,7 @@ void regex_func(ctx, i, sqval)
 		if(c->opcode == OP_REGEXP) {
 			oqr = (qreg_t*)c->ops.o3;
 			if(strcmp(regexp, oqr->tregex) == 0) {
-				rc = fregexec(oqr->re, (char*)string);
+				rc = fregexec(oqr->re, (char*)string, NULL, 0);
 				if(rc == 0)
 					orc = 1;
 				break;

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fdbfsregex.h,v 1.2 2005/10/03 20:56:23 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fdbfsregex.h,v 1.3 2005/12/24 22:11:37 dcp1990 Exp $ */
 #ifndef HAVE_FDBRE_H
 #define HAVE_FDBRE_H 1
 #include <fdbfsconfig.h>
@@ -49,6 +49,7 @@
 #endif
 
 #define FREG_NOCASE	0x1
+#define FREG_NOSUB	0x2
 
 #define FREG_OK		0x0
 #define FREG_NOMATCH	0x1
@@ -61,6 +62,11 @@ typedef struct {
 	short int dynamic; /* errmsg malloc()d? */
 } freg_t;
 
+typedef struct {
+	int s;
+	int e;
+} fregmatch_t;
+
 
 /* functions */
 
@@ -69,5 +75,5 @@ freg_t* new_freg(char *emsg, size_t emsgsize);
 void frerrfree(freg_t *fr);
 void destroy_freg(freg_t *fr);
 int fregcomp(freg_t *fr, char *regpat, int flags); /* posix regcomp semantics: rc == 0 means "ok" */
-int fregexec(freg_t *fr, char *str);
+int fregexec(freg_t *fr, char *str, fregmatch_t *matches, size_t matchsize);
 #endif

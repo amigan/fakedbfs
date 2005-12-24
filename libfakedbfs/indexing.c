@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.46 2005/12/24 01:53:36 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.47 2005/12/24 22:11:37 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -49,7 +49,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.46 2005/12/24 01:53:36 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.47 2005/12/24 22:11:37 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -862,7 +862,7 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re, defs) /* this has n
 		if(c->fts_info == FTS_D) /* no directories */
 			continue;
 		if(re != NULL) {
-			rc = fregexec(re, c->fts_name);
+			rc = fregexec(re, c->fts_name, NULL, 0);
 			if(rc == FREG_NOMATCH) {
 				continue;
 			} else if(rc != 0) {
@@ -949,7 +949,7 @@ int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse, defs)
 			ERR(die, "index_dir: error allocating regex: %s", emsg);
 			return 0;
 		}
-		if((rc = fregcomp(tre, re, (nocase ? FREG_NOCASE : 0))) != 0) {
+		if((rc = fregcomp(tre, re, (nocase ? FREG_NOCASE : 0) | FREG_NOSUB)) != 0) {
 			ERR(die, "index_dir: error compiling regex (rc %d) '%s': %s", rc, re, tre->errmsg);
 			destroy_freg(tre);
 			return 0;
