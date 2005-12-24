@@ -27,14 +27,14 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.5 2005/09/21 03:35:04 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.6 2005/12/24 22:27:48 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
 #include <errno.h>
-#include <regex.h>
+#include <fdbfsregex.h>
 #include <stdio.h>
 #include <id3.h>
 
@@ -46,7 +46,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.5 2005/09/21 03:35:04 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.6 2005/12/24 22:27:48 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
@@ -111,35 +111,42 @@ int match_filename(filename, errmsg, tc, th)
 {
 	fields_t *h = NULL, *c = NULL, *n;
 	char *ours, *cur, oc;
-	regex_t tre;
-	regmatch_t matches[NSUBS];
+	freg_t *tre;
+	char emsg[256];
+	fregmatch_t matches[NSUBS + 1];
 	int rc;
 
-	rc = regcomp(&tre, FILENAME_REGEX, REG_EXTENDED | (CASE_INSENS ? REG_ICASE : 0));
-	if(rc != 0) {
-		*errmsg = malloc(128);
-		regerror(rc, &tre, *errmsg, 127);
+	tre = new_freg(emsg, sizeof(emsg));
+
+	if(tre == NULL) {
+		*errmsg = strdup(emsg);
 		return 0;
 	}
 
-	rc = regexec(&tre, filename, NSUBS + 1, matches, 0x0);
-	if(rc != REG_NOMATCH && rc != 0) {
-		*errmsg = malloc(128);
-		regerror(rc, &tre, *errmsg, 127);
-		regfree(&tre);
+	rc = fregcomp(tre, FILENAME_REGEX, (CASE_INSENS ? FREG_NOCASE : 0));
+	if(rc != 0) {
+		*errmsg = strdup(tre->errmsg);
+		destroy_freg(tre);
 		return 0;
-	} else if(rc != REG_NOMATCH) {
+	}
+
+	rc = fregexec(tre, filename, matches, NSUBS + 1);
+	if(rc != FREG_NOMATCH && rc != 0) {
+		*errmsg = strdup(tre->errmsg);
+		destroy_freg(tre);
+		return 0;
+	} else if(rc != FREG_NOMATCH) {
 		h = malloc(sizeof(*h));
 		memset(h, 0, sizeof(*h));
 		h->fieldname = strdup(ARTISTNAME);
 		h->fmtname = strdup(ARTISTFMT);
 		ours = strdup(filename);
-		cur = ours + matches[1].rm_so;
-		oc = *(ours + matches[1].rm_eo);
-		*(ours + matches[1].rm_eo) = '\0';
+		cur = ours + matches[1].s;
+		oc = *(ours + matches[1].e);
+		*(ours + matches[1].e) = '\0';
 		h->val = strdup(cur);
 		h->type = string;
-		*(ours + matches[1].rm_eo) = oc;
+		*(ours + matches[1].e) = oc;
 		
 		n = malloc(sizeof(*n));
 		memset(n, 0, sizeof(*n));
@@ -148,11 +155,11 @@ int match_filename(filename, errmsg, tc, th)
 		c->fieldname = strdup(ALBUMNAME);
 		c->fmtname = strdup(ALBUMFMT);
 		c->type = string;
-		cur = ours + matches[2].rm_so;
-		oc = *(ours + matches[2].rm_eo);
-		*(ours + matches[2].rm_eo) = '\0';
+		cur = ours + matches[2].s;
+		oc = *(ours + matches[2].e);
+		*(ours + matches[2].e) = '\0';
 		c->val = strdup(cur);
-		*(ours + matches[2].rm_eo) = oc;
+		*(ours + matches[2].e) = oc;
 
 		n = malloc(sizeof(*n));
 		memset(n, 0, sizeof(*n));
@@ -161,16 +168,16 @@ int match_filename(filename, errmsg, tc, th)
 		c->fieldname = strdup(DISCNAME);
 		c->fmtname = strdup(DISCFMT);
 		c->type = number;
-		if(matches[3].rm_so == matches[3].rm_eo - 1) {
+		if(matches[3].s == matches[3].e - 1) {
 			c->val = malloc(sizeof(int));
 			*(int*)c->val = 1;
 		} else {
-			cur = ours + matches[3].rm_so;
-			oc = *(ours + matches[3].rm_eo);
-			*(ours + matches[3].rm_eo) = '\0';
+			cur = ours + matches[3].s;
+			oc = *(ours + matches[3].e);
+			*(ours + matches[3].e) = '\0';
 			c->val = malloc(sizeof(int));
 			*(int*)c->val = atoi(cur);
-			*(ours + matches[3].rm_eo) = oc;
+			*(ours + matches[3].e) = oc;
 		}
 
 		n = malloc(sizeof(*n));
@@ -180,12 +187,12 @@ int match_filename(filename, errmsg, tc, th)
 		c->fieldname = strdup(TRACKNAME);
 		c->fmtname = strdup(TRACKFMT);
 		c->type = number;
-		cur = ours + matches[4].rm_so;
-		oc = *(ours + matches[4].rm_eo);
-		*(ours + matches[4].rm_eo) = '\0';
+		cur = ours + matches[4].s;
+		oc = *(ours + matches[4].e);
+		*(ours + matches[4].e) = '\0';
 		c->val = malloc(sizeof(int));
 		*(int*)c->val = atoi(cur);
-		*(ours + matches[4].rm_eo) = oc;
+		*(ours + matches[4].e) = oc;
 
 		n = malloc(sizeof(*n));
 		memset(n, 0, sizeof(*n));
@@ -194,16 +201,16 @@ int match_filename(filename, errmsg, tc, th)
 		c->fieldname = strdup(TITLENAME);
 		c->fmtname = strdup(TITLEFMT);
 		c->type = string;
-		cur = ours + matches[5].rm_so;
-		oc = *(ours + matches[5].rm_eo);
-		*(ours + matches[5].rm_eo) = '\0';
+		cur = ours + matches[5].s;
+		oc = *(ours + matches[5].e);
+		*(ours + matches[5].e) = '\0';
 		c->val = malloc(sizeof(int));
 		c->val = strdup(cur);
-		*(ours + matches[5].rm_eo) = oc;
+		*(ours + matches[5].e) = oc;
 
 		free(ours);
 	}
-	regfree(&tre);
+	destroy_freg(tre);
 
 	*tc = c;
 	*th = h;

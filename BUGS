@@ -1,5 +1,6 @@
-$Amigan: fakedbfs/BUGS,v 1.2 2005/12/24 22:11:37 dcp1990 Exp $
+$Amigan: fakedbfs/BUGS,v 1.3 2005/12/24 22:27:48 dcp1990 Exp $
 
 BUGS as of 2.0 ("Doctor Wu"):
 *Memory leaks. Big time.
 *realpath(3) and CWD fuckishness
+*subs don't work with freg when using pcre
