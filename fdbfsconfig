@@ -1,8 +1,8 @@
-# $Amigan: fakedbfs/fdbfsconfig,v 1.4 2005/12/24 22:11:37 dcp1990 Exp $
+# $Amigan: fakedbfs/fdbfsconfig,v 1.5 2005/12/24 22:44:54 dcp1990 Exp $
 # this is for Unix...
 platform unix
 prefix /usr/local
 #freedebug
 # no dmalloc...
 #dmalloc
-pcre /usr/local/bin
+#pcre /usr/local/bin
