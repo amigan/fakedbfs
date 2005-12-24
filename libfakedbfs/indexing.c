@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.45 2005/12/23 20:22:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.46 2005/12/24 01:53:36 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -49,7 +49,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.45 2005/12/23 20:22:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.46 2005/12/24 01:53:36 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -653,7 +653,7 @@ int complete_fields_from_db(f, cat, h)
 				new->val = allocz(sizeof(int));
 				*(int*)new->val = 0;
 			*/
-			new->val = NULL;
+			new->val = allocz(sizeof(int)); /* wasteful, but prevents BS from happening during indexing in interactive mode */
 			new->len = 1;
 			if(new->type == oenum) {
 				new->ehead = cc->enumptr;
