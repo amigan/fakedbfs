@@ -1,8 +1,8 @@
-$Amigan: fakedbfs/LICENSE,v 1.1 2005/12/24 22:38:31 dcp1990 Exp $
+$Amigan: fakedbfs/LICENSE,v 1.2 2005/12/24 22:38:59 dcp1990 Exp $
 
 License for fakedbfs is as follows:
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005, Dan Ponte <dcp1990@neptune.atopia.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
