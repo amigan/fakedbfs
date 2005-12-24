@@ -1,5 +1,7 @@
-$Amigan: fakedbfs/CREDITS,v 1.1 2005/09/22 23:14:51 dcp1990 Exp $
+$Amigan: fakedbfs/CREDITS,v 1.2 2005/12/24 22:38:31 dcp1990 Exp $
 
 (C)2005, Dan Ponte
 
 Special thanks to Caelian and pillBOX for their help with debugging my memory issues.
+
+ficl (http://ficl.sourceforge.net/) is (C)1997-2001, John Sadler.
