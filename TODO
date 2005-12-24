@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/TODO,v 1.23 2005/12/23 20:02:14 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.24 2005/12/24 22:28:04 dcp1990 Exp $
 
 TODO as of 2.0-RELEASE (double stars means "must do before release of 2.0-RELEASE"):
 *Mucho memory leaks. Some kind soul should run valgrind and fix them. I don't have the time; I will when
@@ -8,7 +8,6 @@ TODO as of 2.0-RELEASE (double stars means "must do before release of 2.0-RELEAS
 *Add support for ogg to the music plugin
 *Write more plugins
 *Write more specfiles
-**Make music plugin use freg
 *Document every API function
 *grep -R -E 'XXX:|TODO:' * and fix
 *Win32 port
