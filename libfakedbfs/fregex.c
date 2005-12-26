@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.3 2005/12/24 22:11:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.4 2005/12/26 08:01:11 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@
 #include <fakedbfs.h>
 #include <fdbfsregex.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.3 2005/12/24 22:11:37 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.4 2005/12/26 08:01:11 dcp1990 Exp $")
 
 int frinitialise(fr)
 	freg_t *fr;
@@ -169,28 +169,27 @@ int fregexec(fr, str, matches, matchsize)
 
 	rc = pcre_exec(fr->re, fr->extra, str, strlen(str), 0, 0, mats, mats != NULL ? nmats : 0);
 
-	switch(rc) {
-		case PCRE_ERROR_NOMATCH:
-			if(mats != NULL)
-				free(mats);
-			return 1;
-		case 0:
-			if(mats != NULL) {
-				for(i = 0; i < matchsize; i++) {
-					matches[i].s = cv->st;
-					matches[i].e = cv->en;
-					cv++;
-				}
-				free(mats);
+	if(rc == PCRE_ERROR_NOMATCH) {
+		if(mats != NULL)
+			free(mats);
+		return 1;
+	} else if(rc < 0) {
+		fr->errmsg = malloc(128 * sizeof(char));
+		snprintf(fr->errmsg, 128, "Error with pcre_exec. (rc = %d)", rc);
+		fr->dynamic = 1;
+		if(mats != NULL)
+			free(mats);
+		return rc;
+	} else {
+		if(mats != NULL) {
+			for(i = 0; i < nmats; i++) {
+				matches[i].s = cv->st;
+				matches[i].e = cv->en;
+				cv++;
 			}
-			return 0;
-		default:
-			fr->errmsg = malloc(128 * sizeof(char));
-			snprintf(fr->errmsg, 128, "Error with pcre_exec. (rc = %d)", rc);
-			fr->dynamic = 1;
-			if(mats != NULL)
-				free(mats);
-			return rc;
+			free(mats);
+		}
+		return 0;
 	}
 	/* NOTREACHED */
 
