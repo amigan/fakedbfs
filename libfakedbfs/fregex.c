@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.4 2005/12/26 08:01:11 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.5 2005/12/30 01:31:19 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@
 #include <fakedbfs.h>
 #include <fdbfsregex.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.4 2005/12/26 08:01:11 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.5 2005/12/30 01:31:19 dcp1990 Exp $")
 
 int frinitialise(fr)
 	freg_t *fr;
@@ -154,17 +154,10 @@ int fregexec(fr, str, matches, matchsize)
 	int rc, i;
 	int *mats = NULL;
 	size_t nmats = 0;
-	struct PCREVecElem {
-		int st;
-		int en;
-		int work;
-	};
-	struct PCREVecElem *cv = NULL;
 
 	if(matches != NULL) {
 		nmats = matchsize * 3;
 		mats = allocz(sizeof(*mats) * nmats);
-		cv = (struct PCREVecElem *)mats;
 	}
 
 	rc = pcre_exec(fr->re, fr->extra, str, strlen(str), 0, 0, mats, mats != NULL ? nmats : 0);
@@ -183,9 +176,8 @@ int fregexec(fr, str, matches, matchsize)
 	} else {
 		if(mats != NULL) {
 			for(i = 0; i < nmats; i++) {
-				matches[i].s = cv->st;
-				matches[i].e = cv->en;
-				cv++;
+				matches[i].s = mats[(i * 2)];
+				matches[i].e = mats[(i * 2) + 1];
 			}
 			free(mats);
 		}
