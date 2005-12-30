@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/findex/findex.c,v 1.20 2005/12/17 22:26:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.21 2005/12/30 01:34:51 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -48,7 +48,7 @@
 #define FINDEXVER "0.1"
 #define MAXPLEN 1023
 
-RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.20 2005/12/17 22:26:51 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.21 2005/12/30 01:34:51 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int recurse = 0;
@@ -277,6 +277,10 @@ int main(argc, argv)
 	
 	for(i = 0; i < argc; i++) {
 		cf = strdup(argv[i]);
+
+		if(interactive)
+			printf("File: %s\n", cf);
+
 		if(!idxus(cf, cat)) {
 			free(cf);
 			break;
