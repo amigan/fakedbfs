@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.7 2005/12/20 22:38:43 dcp1990 Exp $
+$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.8 2005/12/30 01:42:31 dcp1990 Exp $
 
 Query opcodes
 	By Dan Ponte
@@ -9,7 +9,7 @@ unsigned, and the third being a pointer. These are named O1, O2, and O3, respect
 There is also a stack. All pointers to objects must be dynamically allocated using malloc(3).
 
 After each row, a pointer to the head of a fields_t is pushed to the stack. Pop it off to conserve stack entries. (we use a fixed stack for speed
-and effeciency.)
+and efficiency.)
 
 Here is a list of opcodes:
 ========================================================================================================================================|
