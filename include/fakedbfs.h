@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.61 2005/12/31 03:53:28 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.62 2005/12/31 04:59:24 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -159,6 +159,8 @@ typedef struct ConfNode {
 #define CN_FLAG_LEAF	0x1	/* leaf node; actually holds data */
 #define CN_DYNA_DATA	0x2	/* free(data.ptr); ...I know I could check type but this is easier */
 
+#define ROOT_NODE_TAG	"fdbfs"
+
 struct PluginInfo {
 	const char *extensions; /* a list of file extensions, not including dots, that
 				this plugin handles. Each extension is separated
@@ -225,6 +227,7 @@ typedef struct FDBFS {
 	answer_t *(*askfieldfunc) AFFPROTO; /* returns status: 0 means no change, 1 means change, -1 means error */
 	Heads heads;
 	ficlSystem *fsys;
+	confnode_t *rconf;
 } fdbfs_t;
 
 /* crawler stuff */
@@ -429,6 +432,9 @@ int ficl_init(fdbfs_t *f);
 #ifdef HAVE_FICL_H
 int ficl_addwords(fdbfs_t *f, ficlDictionary *dict);
 #endif
+
+/* conf stuff */
+confnode_t* conf_node_create(char *tag, confnode_t *parent, int leaf);
 
 /* application interfaces */
 int parse_definition(fdbfs_t *f, char *filename);

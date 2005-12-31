@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.1 2005/12/31 03:53:28 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.2 2005/12/31 04:59:24 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,6 +45,44 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.1 2005/12/31 03:53:28 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.2 2005/12/31 04:59:24 dcp1990 Exp $")
 
+static void conf_node_link_parent(parent, n)
+	confnode_t *parent, *n;
+{
+	confnode_t *c;
 
+	if(parent->child == NULL)
+		parent->child = n;
+	else {
+		for(c = parent->child; c->next != NULL; c = c->next) ;
+		c->next = NULL;
+	}
+}
+
+confnode_t* conf_node_create(tag, parent, leaf)
+	char *tag;
+	confnode_t *parent;
+	int leaf;
+{
+	confnode_t *n;
+
+	n = allocz(sizeof(*n));
+	n->tag = strdup(tag);
+
+	if(parent != NULL) {
+		conf_node_link_parent(parent, n);
+	}
+
+	if(leaf)
+		n->flags |= CN_FLAG_LEAF;
+
+	return n;
+}
+int conf_init(f)
+	fdbfs_t *f;
+{
+	f->rconf = conf_node_create(ROOT_NODE_TAG, NULL, 0);
+
+	return 1;
+}
