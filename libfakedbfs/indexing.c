@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.47 2005/12/24 22:11:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.48 2005/12/31 19:25:03 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -49,7 +49,7 @@
 #include <fdbfsregex.h>
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.47 2005/12/24 22:11:37 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.48 2005/12/31 19:25:03 dcp1990 Exp $")
 
 int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -269,6 +269,7 @@ answer_t* askfunc_std(buf, def, fieldname, name, filen, dt, ehead, subhead)
 checkagain:
 	switch(dt) {
 		case number:
+		case character:
 		case datime: /* fugly; oh well */
 		case usnumber:
 			printf("%s [%d]> ", fieldname, def->ad.integer);
@@ -317,6 +318,7 @@ checkagain:
 		case number:
 		case datime:
 		case usnumber: /* incorrect! oh well...shuts the compiler up. we don't use usnumber yet anyway */
+		case character:
 			buf->ad.integer = atoi(bf);
 			break;
 		case boolean:
@@ -428,6 +430,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 					case boolean:
 					case oenum:
 					case oenumsub:
+					case character:
 						def.ad.integer = *(int*)cval;
 						break;
 					case string:

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.62 2005/12/31 04:59:24 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.63 2005/12/31 19:25:02 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -142,7 +142,10 @@ union Data {
 	unsigned int usint;
 	char *string;
 	char character;
-	void *ptr;
+	struct {
+		void *ptr;
+		size_t len;
+	} pointer;
 	FLOATTYPE fp;
 };
 
@@ -160,6 +163,9 @@ typedef struct ConfNode {
 #define CN_DYNA_DATA	0x2	/* free(data.ptr); ...I know I could check type but this is easier */
 
 #define ROOT_NODE_TAG	"fdbfs"
+#define CONFTABLE	"config"
+#define CONFTABLESPEC	"id INTEGER PRIMARY KEY, mib TEXT UNIQUE," \
+       " type INTEGER, value BLOB"
 
 struct PluginInfo {
 	const char *extensions; /* a list of file extensions, not including dots, that
@@ -435,6 +441,8 @@ int ficl_addwords(fdbfs_t *f, ficlDictionary *dict);
 
 /* conf stuff */
 confnode_t* conf_node_create(char *tag, confnode_t *parent, int leaf);
+int conf_init(fdbfs_t *f);
+int db_mib_add(fdbfs_t *f, char *mib, enum DataType type, union Data data);
 
 /* application interfaces */
 int parse_definition(fdbfs_t *f, char *filename);

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.24 2005/12/22 22:06:31 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.25 2005/12/31 19:25:03 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.24 2005/12/22 22:06:31 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.25 2005/12/31 19:25:03 dcp1990 Exp $")
 
 
 int open_db(f)
@@ -159,6 +159,7 @@ const char* gettype(t)
 		case oenum:
 		case oenumsub:
 		case datime:
+		case character:
 			return " INTEGER DEFAULT 0";
 			break;
 		case string:
@@ -403,6 +404,7 @@ int bind_field(f, count, type, value, len, stmt)
 		case oenum:
 		case datime:
 		case oenumsub:
+		case character:
 #ifdef INDEX_SQL_DEBUG
 			printf("int %d\n", value != NULL ? *(int*)value : 0x0);
 #endif
@@ -494,3 +496,73 @@ int get_lastupdate(f, cat, filename)
 	return lu;
 }
 
+int db_mib_add(f, mib, type, data)
+	fdbfs_t *f;
+	char *mib;
+	enum DataType type;
+	union Data data;
+{
+	sqlite3_stmt *cst;
+	const char *tail;
+	const char *sql = "INSERT OR REPLACE INTO " CONFTABLE " (mib, type, value) VALUES(?, ?, ?)";
+	int rc;
+
+	if((rc = sqlite3_prepare(f->db, sql, strlen(sql), &cst, &tail)) != SQLITE_OK) {
+		ERR(die, "db_mib_add: SQLite error after prepare %s", sqlite3_errmsg(f->db));
+		return 0;
+	}
+
+	if((rc = sqlite3_bind_text(cst, 1, mib, strlen(mib), SQLITE_TRANSIENT /* necessary? */)) != SQLITE_OK) {
+		ERR(die, "db_mib_add: SQLite error after bind_text (mib): %s", sqlite3_errmsg(f->db));
+		sqlite3_finalize(cst);
+		return 0;
+	}
+
+	if((rc = sqlite3_bind_int(cst, 2, type)) != SQLITE_OK) {
+		ERR(die, "db_mib_add: SQLite error after bind_int (type): %s", sqlite3_errmsg(f->db));
+		sqlite3_finalize(cst);
+		return 0;
+	}
+
+	switch(type) {
+		case oenum:
+		case oenumsub:
+		case image:
+			sqlite3_finalize(cst);
+			SERR(die, "db_mib_add: error: oenum/oenumsub not supported by conf system");
+			return 0;
+		case number:
+		case usnumber:
+		case boolean:
+		case datime:
+		case character:
+			rc = sqlite3_bind_int(cst, 3, data.integer);
+			break;
+		case string:
+			rc = sqlite3_bind_text(cst, 3, data.string, strlen(data.string), SQLITE_STATIC);
+			break;
+		case fp:
+			rc = sqlite3_bind_double(cst, 3, data.fp);
+			break;
+		case binary:
+			rc = sqlite3_bind_blob(cst, 3, data.pointer.ptr, data.pointer.len, SQLITE_STATIC);
+			break;
+		default:
+			sqlite3_finalize(cst);
+			return SERR(die, "db_mib_add: unsupported datatype");
+	}
+
+	if(rc != SQLITE_OK) {
+		ERR(die, "db_mib_add: SQLite error after bind (data): %s", sqlite3_errmsg(f->db));
+		sqlite3_finalize(cst);
+		return 0;
+	}
+
+	if((rc = sqlite3_step(cst)) != SQLITE_DONE) {
+		ERR(die, "db_mib_add: error executing query: %s", sqlite3_errmsg(f->db));
+		sqlite3_finalize(cst);
+		return 0;
+	}
+
+	return 1;
+}

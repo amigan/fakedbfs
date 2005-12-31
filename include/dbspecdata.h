@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/dbspecdata.h,v 1.7 2005/11/27 02:51:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/dbspecdata.h,v 1.8 2005/12/31 19:25:02 dcp1990 Exp $ */
 #ifndef HAVE_DBSPECDATA_H
 #define HAVE_DBSPECDATA_H 1
 #define MAXLINE 2048
@@ -81,8 +81,9 @@ enum DataType {
 	oenum, /* DO NOT USE FOR "OTHER" IN AN ENUM */
 	oenumsub, /* this either; this is for .sub references */
 	usnumber, /* new type for unsigned numbers */
-	datime /* date and time; see lastupdate (this is really like number, but treated differently for display
+	datime, /* date and time; see lastupdate (this is really like number, but treated differently for display
 	purposes */
+	character /* for use with conf only */
 };
 
 /* Enum stuff */
