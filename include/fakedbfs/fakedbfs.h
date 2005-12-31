@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.60 2005/12/23 20:22:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.61 2005/12/31 03:53:28 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -137,6 +137,27 @@ typedef struct FConfig {
 	char *pluginpath; /* search path, delimited by pipes (``|'') */
 } config_t;
 
+union Data {
+	int integer;
+	unsigned int usint;
+	char *string;
+	char character;
+	void *ptr;
+	FLOATTYPE fp;
+};
+
+/* config stuff */
+typedef struct ConfNode {
+	char *tag;
+	unsigned int flags;
+	enum DataType type;
+	union Data data;
+	struct ConfNode *child;
+	struct ConfNode *next;
+} confnode_t;
+
+#define CN_FLAG_LEAF	0x1	/* leaf node; actually holds data */
+#define CN_DYNA_DATA	0x2	/* free(data.ptr); ...I know I could check type but this is easier */
 
 struct PluginInfo {
 	const char *extensions; /* a list of file extensions, not including dots, that
