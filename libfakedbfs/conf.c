@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.3 2005/12/31 19:25:03 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.4 2006/01/02 05:02:17 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,18 +45,21 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.3 2005/12/31 19:25:03 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.4 2006/01/02 05:02:17 dcp1990 Exp $")
 
 static void conf_node_link_parent(parent, n)
 	confnode_t *parent, *n;
 {
-	confnode_t *c;
-
-	if(parent->child == NULL)
+	if(parent->child == NULL) {
 		parent->child = n;
-	else {
-		for(c = parent->child; c->next != NULL; c = c->next) ;
-		c->next = NULL;
+		parent->childlast = n;
+	} else {
+		/* this is a search routine, it's slow:
+			for(c = parent->child; c->next != NULL; c = c->next) ;
+		*/
+		parent->childlast->next = n;
+		n->next = NULL;
+		parent->childlast = n;
 	}
 }
 
@@ -93,8 +96,104 @@ int conf_init_db(f)
 
 	dta.integer = 1;
 
-	if(!db_mib_add(f, "fdbfs.plusins.forthpri", boolean, dta))
+	if(!db_mib_add(f, ROOT_NODE_TAG ".plugins.forthpri", boolean, dta))
 		return 0;
+
+	return 1;
+}
+
+int conf_add_to_tree(f, mib, type, data, dynamic)
+	fdbfs_t *f;
+	char *mib;
+	enum DataType type;
+	union Data *data;
+	short dynamic;
+{
+	confnode_t *n;
+	char *lastnode;
+
+	lastnode = strrchr(mib, '.');
+	if(lastnode == NULL)
+		return 0;
+
+	if(strlen(++lastnode) < 1)
+		return 0;
+
+	n = allocz(sizeof(*n));
+	n->tag = strdup(lastnode);
+	n->flags |= CN_FLAG_LEAF;
+
+	if(dynamic == 1)
+		n->flags |= CN_DYNA_DATA;
+	else if(dynamic == 2)
+		n->flags |= CN_DYNA_STR;
+
+	n->data = *data;
+
+	/* TODO: walk the tree filling in any non-leaf nodes as needed, and connect this mib to its proper place. */
+
+	return 1;
+}
+
+/*
+ * This routine is really slow, because in order to attach out new node to the tree,
+ * the attachment routine needs to search the entire tree. Unless we use childlast, which we do.
+ */
+int conf_read_from_db(f)
+	fdbfs_t *f;
+{
+	sqlite3_stmt *cst;
+	const char *sql = "SELECT mib,type,value FROM " CONFTABLE;
+	const char *tail;
+	enum DataType type;
+	const char *mib;
+	union Data data;
+	short dynamic;
+	int rc;
+
+	if((rc = sqlite3_prepare(f->db, sql, strlen(sql), &cst, &tail)) != SQLITE_OK) {
+		return ERR(die, "conf_read_from_db: sqlite %s", sqlite3_errmsg(f->db));
+	}
+
+	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
+		dynamic = 0;
+		mib = sqlite3_column_text(cst, 0);
+		type = sqlite3_column_int(cst, 1);
+		switch(type) {
+			case number:
+			case boolean:
+			case usnumber:
+			case character:
+				data.integer = sqlite3_column_int(cst, 2);
+				break;
+			case string:
+				data.string = strdup(sqlite3_column_text(cst, 2));
+				dynamic = 2;
+				break;
+			case fp:
+				data.fp = sqlite3_column_double(cst, 2);
+				break;
+			case binary:
+				data.pointer.len = sqlite3_column_bytes(cst, 2);
+				data.pointer.ptr = malloc(data.pointer.len);
+				memcpy(data.pointer.ptr, sqlite3_column_blob(cst, 2), data.pointer.len);
+				dynamic = 1;
+				break;
+			default:
+				sqlite3_finalize(cst);
+				return ERR(die, "conf_read_from_db: unsupported type %x", type);
+		}
+
+		conf_add_to_tree(f, mib, type, &data, dynamic);
+	}
+
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
+		ERR(die, "conf_read_from_db: step error: %s", sqlite3_errmsg(f->db));
+		sqlite3_finalize(cst);
+		return 0;
+	}
+
+	sqlite3_finalize(cst);
 
 	return 1;
 }
@@ -103,6 +202,8 @@ int conf_init(f)
 	fdbfs_t *f;
 {
 	f->rconf = conf_node_create(ROOT_NODE_TAG, NULL, 0);
+
+	conf_read_from_db(f);
 
 	return 1;
 }

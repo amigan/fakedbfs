@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.63 2005/12/31 19:25:02 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.64 2006/01/02 05:02:17 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -156,11 +156,13 @@ typedef struct ConfNode {
 	enum DataType type;
 	union Data data;
 	struct ConfNode *child;
+	struct ConfNode *childlast; /* last element of child tree; this should make stuff faster */
 	struct ConfNode *next;
 } confnode_t;
 
 #define CN_FLAG_LEAF	0x1	/* leaf node; actually holds data */
-#define CN_DYNA_DATA	0x2	/* free(data.ptr); ...I know I could check type but this is easier */
+#define CN_DYNA_DATA	0x2	/* free(data.pointer.ptr); ...I know I could check type but this is easier */
+#define CN_DYNA_STR	0x4	/* free(data.string); */
 
 #define ROOT_NODE_TAG	"fdbfs"
 #define CONFTABLE	"config"
