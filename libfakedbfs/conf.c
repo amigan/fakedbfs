@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * conf.c - fakedbfs configuration subsystem
  * 
@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.4 2006/01/02 05:02:17 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.5 2006/01/05 13:40:43 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,21 +45,20 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.4 2006/01/02 05:02:17 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.5 2006/01/05 13:40:43 dcp1990 Exp $")
 
 static void conf_node_link_parent(parent, n)
 	confnode_t *parent, *n;
 {
 	if(parent->child == NULL) {
 		parent->child = n;
-		parent->childlast = n;
+		n->next = NULL;
 	} else {
 		/* this is a search routine, it's slow:
 			for(c = parent->child; c->next != NULL; c = c->next) ;
 		*/
-		parent->childlast->next = n;
-		n->next = NULL;
-		parent->childlast = n;
+		n->next = parent->child;
+		parent->child = n;
 	}
 }
 

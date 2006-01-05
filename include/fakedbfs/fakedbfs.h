@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.64 2006/01/02 05:02:17 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.65 2006/01/05 13:40:37 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -156,7 +156,6 @@ typedef struct ConfNode {
 	enum DataType type;
 	union Data data;
 	struct ConfNode *child;
-	struct ConfNode *childlast; /* last element of child tree; this should make stuff faster */
 	struct ConfNode *next;
 } confnode_t;
 
