@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.17 2005/12/17 23:35:50 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.18 2006/01/06 01:03:43 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -40,7 +40,7 @@
 
 
 #ifndef lint
-RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.17 2005/12/17 23:35:50 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.18 2006/01/06 01:03:43 dcp1990 Exp $")
 const char *fakedbfsver _unused = FAKEDBFSVER;
 const char *fakedbfsvname _unused = VERNAME;
 const char *fakedbfscopyright _unused = "libfakedbfs (C)2005, Dan Ponte. Under the BSD license.";
@@ -53,7 +53,8 @@ fdbfs_t *new_fdbfs(dbfile, error, debugf, useplugins)
 	char *dbfile;
 	char **error; /* if we return NULL, this must be freed */
 	void (*debugf)(char*, enum ErrorAction);
-	int useplugins;
+	int useplugins; /* this also controls the configuration subsystem; if false, then we don't read config stuff (useful for servers and stuff where config stuff isn't
+			   completely necessary) */
 {
 	fdbfs_t *f;
 	int rc;
@@ -72,6 +73,7 @@ fdbfs_t *new_fdbfs(dbfile, error, debugf, useplugins)
 		if(getenv(FDBFSPLUGENV) != NULL)
 			set_plug_path(f, getenv(FDBFSPLUGENV));
 		init_plugins(f);
+		conf_init(f);
 	}
 
 	set_aff(f, askfunc_std);
@@ -93,6 +95,9 @@ int destroy_fdbfs(f)
 		free_enum_head_list(f->heads.db_enumh);
 	if(f->heads.db_cath != NULL)
 		free_cat_head_list(f->heads.db_cath);
+
+	conf_destroy_tree(f->rconf);
+
 	free(f);
 	return 1;
 }

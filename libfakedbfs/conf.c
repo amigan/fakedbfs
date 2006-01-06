@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.6 2006/01/06 00:49:30 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.7 2006/01/06 01:03:43 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.6 2006/01/06 00:49:30 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.7 2006/01/06 01:03:43 dcp1990 Exp $")
 
 static void conf_node_link_parent(parent, n)
 	confnode_t *parent, *n;
@@ -192,6 +192,27 @@ int conf_add_to_tree(f, mib, type, data, dynamic)
 	/* TODO: walk the tree filling in any non-leaf nodes as needed, and connect this mib to its proper place. */
 	*lastnode = '\0'; /* just to help */
 	return conf_connect_to_tree(f->rconf, mib, n);
+}
+
+void conf_destroy_tree(t)
+	confnode_t *t;
+{
+	confnode_t *c = t, *nx;
+
+	while(c != NULL) {
+		nx = c->next;
+		conf_destroy_tree(c->child);
+		free(c->tag);
+		if(c->flags & CN_FLAG_LEAF) {
+			if(c->flags & CN_DYNA_DATA)
+				free(c->data.pointer.ptr);
+			else if(c->flags & CN_DYNA_STR)
+				free(c->data.string);
+		}
+
+		free(c);
+		c = nx;
+	}
 }
 
 /*
