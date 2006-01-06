@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.18 2006/01/06 01:03:43 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.19 2006/01/06 01:08:07 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -40,7 +40,7 @@
 
 
 #ifndef lint
-RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.18 2006/01/06 01:03:43 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.19 2006/01/06 01:08:07 dcp1990 Exp $")
 const char *fakedbfsver _unused = FAKEDBFSVER;
 const char *fakedbfsvname _unused = VERNAME;
 const char *fakedbfscopyright _unused = "libfakedbfs (C)2005, Dan Ponte. Under the BSD license.";
@@ -73,7 +73,12 @@ fdbfs_t *new_fdbfs(dbfile, error, debugf, useplugins)
 		if(getenv(FDBFSPLUGENV) != NULL)
 			set_plug_path(f, getenv(FDBFSPLUGENV));
 		init_plugins(f);
-		conf_init(f);
+		if(!conf_init(f)) {
+			*error = strdup(f->error.emsg);
+			estr_free(&f->error);
+			free(f);
+			return NULL;
+		}
 	}
 
 	set_aff(f, askfunc_std);
