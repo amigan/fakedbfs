@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.65 2006/01/05 13:40:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.66 2006/01/06 00:49:30 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -443,7 +443,10 @@ int ficl_addwords(fdbfs_t *f, ficlDictionary *dict);
 /* conf stuff */
 confnode_t* conf_node_create(char *tag, confnode_t *parent, int leaf);
 int conf_init(fdbfs_t *f);
+int conf_init_db(fdbfs_t *f);
 int db_mib_add(fdbfs_t *f, char *mib, enum DataType type, union Data data);
+int conf_add_to_tree(fdbfs_t *f, char *mib, enum DataType type, union Data *data, short dynamic);
+int conf_read_from_db(fdbfs_t *f);
 
 /* application interfaces */
 int parse_definition(fdbfs_t *f, char *filename);

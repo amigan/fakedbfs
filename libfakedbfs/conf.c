@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.5 2006/01/05 13:40:43 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.6 2006/01/06 00:49:30 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.5 2006/01/05 13:40:43 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.6 2006/01/06 00:49:30 dcp1990 Exp $")
 
 static void conf_node_link_parent(parent, n)
 	confnode_t *parent, *n;
@@ -101,6 +101,66 @@ int conf_init_db(f)
 	return 1;
 }
 
+static confnode_t* conf_create_branch(tag)
+	char *tag;
+{
+	confnode_t *n;
+
+	n = allocz(sizeof(*n));
+
+	n->tag = strdup(tag);
+
+	return n;
+}
+
+static confnode_t* conf_search_create_branch(parent, name)
+	confnode_t *parent;
+	char *name;
+{
+	confnode_t *c;
+
+	for(c = parent->child; c != NULL; c = c->next) {
+		if(strcmp(c->tag, name) == 0) {
+			return c;
+		}
+	}
+
+	c = conf_create_branch(name);
+	conf_node_link_parent(parent, c);
+
+	return c;
+}
+
+static int conf_connect_to_tree(t, mib, n)
+	confnode_t *t; /* parent */
+	char *mib;
+	confnode_t *n;
+{
+	confnode_t *c = t;
+	char *ln = mib;
+	char *oln;
+	
+	do {
+		oln = ln;
+		ln = strchr(ln, '.');
+
+		if(!ln)
+			return 0;
+
+		if(ln[1] == '\0')
+			break;
+
+		*ln = '\0';
+		c = conf_search_create_branch(c, ln);
+		*ln = '.';
+		ln++;
+	} while(ln != NULL);
+
+	conf_node_link_parent(c, n);
+
+	return 1;
+}
+
 int conf_add_to_tree(f, mib, type, data, dynamic)
 	fdbfs_t *f;
 	char *mib;
@@ -130,8 +190,8 @@ int conf_add_to_tree(f, mib, type, data, dynamic)
 	n->data = *data;
 
 	/* TODO: walk the tree filling in any non-leaf nodes as needed, and connect this mib to its proper place. */
-
-	return 1;
+	*lastnode = '\0'; /* just to help */
+	return conf_connect_to_tree(f->rconf, mib, n);
 }
 
 /*
@@ -145,7 +205,7 @@ int conf_read_from_db(f)
 	const char *sql = "SELECT mib,type,value FROM " CONFTABLE;
 	const char *tail;
 	enum DataType type;
-	const char *mib;
+	char *mib;
 	union Data data;
 	short dynamic;
 	int rc;
@@ -156,7 +216,7 @@ int conf_read_from_db(f)
 
 	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
 		dynamic = 0;
-		mib = sqlite3_column_text(cst, 0);
+		mib = strdup(sqlite3_column_text(cst, 0));
 		type = sqlite3_column_int(cst, 1);
 		switch(type) {
 			case number:
@@ -184,6 +244,7 @@ int conf_read_from_db(f)
 		}
 
 		conf_add_to_tree(f, mib, type, &data, dynamic);
+		free(mib);
 	}
 
 	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
@@ -202,7 +263,12 @@ int conf_init(f)
 {
 	f->rconf = conf_node_create(ROOT_NODE_TAG, NULL, 0);
 
-	conf_read_from_db(f);
+	if(!table_exists(f, CONFTABLE))
+		if(!conf_init_db(f))
+			return 0;
 
-	return 1;
+	if(!conf_read_from_db(f))
+		return 0;
+
+	return 0;
 }
