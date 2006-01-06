@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/TODO,v 1.25 2006/01/02 03:54:07 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.26 2006/01/06 01:08:30 dcp1990 Exp $
 
 TODO as of 2.0-RELEASE (double stars means "must do before release of 2.0-RELEASE"):
 *Mucho memory leaks. Some kind soul should run valgrind and fix them. I don't have the time; I will when
@@ -16,6 +16,7 @@ TODO as of 2.0-RELEASE (double stars means "must do before release of 2.0-RELEAS
 *Add installation features to the build process (Makefile, etc)
 *Fix build system such that we link against the freshly-built library and not one in /usr/local/lib if it's there
 *Improve handling of SQLITE_BUSY and other concurrent access stuff
+*Find out why conf tree isn't being populated from the DB
 
 Wishlist for 1.2/2.0:
 *Build in Unix-specific stuff for platforms that don't have it (such as FTS)
