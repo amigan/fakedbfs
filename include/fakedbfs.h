@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.67 2006/01/06 01:03:43 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs.h,v 1.68 2006/01/11 01:39:54 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -162,6 +162,7 @@ typedef struct ConfNode {
 #define CN_FLAG_LEAF	0x1	/* leaf node; actually holds data */
 #define CN_DYNA_DATA	0x2	/* free(data.pointer.ptr); ...I know I could check type but this is easier */
 #define CN_DYNA_STR	0x4	/* free(data.string); */
+#define CN_FLAG_ROOT	0x8	/* we are the root branch */
 
 #define ROOT_NODE_TAG	"fdbfs"
 #define CONFTABLE	"config"
@@ -447,6 +448,7 @@ int conf_init_db(fdbfs_t *f);
 int db_mib_add(fdbfs_t *f, char *mib, enum DataType type, union Data data);
 int conf_add_to_tree(fdbfs_t *f, char *mib, enum DataType type, union Data *data, short dynamic);
 int conf_read_from_db(fdbfs_t *f);
+enum DataType conf_get(fdbfs_t *f, char *mib, union Data *data);
 void conf_destroy_tree(confnode_t *t);
 
 /* application interfaces */

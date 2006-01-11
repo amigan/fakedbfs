@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.9 2006/01/07 02:57:16 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.10 2006/01/11 01:39:54 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.9 2006/01/07 02:57:16 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.10 2006/01/11 01:39:54 dcp1990 Exp $")
 
 static void conf_node_link_parent(parent, n)
 	confnode_t *parent, *n;
@@ -113,6 +113,53 @@ static confnode_t* conf_create_branch(tag)
 	return n;
 }
 
+static confnode_t* conf_search_tag(parent, name)
+	confnode_t *parent;
+	char *name;
+{
+	confnode_t *c;
+
+	for(c = parent->child; c != NULL; c = c->next) {
+		if(strcmp(c->tag, name) == 0) {
+			return c;
+		}
+	}
+
+	return NULL;
+}
+
+static confnode_t* conf_search_mib(p, mib)
+	confnode_t *p;
+	char *mib; /* not const! */
+{
+	confnode_t *c = p;
+	char *ln = mib;
+	char *oln;
+	short lastelem = 0;
+
+	while(!lastelem) {
+		oln = ln;
+		ln = strchr(ln, '.');
+
+		if(!ln)
+			lastelem = 1;
+		else {
+			*ln = '\0';
+		}
+		c = conf_search_tag(c, oln);
+		
+		if(c == NULL)
+			return NULL;
+
+		if(!lastelem) {
+			*ln = '.';
+			ln++;
+		}
+	}
+
+	return c;
+}
+
 static confnode_t* conf_search_create_branch(parent, name)
 	confnode_t *parent;
 	char *name;
@@ -139,22 +186,23 @@ static int conf_connect_to_tree(t, mib, n)
 	confnode_t *c = t;
 	char *ln = mib;
 	char *oln;
-	
-	do {
+
+	while(1) {
 		oln = ln;
 		ln = strchr(ln, '.');
 
-		if(!ln)
-			return 0;
+		if(!ln) {
+			break;
+		}
 
-		if(ln[1] == '\0')
+		if(oln[1] == '\0')
 			break;
 
 		*ln = '\0';
-		c = conf_search_create_branch(c, ln);
+		c = conf_search_create_branch(c, oln);
 		*ln = '.';
 		ln++;
-	} while(ln != NULL);
+	}
 
 	conf_node_link_parent(c, n);
 
@@ -189,6 +237,7 @@ int conf_add_to_tree(f, mib, type, data, dynamic)
 		n->flags |= CN_DYNA_STR;
 
 	n->data = *data;
+	n->type = type;
 
 	/* TODO: walk the tree filling in any non-leaf nodes as needed, and connect this mib to its proper place. */
 	*lastnode = '\0'; /* just to help */
@@ -205,7 +254,8 @@ void conf_destroy_tree(t)
 	while(c != NULL) {
 		nx = c->next;
 		conf_destroy_tree(c->child);
-		free(c->tag);
+		if(c->tag != NULL)
+			free(c->tag);
 		if(c->flags & CN_FLAG_LEAF) {
 			if(c->flags & CN_DYNA_DATA)
 				free(c->data.pointer.ptr);
@@ -282,10 +332,43 @@ int conf_read_from_db(f)
 	return 1;
 }
 
+static void dump_confnode(c)
+	confnode_t *c;
+{
+	for(; c != NULL; c = c->next) {
+		printf("n %s data %p %s children:\n", c->tag, c->data.string, c->flags & CN_FLAG_LEAF ? "(leaf)"  : "");
+		dump_confnode(c->child);
+		printf("--%s end--\n", c->tag);
+	}
+}
+
+enum DataType conf_get(f, mib, data)
+	fdbfs_t *f;
+	char *mib;
+	union Data *data; /* output */
+{
+	char *mibcpy = strdup(mib);
+	confnode_t *tnode;
+
+	tnode = conf_search_mib(f->rconf, mibcpy);
+	free(mibcpy);
+
+	if(tnode == NULL) {
+		return -1;
+	}
+
+	/* otherwise we found it; copy the data elem (note that this is only valid until we destroy fdbfs_t */
+
+	*data = tnode->data;
+
+	return tnode->type;
+}
+
 int conf_init(f)
 	fdbfs_t *f;
 {
-	f->rconf = conf_node_create(ROOT_NODE_TAG, NULL, 0);
+	f->rconf = allocz(sizeof(confnode_t));
+	f->rconf->flags |= CN_FLAG_ROOT;
 
 	if(!table_exists(f, CONFTABLE))
 		if(!conf_init_db(f))
