@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/CHANGELOG,v 1.14 2006/01/11 01:42:00 dcp1990 Exp $
+$Amigan: fakedbfs/CHANGELOG,v 1.15 2006/01/11 01:42:46 dcp1990 Exp $
 
 Changelog
 
@@ -7,6 +7,7 @@ Changelog
 *answer_t members have been consolidated into a union to save space. This may cause problems; we'll see
 *freg now supports substrings; the API has changed to support this. See the freg_* functions.
 *configuration subsystem added
+*mime field now mandatory in database; this is possibly incompatible.
 
 1.1.0-RELEASE ("Bodhisattva")
 *All indexing functions now accept a last argument, def, for default fields. This is to facilitate our default spec parser for findex(1).

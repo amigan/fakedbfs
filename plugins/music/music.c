@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.6 2005/12/24 22:27:48 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.7 2006/01/11 01:42:46 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.6 2005/12/24 22:27:48 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.7 2006/01/11 01:42:46 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
@@ -291,7 +291,7 @@ fields_t* extract_from_mp3(filename, errmsg)
 	ID3Tag *t;
 	ID3Frame *cfr;
 	char *cv;
-	fields_t *h = NULL, *c = NULL;
+	fields_t *h = NULL, *c = NULL, *mime;
 
 	if(!match_filename(filename, errmsg, &c, &h))
 		return NULL;
@@ -334,6 +334,14 @@ fields_t* extract_from_mp3(filename, errmsg)
 
 	ID3Tag_Delete(t);
 
+	mime = allocz(sizeof(*mime));
+	mime->fieldname = strdup("mime");
+	mime->fmtname = strdup("MIME type");
+	mime->type = string;
+	mime->val = strdup("audio/mpeg");
+	mime->next = h;
+	h = mime;
+
 	return h;
 }
 
@@ -341,9 +349,17 @@ fields_t* extract_from_ogg(filename, errmsg)
 	char *filename;
 	char **errmsg;
 {
-	fields_t *h = NULL, *c = NULL;
+	fields_t *h = NULL, *c = NULL, *mime;
 
 	match_filename(filename, errmsg, &h, &c);
+
+	mime = allocz(sizeof(*mime));
+	mime->fieldname = strdup("mime");
+	mime->fmtname = strdup("MIME type");
+	mime->type = string;
+	mime->val = strdup("application/ogg");
+	mime->next = h;
+	h = mime;
 
 	return h;
 }
