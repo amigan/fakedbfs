@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.10 2006/01/11 01:39:54 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.11 2006/01/11 02:04:46 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.10 2006/01/11 01:39:54 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.11 2006/01/11 02:04:46 dcp1990 Exp $")
 
 static void conf_node_link_parent(parent, n)
 	confnode_t *parent, *n;
@@ -246,6 +246,17 @@ int conf_add_to_tree(f, mib, type, data, dynamic)
 	return rc;
 }
 
+static void conf_destroy_data(c)
+	confnode_t *c;
+{
+	if(c->flags & CN_FLAG_LEAF) {
+		if(c->flags & CN_DYNA_DATA)
+			free(c->data.pointer.ptr);
+		else if(c->flags & CN_DYNA_STR)
+			free(c->data.string);
+	}
+}
+
 void conf_destroy_tree(t)
 	confnode_t *t;
 {
@@ -256,12 +267,8 @@ void conf_destroy_tree(t)
 		conf_destroy_tree(c->child);
 		if(c->tag != NULL)
 			free(c->tag);
-		if(c->flags & CN_FLAG_LEAF) {
-			if(c->flags & CN_DYNA_DATA)
-				free(c->data.pointer.ptr);
-			else if(c->flags & CN_DYNA_STR)
-				free(c->data.string);
-		}
+
+		conf_destroy_data(c);
 
 		free(c);
 		c = nx;
@@ -362,6 +369,51 @@ enum DataType conf_get(f, mib, data)
 	*data = tnode->data;
 
 	return tnode->type;
+}
+
+int conf_set(f, mib, type, data) /* this routine is dedicated to Genesis' song "In The Beginning", to which it was written */
+	fdbfs_t *f;
+	char *mib;
+	enum DataType type;
+	union Data data; /* if applicable, this must persist for us to free according to our whims. */
+{
+	char *mibcpy = strdup(mib);
+	confnode_t *tnode;
+	short dynamic = 0;
+
+	tnode = conf_search_mib(f->rconf, mibcpy);
+
+	switch(type) {
+		case string:
+			dynamic = 2;
+			break;
+		case binary:
+			dynamic = 1;
+			break;
+		default:
+			dynamic = 0;
+			break;
+	}
+
+	if(tnode == NULL) {
+		conf_add_to_tree(f, mibcpy, type, &data, dynamic);
+		if(!db_mib_add(f, mibcpy, type, data)) {
+			free(mibcpy);
+			return 0;
+		}
+	} else {
+		conf_destroy_data(tnode);
+		tnode->data = data;
+		tnode->type = type;
+		if(!db_mib_update(f, mibcpy, type, data)) {
+			free(mibcpy);
+			return 0;
+		}
+	}
+
+	free(mibcpy);
+
+	return 1;
 }
 
 int conf_init(f)

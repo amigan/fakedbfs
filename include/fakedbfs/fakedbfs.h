@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.68 2006/01/11 01:39:54 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.69 2006/01/11 02:04:46 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -446,9 +446,11 @@ confnode_t* conf_node_create(char *tag, confnode_t *parent, int leaf);
 int conf_init(fdbfs_t *f);
 int conf_init_db(fdbfs_t *f);
 int db_mib_add(fdbfs_t *f, char *mib, enum DataType type, union Data data);
+int db_mib_update(fdbfs_t *f, char *mib, enum DataType type, union Data data);
 int conf_add_to_tree(fdbfs_t *f, char *mib, enum DataType type, union Data *data, short dynamic);
 int conf_read_from_db(fdbfs_t *f);
 enum DataType conf_get(fdbfs_t *f, char *mib, union Data *data);
+int conf_set(fdbfs_t *f, char *mib, enum DataType type, union Data data);
 void conf_destroy_tree(confnode_t *t);
 
 /* application interfaces */
