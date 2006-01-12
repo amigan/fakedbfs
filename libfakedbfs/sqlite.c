@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.26 2006/01/11 02:04:46 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.27 2006/01/12 13:38:40 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,28 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.26 2006/01/11 02:04:46 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.27 2006/01/12 13:38:40 dcp1990 Exp $")
+
+
+int db_busy_handler(data, prior)
+	void *data;
+	int prior;
+{
+	fdbfs_t *f = (fdbfs_t *)data;
+
+	debug_info(f, error, "SQLite error: BUSY (%d prior calls)\n", prior);
+	if(prior < 3) {
+		debug_info(f, warn, "Sleeping for 1 second...\n");
+		sleep(1);
+		return 0;
+	} else {
+		debug_info(f, error, "Aborting query!\n");
+		return 1;
+	}
+
+	return 2;
+}
+
 
 
 int open_db(f)
@@ -50,6 +71,8 @@ int open_db(f)
 	if(rc) {
 		return ERR(die, "open_db: error opening database: %s", sqlite3_errmsg(f->db));
 	}
+
+	sqlite3_busy_handler(f->db, db_busy_handler, f);
 
 	rc = sqlite3_create_function(f->db, "regexp", 2, SQLITE_ANY /* not exactly true... */, (void*)f, regex_func, NULL, NULL);
 	if(rc != SQLITE_OK) {
