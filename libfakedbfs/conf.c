@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.11 2006/01/11 02:04:46 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.12 2006/01/12 19:59:13 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.11 2006/01/11 02:04:46 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.12 2006/01/12 19:59:13 dcp1990 Exp $")
 
 static void conf_node_link_parent(parent, n)
 	confnode_t *parent, *n;
@@ -82,13 +82,16 @@ confnode_t* conf_node_create(tag, parent, leaf)
 	return n;
 }
 
+/* add function to check if all the MIBs we need are in the DB and add them
+ * if we must... */
 int conf_init_db(f)
 	fdbfs_t *f;
 {
 	int rc;
 	union Data dta;
 
-	rc = create_table(f, CONFTABLE, CONFTABLESPEC);
+	if(!table_exists(f, CONFTABLE))
+		rc = create_table(f, CONFTABLE, CONFTABLESPEC);
 
 	if(!rc)
 		return 0;
@@ -422,9 +425,8 @@ int conf_init(f)
 	f->rconf = allocz(sizeof(confnode_t));
 	f->rconf->flags |= CN_FLAG_ROOT;
 
-	if(!table_exists(f, CONFTABLE))
-		if(!conf_init_db(f))
-			return 0;
+	if(!conf_init_db(f))
+		return 0;
 
 	if(!conf_read_from_db(f))
 		return 0;
