@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.19 2006/01/06 01:08:07 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.20 2006/01/14 19:03:57 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -40,7 +40,7 @@
 
 
 #ifndef lint
-RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.19 2006/01/06 01:08:07 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.20 2006/01/14 19:03:57 dcp1990 Exp $")
 const char *fakedbfsver _unused = FAKEDBFSVER;
 const char *fakedbfsvname _unused = VERNAME;
 const char *fakedbfscopyright _unused = "libfakedbfs (C)2005, Dan Ponte. Under the BSD license.";
@@ -79,6 +79,12 @@ fdbfs_t *new_fdbfs(dbfile, error, debugf, useplugins)
 			free(f);
 			return NULL;
 		}
+		if(!ficl_init(f)) {
+			*error = strdup("Couldn't initialise ficl system");
+			estr_free(&f->error);
+			free(f);
+			return NULL;
+		}
 	}
 
 	set_aff(f, askfunc_std);
@@ -102,6 +108,7 @@ int destroy_fdbfs(f)
 		free_cat_head_list(f->heads.db_cath);
 
 	conf_destroy_tree(f->rconf);
+	ficl_destroy(f);
 
 	free(f);
 	return 1;

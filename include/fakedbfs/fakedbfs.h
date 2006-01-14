@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.69 2006/01/11 02:04:46 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.70 2006/01/14 19:03:54 dcp1990 Exp $ */
 #include <fdbfsconfig.h>
 #ifndef _SQLITE3_H_
 #include <sqlite3.h>
@@ -224,6 +224,11 @@ typedef struct a_t {
 	size_t len;
 } answer_t;
 
+struct FiclState {
+	struct FDBFS *f;
+	short do_outp;
+};
+
 typedef struct FDBFS {
 	char *dbname;
 	sqlite3 *db;
@@ -235,6 +240,7 @@ typedef struct FDBFS {
 	answer_t *(*askfieldfunc) AFFPROTO; /* returns status: 0 means no change, 1 means change, -1 means error */
 	Heads heads;
 	ficlSystem *fsys;
+	struct FiclState fst;
 	confnode_t *rconf;
 } fdbfs_t;
 
@@ -437,6 +443,7 @@ int crawl_dir(crawl_t *cr, char *dir); /* simply adds dir to the base frame */
 
 /* ficl stuff */
 int ficl_init(fdbfs_t *f);
+void ficl_destroy(fdbfs_t *f);
 #ifdef HAVE_FICL_H
 int ficl_addwords(fdbfs_t *f, ficlDictionary *dict);
 #endif

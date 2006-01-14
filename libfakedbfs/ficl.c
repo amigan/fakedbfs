@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.1 2005/12/23 19:57:03 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.2 2006/01/14 19:03:57 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -49,7 +49,9 @@
 #define FICLWORD(word)		cword = ficlDictionarySetPrimitive(dict, #word, ficl_word_ ## word, 0x0)
 #define WORDDEF(word)		void ficl_word_ ## word(ficlVm *vm)
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.1 2005/12/23 19:57:03 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.2 2006/01/14 19:03:57 dcp1990 Exp $")
+
+
 
 static const struct PluginInfo ficl_inf = {
 	"",
@@ -61,13 +63,49 @@ static const struct PluginInfo ficl_inf = {
 	MINOR_API_VERSION
 };
 
+void ficl_output(cb, text) /* HACK! */
+	ficlCallback *cb;
+	char *text;
+{
+	struct FiclState *fs = cb->context;
+
+	if(fs->do_outp) {
+		if(text != NULL)
+			fputs(text, stdout);
+		else
+			fflush(stdout);
+	}
+}
+
+
+void ficl_error(cb, text) /* HACK! */
+	ficlCallback *cb;
+	char *text;
+{
+	if(text != NULL)
+		fputs(text, stderr);
+	else
+		fflush(stderr);
+}
+
 int ficl_init(f)
 	fdbfs_t *f;
 {
 	ficlSystem *fsys;
 	ficlDictionary *sysdict;
+	ficlSystemInformation si;
 
-	fsys = ficlSystemCreate(NULL);
+	f->fst.f = f;
+	f->fst.do_outp = 0; /* supress start messages */
+
+	ficlSystemInformationInitialize(&si);
+	si.textOut = ficl_output;
+	si.errorOut = ficl_error;
+	si.context = &f->fst;
+
+	fsys = ficlSystemCreate(&si);
+
+	f->fst.do_outp = 1;
 	
 	if(fsys == NULL) {
 		return SERR(die, "Error creating ficl system!");
@@ -79,6 +117,14 @@ int ficl_init(f)
 
 	return ficl_addwords(f, sysdict);
 }
+
+void ficl_destroy(f)
+	fdbfs_t *f;
+{
+	if(f->fsys != NULL)
+		ficlSystemDestroy(f->fsys);
+}
+
 
 
 

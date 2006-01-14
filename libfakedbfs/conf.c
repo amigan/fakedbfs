@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.12 2006/01/12 19:59:13 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.13 2006/01/14 19:03:57 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.12 2006/01/12 19:59:13 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.13 2006/01/14 19:03:57 dcp1990 Exp $")
 
 static void conf_node_link_parent(parent, n)
 	confnode_t *parent, *n;
@@ -90,11 +90,11 @@ int conf_init_db(f)
 	int rc;
 	union Data dta;
 
-	if(!table_exists(f, CONFTABLE))
+	if(!table_exists(f, CONFTABLE)) {
 		rc = create_table(f, CONFTABLE, CONFTABLESPEC);
-
-	if(!rc)
-		return 0;
+		if(!rc)
+			return 0;
+	}
 
 	dta.integer = 1;
 

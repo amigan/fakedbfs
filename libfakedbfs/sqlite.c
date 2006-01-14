@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.27 2006/01/12 13:38:40 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.28 2006/01/14 19:03:57 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@
 /* us */
 #include <fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.27 2006/01/12 13:38:40 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.28 2006/01/14 19:03:57 dcp1990 Exp $")
 
 
 int db_busy_handler(data, prior)
@@ -50,7 +50,7 @@ int db_busy_handler(data, prior)
 
 	debug_info(f, error, "SQLite error: BUSY (%d prior calls)\n", prior);
 	if(prior < 3) {
-		debug_info(f, warn, "Sleeping for 1 second...\n");
+		debug_info(f, warning, "Sleeping for 1 second...\n");
 		sleep(1);
 		return 0;
 	} else {
