@@ -3,7 +3,7 @@ OBJECTS= dictionary.o system.o fileaccess.o float.o double.o prefix.o search.o s
 HEADERS= ficl.h ficlplatform/ansi.h
 #
 # Flags for shared library
-TARGET=  -ansi -DFICL_ANSI  -ggdb -Wall # riscos MOTO_CPU32 
+TARGET=  -ansi -DFICL_ANSI  -ggdb # riscos MOTO_CPU32 
 SHFLAGS = -fPIC
 CFLAGS= -O $(SHFLAGS) $(TARGET)
 LIB = ar cr
