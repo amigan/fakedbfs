@@ -1188,7 +1188,7 @@ COMPARE:
 			{
 				char *cp1, *cp2;
 				ficlUnsigned u1, u2, uMin;
-				int n = 0;
+				long n = 0;
 
 				CHECK_STACK(4, 1);
 				u2  = (dataTop--)->u;
@@ -1206,11 +1206,11 @@ COMPARE:
 						c1 = (char)tolower(c1);
 						c2 = (char)tolower(c2);
 					}
-					n = (int)(c1 - c2);
+					n = (long)(c1 - c2);
 				}
 
 				if (n == 0)
-					n = (int)(u1 - u2);
+					n = (long)(u1 - u2);
 
 				if (n < 0) 
 					n = -1;
@@ -2302,7 +2302,7 @@ FMINUSROLL:
 				*/
 				if ((ficlInstruction)fw->code < ficlInstructionLast)
 				{
-					instruction = (int)fw->code;
+					instruction = (long)fw->code;
 					goto AGAIN;
 				}
 

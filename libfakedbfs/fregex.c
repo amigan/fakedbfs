@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.5 2005/12/30 01:31:19 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.6 2006/01/28 22:34:36 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@
 #include <fakedbfs.h>
 #include <fdbfsregex.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.5 2005/12/30 01:31:19 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.6 2006/01/28 22:34:36 dcp1990 Exp $")
 
 int frinitialise(fr)
 	freg_t *fr;
@@ -63,7 +63,7 @@ freg_t* new_freg(emsg, emsgsize)
 
 	new = allocz(sizeof(*new));
 	if(new == NULL) {
-		snprintf(emsg, emsgsize, "Error allocating %d bytes.", sizeof(*new));
+		snprintf(emsg, emsgsize, "Error allocating %ld bytes.", sizeof(*new));
 		return NULL;
 	}
 
