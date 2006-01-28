@@ -30,13 +30,13 @@ int ficlWordIsCompileOnly(ficlWord *word)
 ficlWordKind ficlWordClassify(ficlWord *word)
 {
     ficlPrimitive code;
-    int i;
+    long i;
 	ficlWordKind iType;
 
 	if ( (((ficlInstruction)word) > ficlInstructionInvalid)
 		&& (((ficlInstruction)word) < ficlInstructionLast) )
 		{
-		i = (int)word;
+		i = (long)word;
 		iType = FICL_WORDKIND_INSTRUCTION;
 		goto IS_INSTRUCTION;
 		}
@@ -45,7 +45,7 @@ ficlWordKind ficlWordClassify(ficlWord *word)
 
 	if ((ficlInstruction)code < ficlInstructionLast)
 		{
-		i = (int)code;
+		i = (long)code;
 		iType = FICL_WORDKIND_INSTRUCTION_WORD;
 		goto IS_INSTRUCTION;
 		}
