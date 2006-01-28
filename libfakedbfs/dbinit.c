@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.42 2006/01/11 01:42:46 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.43 2006/01/28 22:35:23 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +45,7 @@
 #define ParseTOKENTYPE Toke
 #define ParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.42 2006/01/11 01:42:46 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.43 2006/01/28 22:35:23 dcp1990 Exp $")
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *p, void (*freeProc)(void*));
@@ -339,6 +339,9 @@ char* construct_subelem_field(h)
 
 	/* actual traversing */
 	for(c = h; c != NULL; c = c->next) {
+		/* XXX: this needs to be more fail-safe. We can't afford having the damned thing just bomb
+		 * without telling anyone if the buffer turns out to be too small.
+		 */
 		snprintf(ourbuffer, sizeof(ourbuffer), "%s\037%d\036", (c->flags & SUBE_IS_SELF ? "\021" : /* printf says "(null)" if it's null. this might truncate the other values */
 													      (c->name == NULL ? "\021" : c->name))/* default to self if null */,
 				c->value);
