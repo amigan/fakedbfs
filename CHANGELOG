@@ -1,8 +1,10 @@
-$Amigan: fakedbfs/CHANGELOG,v 1.15 2006/01/11 01:42:46 dcp1990 Exp $
+$Amigan: fakedbfs/CHANGELOG,v 1.16 2006/01/28 22:47:30 dcp1990 Exp $
 
 Changelog
 
 2.0.0-RELEASE ("Doctor Wu")
+*Thanks to fez (new amd64 workstation), this code should now be mostly 64bit clean. I also made some changes to ficl to make it 64bit clean.
+ I submitted those patches to the ficl team. Hopefully they will be integrated.
 *ficl has been imported into the tree and work started; see libfakedbfs/ficl.c
 *answer_t members have been consolidated into a union to save space. This may cause problems; we'll see
 *freg now supports substrings; the API has changed to support this. See the freg_* functions.
