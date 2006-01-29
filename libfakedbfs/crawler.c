@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.7 2006/01/29 21:40:15 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -50,7 +50,7 @@
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.7 2006/01/29 21:40:15 dcp1990 Exp $")
 
 static void destroy_frame(crawlframe_t *cf);
 
@@ -194,7 +194,7 @@ int fdbfs_crawl_dir(cr, dir) /* simply adds dir to the base frame */
 	return 1;
 }
 
-int setup_dir(cr, ds, oid)
+static int setup_dir(cr, ds, oid)
 	crawl_t *cr;
 	struct DirState *ds;
 	file_id_t *oid;
