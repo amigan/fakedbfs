@@ -1,6 +1,6 @@
 .\" El manpage-o for the specfile format
 .\" (C)2005, Dan Ponte
-.\" $Amigan: fakedbfs/doc/specfile.5,v 1.3 2005/09/24 17:01:56 dcp1990 Exp $
+.\" $Amigan: fakedbfs/doc/specfile.5,v 1.4 2006/01/29 21:07:12 dcp1990 Exp $
 .Dd August 13, 2005
 .Dt SPECFILE 5
 .Os
@@ -11,7 +11,7 @@
 .Sh SYNOPSIS
 #include <dbspecdata.h>
 .Pp
-int parse_definition(fdbfs_t *f, char *filename);
+int fdbfs_dbspec_parse(fdbfs_t *f, char *filename);
 .Sh DESCRIPTION
 .Nm
 is the term used to describe the files that libfakedbfs accepts for database

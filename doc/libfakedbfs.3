@@ -1,21 +1,22 @@
 .\" El manpage-o for the specfile format
 .\" (C)2005, Dan Ponte
-.\" $Amigan: fakedbfs/doc/libfakedbfs.3,v 1.1 2005/09/24 21:48:28 dcp1990 Exp $
-.Dd September 24, 2005
+.\" $Amigan: fakedbfs/doc/libfakedbfs.3,v 1.2 2006/01/29 21:07:12 dcp1990 Exp $
+.Dd January 29, 2006
 .Dt LIBFAKEDBFS 3
 .Os
 .Sh NAME
 .Nm libfakedbfs
 .Nd the main library of the Fake Database Filesystem
 .Sh SYNOPSIS
-#include <fakedbfsapps.h>
 .Pp
-#include <fakedbfs.h>
+#include <fakedbfs/fakedbfs.h>
 .Pp
-fdbfs_t* new_fdbfs(char *dbfile, char **error, void (*debugf)(char *,
+#include <fakedbfs/fakedbfsapps.h>
+.Pp
+fdbfs_t* fdbfs_new(char *dbfile, char **error, void (*debugf)(char *,
 enum ErrorAction), int useplugins);
 .Pp
-int destroy_fdbfs(fdbfs_t *f);
+int fdbfs_destroy(fdbfs_t *f);
 .Sh DESCRIPTION
 .Nm
 is the main library used by the

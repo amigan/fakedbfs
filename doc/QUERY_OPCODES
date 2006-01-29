@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.8 2005/12/30 01:42:31 dcp1990 Exp $
+$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.9 2006/01/29 21:07:12 dcp1990 Exp $
 
 Query opcodes
 	By Dan Ponte
@@ -47,9 +47,9 @@ OPCODE	|Name		|Description										|Accepts:		|
 ========================================================================================================================================|
 
 NOTE AS PROMISED:
-	qreg_t structures are compiled by a call to qreg_compile(char *regex, char *colname, int case_insens, char **errmsg). Returned is a pointer to a freshly-malloc(3)'d qreg_t. case_insens is true if case-insensitivity is desired; 0 otherwise. If an error is encountered, NULL is returned and *errmsg is set to a dynamically allocated (free with free(3)) string containing the message.
+	qreg_t structures are compiled by a call to fdbfs_qreg_compile(char *regex, char *colname, int case_insens, char **errmsg). Returned is a pointer to a freshly-malloc(3)'d qreg_t. case_insens is true if case-insensitivity is desired; 0 otherwise. If an error is encountered, NULL is returned and *errmsg is set to a dynamically allocated (free with free(3)) string containing the message.
 This structure should be freed when no longer in use by a call to qreg_destroy(qreg_t *qreg) (this might be done for you in a query_destroy call).
 Note that the regex nor colname are not needed later; they will be strdup()'d if necessary.
 In essence, a OP_REGEXP instruction expands to "(colname =~ /regex/)" in one instruction.
 
-If the used argument to qi() has the US_DYNA (0x8) bit set, o3 will be freed using free(3) when the instruction list is destroyed.
+If the used argument to fdbfs_query_qi() has the US_DYNA (0x8) bit set, o3 will be freed using free(3) when the instruction list is destroyed.
