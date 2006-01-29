@@ -1,11 +1,11 @@
 # BSD make makefile for the fakedbfs distribution
 # (C)2005, Dan Ponte
-# $Amigan: fakedbfs/Makefile,v 1.13 2005/12/22 22:35:17 dcp1990 Exp $
+# $Amigan: fakedbfs/Makefile,v 1.14 2006/01/29 21:10:52 dcp1990 Exp $
 include globals.mk
 COMPONENTS=buildtools ficl libfakedbfs fcreatedb findex fquery fedit plugins
 CLEANFILES=
 all: .config all-rec
-clean: clean-rec
+clean: clean-rec docsclean
 all-rec:
 	@for i in $(COMPONENTS) ; do $(MAKE) -C $$i ; done
 clean-rec:
@@ -19,3 +19,9 @@ clean-rec:
 configclean:
 	rm -f .config config.h config.mk
 allclean: clean configclean
+
+docs:
+	$(MAKE) -C doc doxygen
+
+docsclean:
+	$(MAKE) -C doc clean

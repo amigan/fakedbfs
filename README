@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/README,v 1.11 2006/01/29 21:08:25 dcp1990 Exp $
+$Amigan: fakedbfs/README,v 1.12 2006/01/29 21:10:52 dcp1990 Exp $
 
 This is the fakedbfs distribution, version 2.0.0-RELEASE (Doctor Wu). See the contents of
 doc/ for more information.
@@ -21,8 +21,7 @@ make
 (replace tclsh8.4 with the name of tclsh on your system)
 
 If you want API docs, install doxygen and do the following:
-cd doc
-doxygen fakedbfs.doxy
+make docs
 
 You should now see them in doc/doxy/. Enjoy!
 
