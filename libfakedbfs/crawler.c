@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.5 2005/12/20 00:33:20 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,36 +45,16 @@
 /* other libraries */
 #include <sqlite3.h>
 /* us */
-#include <fdbfsregex.h>
-#include <fdbfsconfig.h>
-#include <fakedbfs.h>
+#include <fakedbfs/fdbfsregex.h>
+#include <fakedbfs/fdbfsconfig.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.5 2005/12/20 00:33:20 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/crawler.c,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $")
 
-crawl_t* new_crawler(f, mlevels, mlbd)
-	fdbfs_t *f;
-	int mlevels; /* max levels to traverse; spew errors after this */
-	int mlbd; /* max levels before depth traversal....might not be used, oh well
-		   * set to 1 for depth-only traversal, 0 for no depth traversal at all */
-{
-	crawl_t *new;
+static void destroy_frame(crawlframe_t *cf);
 
-	new = allocz(sizeof(*new));
-	new->maxlevels = mlevels;
-	new->mlbefdep = mlbd;
-	new->f = f;
-
-	return new;
-}
-
-void destroy_crawler(cr)
-	crawl_t *cr;
-{
-	destroy_frame(cr->topframe);
-	free(cr);
-}
-
-int push_frame(dst, obj)
+static int push_frame(dst, obj)
 	crawlframe_t *dst;
 	crawlframe_t *obj;
 {
@@ -90,7 +70,7 @@ int push_frame(dst, obj)
 	return 1;
 }
 
-crawlframe_t *pop_frame(src)
+static crawlframe_t *pop_frame(src)
 	crawlframe_t *src;
 {
 	if(src->cindex <= 0)
@@ -101,32 +81,9 @@ crawlframe_t *pop_frame(src)
 	return *(src->sp--);
 }
 
-void traverse_and_free(cf)
-	crawlframe_t *cf;
-{
-	crawlframe_t *tf;
-	if(cf->cindex == 0)
-		return;
 
-	while((tf = pop_frame(cf)) != NULL) {
-		destroy_frame(tf);
-	}
-}
 
-void destroy_frame(cf)
-		crawlframe_t *cf;
-{
-	traverse_and_free(cf);
-	free(cf->stack);
-	/*
-	 * CAVEAT EMPTOR:
-	 * cf->oid.filename is *NOT* freed here; we assume that the application doing crawl_go() will
-	 * use it and free when done. This may not be the case.
-	 */
-	free(cf);
-}
-
-crawlframe_t* create_frame(cr, size, parent, fid, level)
+static crawlframe_t* create_frame(cr, size, parent, fid, level)
 	crawl_t *cr;
 	size_t size;
 	crawlframe_t *parent;
@@ -151,7 +108,56 @@ crawlframe_t* create_frame(cr, size, parent, fid, level)
 	return new;
 }
 
-int crawl_dir(cr, dir) /* simply adds dir to the base frame */
+
+static void traverse_and_free(cf)
+	crawlframe_t *cf;
+{
+	crawlframe_t *tf;
+	if(cf->cindex == 0)
+		return;
+
+	while((tf = pop_frame(cf)) != NULL) {
+		destroy_frame(tf);
+	}
+}
+
+static void destroy_frame(cf)
+		crawlframe_t *cf;
+{
+	traverse_and_free(cf);
+	free(cf->stack);
+	/*
+	 * CAVEAT EMPTOR:
+	 * cf->oid.filename is *NOT* freed here; we assume that the application doing crawl_go() will
+	 * use it and free when done. This may not be the case.
+	 */
+	free(cf);
+}
+
+crawl_t* fdbfs_crawler_new(f, mlevels, mlbd)
+	fdbfs_t *f;
+	int mlevels; /* max levels to traverse; spew errors after this */
+	int mlbd; /* max levels before depth traversal....might not be used, oh well
+		   * set to 1 for depth-only traversal, 0 for no depth traversal at all */
+{
+	crawl_t *new;
+
+	new = allocz(sizeof(*new));
+	new->maxlevels = mlevels;
+	new->mlbefdep = mlbd;
+	new->f = f;
+
+	return new;
+}
+
+void fdbfs_crawler_destroy(cr)
+	crawl_t *cr;
+{
+	destroy_frame(cr->topframe);
+	free(cr);
+}
+
+int fdbfs_crawl_dir(cr, dir) /* simply adds dir to the base frame */
 	crawl_t *cr;
 	char *dir;
 {
@@ -161,7 +167,7 @@ int crawl_dir(cr, dir) /* simply adds dir to the base frame */
 	if(cr->topframe == NULL) { /* create the stack frame */
 		cr->topframe = create_frame(cr, CRAWLFRAME_MAX, NULL, NULL, 0);
 		if(cr->topframe == NULL) {
-			cferr(cr->f, die, "Error creating toplevel stackframe. ");
+			fdbfs_cferr(cr->f, die, "Error creating toplevel stackframe. ");
 			return 0;
 		}
 		cr->curframe = cr->topframe;
@@ -173,14 +179,14 @@ int crawl_dir(cr, dir) /* simply adds dir to the base frame */
 
 	if(n == NULL) {
 		free(nfi.filename);
-		cferr(cr->f, die, "Error creating stackframe. ");
+		fdbfs_cferr(cr->f, die, "Error creating stackframe. ");
 		return 0;
 	}
 
 	if(!push_frame(cr->topframe, n)) {
 		destroy_frame(n);
 		free(nfi.filename);
-		cferr(cr->f, die, "Error pushing stackframe. ");
+		fdbfs_cferr(cr->f, die, "Error pushing stackframe. ");
 		return 0;
 	}
 
@@ -197,7 +203,7 @@ int setup_dir(cr, ds, oid)
 	return 1;
 }
 
-int crawl_go(cr, flags, fid)
+int fdbfs_crawl_go(cr, flags, fid)
 	crawl_t *cr;
 	int flags;
 	file_id_t *fid; /* copy to */
@@ -219,7 +225,7 @@ int crawl_go(cr, flags, fid)
 			return CRAWL_FINISHED; /* we've hit the bottom; all done */
 		}
 
-		return crawl_go(cr, flags, fid); /* cascade down until we don't see anything */
+		return fdbfs_crawl_go(cr, flags, fid); /* cascade down until we don't see anything */
 	}
 
 	if(!setup_dir(cr, &c->ds, &c->oid)) {

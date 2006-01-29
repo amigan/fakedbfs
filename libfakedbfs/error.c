@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/error.c,v 1.6 2005/08/17 15:38:25 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/error.c,v 1.7 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -37,12 +37,13 @@
 #include <ctype.h>
 #include <stdarg.h> /* this may not be portable...just rewrite these routines that use it if needed. */
 /* us */
-#include <fakedbfs.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/debug.h>
 #define BUFSIZE 512
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/error.c,v 1.6 2005/08/17 15:38:25 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/error.c,v 1.7 2006/01/29 21:03:55 dcp1990 Exp $")
 
-int ferr(fdbfs_t *f, enum ErrorAction severity, char *fmt, ...)
+int fdbfs_ferr(fdbfs_t *f, enum ErrorAction severity, char *fmt, ...)
 {
 	va_list ap;
 	char *p;
@@ -57,7 +58,7 @@ int ferr(fdbfs_t *f, enum ErrorAction severity, char *fmt, ...)
 	return 0; /* it's an error condition; this way we can be lazy and just say return(ferr(blah)); */
 }
 
-int cferr(fdbfs_t *f, enum ErrorAction severity, char *fmt, ...)  /* cascade errors */
+int fdbfs_cferr(fdbfs_t *f, enum ErrorAction severity, char *fmt, ...)  /* cascade errors */
 {
 	va_list ap;
 	char *p;
@@ -74,14 +75,14 @@ int cferr(fdbfs_t *f, enum ErrorAction severity, char *fmt, ...)  /* cascade err
 		strlcat(p, f->error.emsg, bs);
 		strlcat(p, "}", bs);
 	}
-	estr_free(&f->error);
+	fdbfs_estr_free(&f->error);
 	f->error.freeit = 1;
 	f->error.emsg = p;
 	f->error.action = severity;
 	return 0;
 }
 
-int debug_info(fdbfs_t *f, enum ErrorAction sev, char *fmt, ...)
+int fdbfs_debug_info(fdbfs_t *f, enum ErrorAction sev, char *fmt, ...)
 {
 	va_list ap;
 	char *p;

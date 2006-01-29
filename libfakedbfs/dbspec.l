@@ -1,18 +1,18 @@
 %{
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.13 2005/10/02 16:43:15 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.14 2006/01/29 21:03:55 dcp1990 Exp $ */
 #include <stdio.h>
 #include <string.h>
 #include "dbspec.h"
-#include <lexdefines.h>
+#include <fakedbfs/lexdefines.h>
 #define NODMALLOC 1
 #define ISLEX	1
-#include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.13 2005/10/02 16:43:15 dcp1990 Exp $")
-int chrcnt = 0, lincnt = 1; /* not thread-safe, I know */
+#include <fakedbfs/fakedbfs.h>
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.l,v 1.14 2006/01/29 21:03:55 dcp1990 Exp $")
+int fdbfs_chrcnt = 0, fdbfs_lincnt = 1; /* not thread-safe, I know */
 %}
 %s comment
 %%
-.			++chrcnt; REJECT;
+.			++fdbfs_chrcnt; REJECT;
 <comment>.		{}
 en			return EN;
 ENUM			return ENUM;
@@ -41,21 +41,21 @@ fc			return FC;
 \)			return CPAR;
 \,			return COMMA;
 <INITIAL>\"[^"]*\"		{
-				yylval.string = strdupq(yytext);
+				yylval.string = fdbfs_strdupq(fdbfs_dstext);
 #ifdef PARSERDEBUG
 				fprintf(stderr, "string %s\n", yylval.string);
 #endif
 				return STRING;
 }
 <INITIAL>[A-Za-z0-9_]+		{
-				yylval.string = fstrdup(yytext);
+				yylval.string = fdbfs_fstrdup(fdbfs_dstext);
 #ifdef PARSERDEBUG
 				fprintf(stderr, "string %s\n", yylval.string);
 #endif
 				return UQSTRING;
 }
 ;			return SCOLON;
-\n			chrcnt = 0; ++lincnt;/* DONOTHING */
+\n			fdbfs_chrcnt = 0; ++fdbfs_lincnt;/* DONOTHING */
 [\t ]			/* DONOTHING */
 .			/* DO nothing */
 %%

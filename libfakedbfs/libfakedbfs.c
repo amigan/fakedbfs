@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * dbinit.c - DB initialisation
  * 
@@ -27,7 +27,11 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.20 2006/01/14 19:03:57 dcp1990 Exp $ */
+/**
+ * @file libfakedbfs.c
+ * @brief Main libfakedbfs functions.
+ */
+/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.21 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -36,20 +40,32 @@
 #include <errno.h>
 #include <ctype.h>
 /* us */
-#include <fakedbfs.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/db.h>
+#include <fakedbfs/debug.h>
+#include <fakedbfs/plugins.h>
+#include <fakedbfs/conf.h>
+#include <fakedbfs/fficl.h>
 
 
 #ifndef lint
-RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.20 2006/01/14 19:03:57 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.21 2006/01/29 21:03:55 dcp1990 Exp $")
+/** @brief fakedbfs version. */
 const char *fakedbfsver _unused = FAKEDBFSVER;
+/** @brief fakedbfs version name */
 const char *fakedbfsvname _unused = VERNAME;
+/** @brief fakedbfs copyright notice. */
 const char *fakedbfscopyright _unused = "libfakedbfs (C)2005, Dan Ponte. Under the BSD license.";
+/** @brief Major version */
 const int  fakedbfsmaj _unused = FAKEDBFSMAJOR;
+/** @brief Minor version */
 const int  fakedbfsmin _unused = FAKEDBFSMINOR;
+/** @brief Micro version */
 const int  fakedbfsmic _unused = FAKEDBFSMICRO;
 #endif
 
-fdbfs_t *new_fdbfs(dbfile, error, debugf, useplugins)
+
+fdbfs_t *fdbfs_new(dbfile, error, debugf, useplugins)
 	char *dbfile;
 	char **error; /* if we return NULL, this must be freed */
 	void (*debugf)(char*, enum ErrorAction);
@@ -62,79 +78,72 @@ fdbfs_t *new_fdbfs(dbfile, error, debugf, useplugins)
 	memset(f, 0, sizeof(*f));
 	f->dbname = strdup(dbfile);
 	f->debugfunc = debugf;
-	rc = open_db(f);
+	rc = fdbfs_db_open(f);
 	if(!rc) {
 		*error = strdup(f->error.emsg);
-		estr_free(&f->error);
+		fdbfs_estr_free(&f->error);
 		free(f);
 		return NULL;
 	}
 	if(useplugins) {
 		if(getenv(FDBFSPLUGENV) != NULL)
-			set_plug_path(f, getenv(FDBFSPLUGENV));
-		init_plugins(f);
-		if(!conf_init(f)) {
+			fdbfs_plugins_set_path(f, getenv(FDBFSPLUGENV));
+		fdbfs_plugins_init(f);
+		if(!fdbfs_conf_init(f)) {
 			*error = strdup(f->error.emsg);
-			estr_free(&f->error);
+			fdbfs_estr_free(&f->error);
 			free(f);
 			return NULL;
 		}
-		if(!ficl_init(f)) {
+		if(!fdbfs_ficl_init(f)) {
 			*error = strdup("Couldn't initialise ficl system");
-			estr_free(&f->error);
+			fdbfs_estr_free(&f->error);
 			free(f);
 			return NULL;
 		}
 	}
 
-	set_aff(f, askfunc_std);
+	fdbfs_set_aff(f, fdbfs_askfunc_std);
 
 	return f;
 }
 
-int destroy_fdbfs(f)
+int fdbfs_destroy(f)
 	fdbfs_t *f;
 {
-	if(!close_db(f)) {
-		estr_free(&f->error);
+	if(!fdbfs_db_close(f)) {
+		fdbfs_estr_free(&f->error);
 		free(f);
 		return 0;
 	}
 	free(f->dbname);
-	destroy_plugin_list(f->plugins);
+	fdbfs_free_plugin_list(f->plugins);
 	if(f->heads.db_enumh != NULL)
-		free_enum_head_list(f->heads.db_enumh);
+		fdbfs_free_enum_head_list(f->heads.db_enumh);
 	if(f->heads.db_cath != NULL)
-		free_cat_head_list(f->heads.db_cath);
+		fdbfs_free_cat_head_list(f->heads.db_cath);
 
-	conf_destroy_tree(f->rconf);
-	ficl_destroy(f);
+	fdbfs_conf_destroy_tree(f->rconf);
+	fdbfs_ficl_destroy(f);
 
 	free(f);
 	return 1;
 }
 
-void set_aff(f, aff)
+void fdbfs_set_aff(f, aff)
 	fdbfs_t *f;
 	answer_t *(*aff)AFFPROTO;
 {
 	f->askfieldfunc = aff;
 }
 
-void set_plug_path(f, path)
-	fdbfs_t *f;
-	char *path;
-{
-	f->conf.pluginpath = strdup(path);
-}
-
-int read_specs_from_db(f)
+int fdbfs_read_specs_from_db(f)
 	fdbfs_t *f;
 {
-	f->heads.db_enumh = enums_from_db(f);
+	f->heads.db_enumh = fdbfs_enums_from_db(f);
 	if(f->heads.db_enumh == NULL && f->error.emsg != NULL)
 		return 0;
-	f->heads.db_cath = cats_from_db(f, f->heads.db_enumh);
+	f->heads.db_cath = fdbfs_cats_from_db(f, f->heads.db_enumh);
 	if(f->heads.db_cath == NULL && f->error.emsg != NULL)
 		return 0;
 	return 1;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * debug.c - debugging stuff (list dumps, etc)
  * 
@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/debug.c,v 1.3 2005/11/27 02:37:01 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/debug.c,v 1.4 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -37,12 +37,13 @@
 #include <ctype.h>
 #include "dbspec.h"
 /* us */
-#include <dbspecdata.h>
-#include <fakedbfs.h>
+#include <fakedbfs/dbspecdata.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/debug.c,v 1.3 2005/11/27 02:37:01 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/debug.c,v 1.4 2006/01/29 21:03:55 dcp1990 Exp $")
 
-struct EnumSubElem* dump_enum_sub_elem(e, allsub) /* returns next */
+struct EnumSubElem* fdbfs_debug_dump_enum_sub_elem(e, allsub) /* returns next */
 	struct EnumSubElem *e;
 	short int allsub; /* are we intentionally freeing allsubs? */
 {
@@ -53,60 +54,60 @@ struct EnumSubElem* dump_enum_sub_elem(e, allsub) /* returns next */
 	return nx;
 }
 
-void dump_enum_sub_elem_list(head, allsub)
+void fdbfs_debug_dump_enum_sub_elem_list(head, allsub)
 	struct EnumSubElem *head;
 	short int allsub;
 {
 	struct EnumSubElem *c, *next;
 	for(c = head; c != NULL; c = next) {
-		next = dump_enum_sub_elem(c, allsub);
+		next = fdbfs_debug_dump_enum_sub_elem(c, allsub);
 	}
 }
 
-struct EnumElem* dump_enum_elem(e)
+struct EnumElem* fdbfs_debug_dump_enum_elem(e)
 	struct EnumElem *e;
 {
 	struct EnumElem *nx;
 	nx = e->next;
 	printf("enumelem '%s'. fmtname '%s'. value == %d. other == %d. otype == %d.\n",
 			e->name, e->fmtname, e->value, e->other, e->othertype);
-	dump_enum_sub_elem_list(e->subhead, 0);
+	fdbfs_debug_dump_enum_sub_elem_list(e->subhead, 0);
 	return nx;
 }
 
-void dump_enum_elem_list(head)
+void fdbfs_debug_dump_enum_elem_list(head)
 	struct EnumElem *head;
 {
 	struct EnumElem *c, *next;
 	for(c = head; c != NULL; c = next) {
-		next = dump_enum_elem(c);
+		next = fdbfs_debug_dump_enum_elem(c);
 	}
 }
 
-struct EnumHead* dump_enum_head(e)
+struct EnumHead* fdbfs_debug_dump_enum_head(e)
 	struct EnumHead *e;
 {
 	struct EnumHead *nx;
 	printf("enumhead '%s'. flags == %x. allsubs == %p.\n",
 			e->name, e->flags, e->allsubs);
-	dump_enum_sub_elem_list(e->allsubs, 1);
-	dump_enum_elem_list(e->headelem);
+	fdbfs_debug_dump_enum_sub_elem_list(e->allsubs, 1);
+	fdbfs_debug_dump_enum_elem_list(e->headelem);
 	nx = e->next;
 	return nx;
 }
 
-void dump_enum_head_list(head)
+void fdbfs_debug_dump_enum_head_list(head)
 	struct EnumHead *head;
 {
 	struct EnumHead *c, *next;
 	for(c = head; c != NULL; c = next) {
-		next = dump_enum_head(c);
+		next = fdbfs_debug_dump_enum_head(c);
 	}
 }
 
 /* catalogues */
 
-struct CatElem* dump_cat_elem(e)
+struct CatElem* fdbfs_debug_dump_cat_elem(e)
 	struct CatElem *e;
 {
 	struct CatElem *nx;
@@ -117,44 +118,44 @@ struct CatElem* dump_cat_elem(e)
 	return nx;
 }
 
-void dump_cat_elem_list(head)
+void fdbfs_debug_dump_cat_elem_list(head)
 	struct CatElem *head;
 {
 	struct CatElem *c, *next;
 	for(c = head; c != NULL; c = next) {
-		next = dump_cat_elem(c);
+		next = fdbfs_debug_dump_cat_elem(c);
 	}
 }
 
-struct CatalogueHead* dump_cat_head(e)
+struct CatalogueHead* fdbfs_debug_dump_cat_head(e)
 	struct CatalogueHead *e;
 {
 	struct CatalogueHead *nx;
 	printf("cathead '%s'. fmtname '%s'. flags == %x. headel == %p. n %c= fmtn.\n",
 			e->name, e->fmtname, e->flags, e->headelem, e->name == e->fmtname ?
 			'=' : '!');
-	dump_cat_elem_list(e->headelem);
+	fdbfs_debug_dump_cat_elem_list(e->headelem);
 	nx = e->next;
 	return nx;
 }
 
-void dump_cat_head_list(head)
+void fdbfs_debug_dump_cat_head_list(head)
 	struct CatalogueHead *head;
 {
 	struct CatalogueHead *c, *next;
 	for(c = head; c != NULL; c = next) {
-		next = dump_cat_head(c);
+		next = fdbfs_debug_dump_cat_head(c);
 	}
 }
 
-void dump_head_members(hd) /* only the heads contained within, not the structure itself */
+void fdbfs_debug_dump_head_members(hd) /* only the heads contained within, not the structure itself */
 	Heads *hd;
 {
-	dump_cat_head_list(hd->cathead);
-	dump_enum_head_list(hd->enumhead);
+	fdbfs_debug_dump_cat_head_list(hd->cathead);
+	fdbfs_debug_dump_enum_head_list(hd->enumhead);
 }
 
-void dump_fields(h)
+void fdbfs_debug_dump_fields(h)
 	fields_t *h;
 {
 	fields_t *c;
@@ -174,7 +175,7 @@ void dump_fields(h)
 				printf("%g", *(FLOATTYPE*)c->val);
 				break;
 			case oenum:
-				printf("%s (%d)", get_enum_string_by_value(c->ehead->headelem, *(int*)c->val, 1), *(int*)c->val);
+				printf("%s (%d)", fdbfs_get_enum_string_by_value(c->ehead->headelem, *(int*)c->val, 1), *(int*)c->val);
 				break;
 			/* TODO: handle oenumsub */
 			default:

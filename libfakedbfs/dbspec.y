@@ -1,22 +1,25 @@
 /* Grammar for db spec files
  * (C)2005, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.24 2006/01/28 22:35:23 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.25 2006/01/29 21:03:55 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.24 2006/01/28 22:35:23 dcp1990 Exp $")
-extern int chrcnt, lincnt;
-extern char *yytext;
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/dbspecdata.h>
+#include <fakedbfs/debug.h>
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.25 2006/01/29 21:03:55 dcp1990 Exp $")
+extern int fdbfs_chrcnt, fdbfs_lincnt;
+extern char *fdbfs_dstext;
 }
+%name {DSpecParse}
 %token_type {Toke}
 %extra_argument {Heads *heads}
 %syntax_error {
 	fdbfs_t *in = (fdbfs_t *)heads->instance;
-	ferr(in, die, "Syntax error at line %d, char %d (near %s)!", lincnt, chrcnt, yytext);
+	fdbfs_ferr(in, die, "Syntax error at line %d, char %d (near %s)!", fdbfs_lincnt, fdbfs_chrcnt, fdbfs_dstext);
 	return;
 }
 specdef ::= blocks.
@@ -42,9 +45,9 @@ catalogueblock ::= CATALOGUE_TYPE catname(A) aliasdef(B) OBRACE catelems CBRACE.
 	}
 catname(A) ::= uqstring(B). {
 		A.str = B.str;
-		if(find_cathead_by_name(heads->db_cath, B.str) != NULL || find_cathead_by_name(heads->cathead, B.str) != NULL) {
+		if(fdbfs_find_cathead_by_name(heads->db_cath, B.str) != NULL || fdbfs_find_cathead_by_name(heads->cathead, B.str) != NULL) {
 			fdbfs_t *in = (fdbfs_t *)heads->instance;
-			ferr(in, die, "Error! catalogue already exists with name %s. ", B.str);
+			fdbfs_ferr(in, die, "Error! catalogue already exists with name %s. ", B.str);
 			break;
 		}
 		heads->curcath = allocz(sizeof(struct CatalogueHead));
@@ -61,10 +64,10 @@ headdoer ::= . {
 	}
 typename(A) ::= uqstring(B). {
 		A.str = B.str;
-		if((heads->db_enumh != NULL && find_enumhead_by_name(heads->db_enumh, B.str) != NULL) ||
-				(heads->enumhead != NULL && find_enumhead_by_name(heads->enumhead, B.str) != NULL)) {
+		if((heads->db_enumh != NULL && fdbfs_find_enumhead_by_name(heads->db_enumh, B.str) != NULL) ||
+				(heads->enumhead != NULL && fdbfs_find_enumhead_by_name(heads->enumhead, B.str) != NULL)) {
 			fdbfs_t *in = (fdbfs_t *)heads->instance;
-			ferr(in, die, "Error! enum already exists with name %s. ", B.str);
+			fdbfs_ferr(in, die, "Error! enum already exists with name %s. ", B.str);
 			break;
 		}
 		heads->curenumh = allocz(sizeof(struct EnumHead));
@@ -88,7 +91,7 @@ enumelements ::= enumelement.
 enumelement(A) ::= string(B). {
 		A.enumelem = allocz(sizeof(struct EnumElem));
 		A.enumelem->fmtname = B.str;
-		A.enumelem->name = normalise(B.str);
+		A.enumelem->name = fdbfs_normalise(B.str);
 		A.enumelem->value = heads->lastevalue++;
 		if(heads->enumelemhead == NULL) {
 			heads->enumelemhead = A.enumelem;
@@ -112,7 +115,7 @@ allocer(A) ::= . {
 	}
 enumelement(A) ::= string(B) allocer(X) OBRACE subelements CBRACE. {
 		X.enumelem->fmtname = B.str;
-		X.enumelem->name = normalise(B.str);
+		X.enumelem->name = fdbfs_normalise(B.str);
 		X.enumelem->subhead = heads->subelhead;
 		X.enumelem->value = heads->lastevalue++;
 		A.enumelem = X.enumelem;
@@ -121,7 +124,7 @@ enumelement(A) ::= string(B) allocer(X) OBRACE subelements CBRACE. {
 enumelement(A) ::= string(B) AS datatype(C). {
 		A.enumelem = allocz(sizeof(struct EnumElem));
 		A.enumelem->fmtname = B.str;
-		A.enumelem->name = normalise(B.str);
+		A.enumelem->name = fdbfs_normalise(B.str);
 		A.enumelem->other = 1;
 		A.enumelem->othertype = C.num;
 		A.enumelem->value = heads->lastevalue++;
@@ -172,15 +175,15 @@ subelement(A) ::= subelem(B). {
 			struct EnumElem *from;
 			struct EnumSubElem *las;
 			fdbfs_t *in = (fdbfs_t*)heads->instance;
-			from = find_elem_by_name(heads->enumelemhead, B.str);
+			from = fdbfs_find_elem_by_name(heads->enumelemhead, B.str);
 			if(from == NULL) {
 				free(A.subelem);
 				heads->err = 1;
-				ferr(in, die, "parser: ERROR line %%d, char %%d: cannot find element %s", lincnt, chrcnt, (B.str == NULL ? "(null)" : B.str));
+				fdbfs_ferr(in, die, "parser: ERROR line %%d, char %%d: cannot find element %s", fdbfs_lincnt, fdbfs_chrcnt, (B.str == NULL ? "(null)" : B.str));
 				break;
 			}
 			heads->lastsubval--; /* undo what we just did */
-			las = copy_sub_list(from->subhead, A.subelem,
+			las = fdbfs_copy_sub_list(from->subhead, A.subelem,
 				heads->lastenumel, &heads->lastsubval);
 			if(heads->lastsubel != NULL)
 				heads->lastsubel->next = A.subelem;
@@ -275,19 +278,19 @@ catdatatype(A) ::= datatype(B). {
 	}
 catdatatype(A) ::= EN uqstring(B). {
 		A.num = (enum DataType)oenum;
-		A.ehead = find_enumhead_by_name(heads->enumhead, B.str);
+		A.ehead = fdbfs_find_enumhead_by_name(heads->enumhead, B.str);
 		if(A.ehead == NULL) {
 			fdbfs_t *in = (fdbfs_t*)heads->instance;
-			ferr(in, die, "Can't find enum named %s. ", B.str);
+			fdbfs_ferr(in, die, "Can't find enum named %s. ", B.str);
 			break;
 		}
 	}
 catdatatype(A) ::= EN uqstring(B) DOTSUB. {
 		A.num = (enum DataType)oenumsub;
-		A.catelem = find_catelem_by_name(heads->catelemhead, B.str);
+		A.catelem = fdbfs_find_catelem_by_name(heads->catelemhead, B.str);
 		if(A.catelem == NULL || A.catelem->type != oenum) {
 			fdbfs_t *in = (fdbfs_t*)heads->instance;
-			ferr(in, die, "Can't find previous element named %s with type enum. ", B.str);
+			fdbfs_ferr(in, die, "Can't find previous element named %s with type enum. ", B.str);
 			break;
 		}
 	}

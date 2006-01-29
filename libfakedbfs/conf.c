@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.13 2006/01/14 19:03:57 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.14 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -41,11 +41,13 @@
 /* other libraries */
 #include <sqlite3.h>
 
-#include <fdbfsconfig.h>
+#include <fakedbfs/fdbfsconfig.h>
+#include <fakedbfs/conf.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/db.h>
+#include <fakedbfs/debug.h>
 
-#include <fakedbfs.h>
-
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.13 2006/01/14 19:03:57 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.14 2006/01/29 21:03:55 dcp1990 Exp $")
 
 static void conf_node_link_parent(parent, n)
 	confnode_t *parent, *n;
@@ -62,7 +64,7 @@ static void conf_node_link_parent(parent, n)
 	}
 }
 
-confnode_t* conf_node_create(tag, parent, leaf)
+confnode_t* fdbfs_conf_node_create(tag, parent, leaf)
 	char *tag;
 	confnode_t *parent;
 	int leaf;
@@ -84,21 +86,21 @@ confnode_t* conf_node_create(tag, parent, leaf)
 
 /* add function to check if all the MIBs we need are in the DB and add them
  * if we must... */
-int conf_init_db(f)
+static int conf_init_db(f)
 	fdbfs_t *f;
 {
 	int rc;
 	union Data dta;
 
-	if(!table_exists(f, CONFTABLE)) {
-		rc = create_table(f, CONFTABLE, CONFTABLESPEC);
+	if(!fdbfs_db_table_exists(f, CONFTABLE)) {
+		rc = fdbfs_db_create_table(f, CONFTABLE, CONFTABLESPEC);
 		if(!rc)
 			return 0;
 	}
 
 	dta.integer = 1;
 
-	if(!db_mib_add(f, ROOT_NODE_TAG ".plugins.forthpri", boolean, dta))
+	if(!fdbfs_db_mib_add(f, ROOT_NODE_TAG ".plugins.forthpri", boolean, dta))
 		return 0;
 
 	return 1;
@@ -212,7 +214,7 @@ static int conf_connect_to_tree(t, mib, n)
 	return 1;
 }
 
-int conf_add_to_tree(f, mib, type, data, dynamic)
+static int conf_add_to_tree(f, mib, type, data, dynamic)
 	fdbfs_t *f;
 	char *mib;
 	enum DataType type;
@@ -260,14 +262,14 @@ static void conf_destroy_data(c)
 	}
 }
 
-void conf_destroy_tree(t)
+void fdbfs_conf_destroy_tree(t)
 	confnode_t *t;
 {
 	confnode_t *c = t, *nx;
 
 	while(c != NULL) {
 		nx = c->next;
-		conf_destroy_tree(c->child);
+		fdbfs_conf_destroy_tree(c->child);
 		if(c->tag != NULL)
 			free(c->tag);
 
@@ -282,7 +284,7 @@ void conf_destroy_tree(t)
  * This routine is really slow, because in order to attach out new node to the tree,
  * the attachment routine needs to search the entire tree. Unless we use childlast, which we do.
  */
-int conf_read_from_db(f)
+int fdbfs_conf_read_from_db(f)
 	fdbfs_t *f;
 {
 	sqlite3_stmt *cst;
@@ -352,7 +354,7 @@ static void dump_confnode(c)
 	}
 }
 
-enum DataType conf_get(f, mib, data)
+enum DataType fdbfs_conf_get(f, mib, data)
 	fdbfs_t *f;
 	char *mib;
 	union Data *data; /* output */
@@ -374,7 +376,7 @@ enum DataType conf_get(f, mib, data)
 	return tnode->type;
 }
 
-int conf_set(f, mib, type, data) /* this routine is dedicated to Genesis' song "In The Beginning", to which it was written */
+int fdbfs_conf_set(f, mib, type, data) /* this routine is dedicated to Genesis' song "In The Beginning", to which it was written */
 	fdbfs_t *f;
 	char *mib;
 	enum DataType type;
@@ -400,7 +402,7 @@ int conf_set(f, mib, type, data) /* this routine is dedicated to Genesis' song "
 
 	if(tnode == NULL) {
 		conf_add_to_tree(f, mibcpy, type, &data, dynamic);
-		if(!db_mib_add(f, mibcpy, type, data)) {
+		if(!fdbfs_db_mib_add(f, mibcpy, type, data)) {
 			free(mibcpy);
 			return 0;
 		}
@@ -408,7 +410,7 @@ int conf_set(f, mib, type, data) /* this routine is dedicated to Genesis' song "
 		conf_destroy_data(tnode);
 		tnode->data = data;
 		tnode->type = type;
-		if(!db_mib_update(f, mibcpy, type, data)) {
+		if(!fdbfs_db_mib_update(f, mibcpy, type, data)) {
 			free(mibcpy);
 			return 0;
 		}
@@ -419,7 +421,7 @@ int conf_set(f, mib, type, data) /* this routine is dedicated to Genesis' song "
 	return 1;
 }
 
-int conf_init(f)
+int fdbfs_conf_init(f)
 	fdbfs_t *f;
 {
 	f->rconf = allocz(sizeof(confnode_t));
@@ -428,7 +430,7 @@ int conf_init(f)
 	if(!conf_init_db(f))
 		return 0;
 
-	if(!conf_read_from_db(f))
+	if(!fdbfs_conf_read_from_db(f))
 		return 0;
 
 	return 1;

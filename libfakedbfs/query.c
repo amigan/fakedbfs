@@ -28,7 +28,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.38 2006/01/11 01:42:46 dcp1990 Exp $ */
+/**
+ * @file query.c
+ * @brief Query VM and related stuff.
+ *
+ * @sa query.h
+ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.39 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -41,12 +47,13 @@
 /* other libraries */
 #include <sqlite3.h>
 /* us */
-#include <query.h>
+#include <fakedbfs/query.h>
 
-#include <fdbfsconfig.h>
+#include <fakedbfs/fdbfsconfig.h>
 #include "queryparser.h"
-#include <fakedbfs.h>
-#include <fdbfsregex.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/fdbfsregex.h>
+#include <fakedbfs/debug.h>
 
 #ifdef UNIX
 #	include <sys/mman.h>
@@ -55,7 +62,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.38 2006/01/11 01:42:46 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.39 2006/01/29 21:03:55 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -66,7 +73,14 @@ void QParseTrace(FILE *TraceFILE, char *zTracePrompt);
 void *QParseAlloc(void *(*mallocProc)(size_t));
 void QParseFree(void *p, void (*freeProc)(void*));
 
-int init_stack(f, size)
+/**
+ * @brief Initialise the query stack.
+ *
+ * @param f Query to operate on.
+ * @param size Number of elements to allocate.
+ * @retval 1 Normal.
+ */
+static int init_stack(f, size)
 	query_t *f;
 	size_t size;
 {
@@ -78,7 +92,13 @@ int init_stack(f, size)
 	return 1;
 }
 
-int destroy_stack(f)
+/**
+ * @brief Destroy stack.
+ *
+ * @param f Query to operate on.
+ * @retval 1 Normal.
+ */
+static int destroy_stack(f)
 	query_t *f;
 {
 	free(f->stackbase);
@@ -88,7 +108,7 @@ int destroy_stack(f)
 	return 1;
 }
 
-int spush(q, o1, o2, o3, used)
+int fdbfs_query_spush(q, o1, o2, o3, used)
 	query_t *q;
 	int o1;
 	unsigned int o2;
@@ -106,7 +126,7 @@ int spush(q, o1, o2, o3, used)
 	return 1;
 }
 
-int spop(q, bf)
+int fdbfs_query_spop(q, bf)
 	query_t *q;
 	operands_t *bf;
 {
@@ -121,14 +141,14 @@ int spop(q, bf)
 	return 1;
 }
 
-int pop1(q, o1)
+int fdbfs_query_pop1(q, o1)
 	query_t *q;
 	int *o1;
 {
 	operands_t c;
 	int rc;
 
-	rc = spop(q, &c);
+	rc = fdbfs_query_spop(q, &c);
 	if(!rc)
 		return rc;
 
@@ -136,14 +156,14 @@ int pop1(q, o1)
 	return rc;
 }
 
-int pop2(q, o2)
+int fdbfs_query_pop2(q, o2)
 	query_t *q;
 	unsigned int *o2;
 {
 	operands_t c;
 	int rc;
 
-	rc = spop(q, &c);
+	rc = fdbfs_query_spop(q, &c);
 	if(!rc)
 		return rc;
 
@@ -151,14 +171,14 @@ int pop2(q, o2)
 	return rc;
 }
 
-int pop3(q, o3)
+int fdbfs_query_pop3(q, o3)
 	query_t *q;
 	void **o3;
 {
 	operands_t c;
 	int rc;
 
-	rc = spop(q, &c);
+	rc = fdbfs_query_spop(q, &c);
 	if(!rc)
 		return rc;
 
@@ -168,28 +188,28 @@ int pop3(q, o3)
 	return rc;
 }
 
-int push1(q, o1)
+int fdbfs_query_push1(q, o1)
 	query_t *q;
 	int o1;
 {
-	return spush(q, o1, 0x0, NULL, USED_O1);
+	return fdbfs_query_spush(q, o1, 0x0, NULL, USED_O1);
 }
 
-int push2(q, o2)
+int fdbfs_query_push2(q, o2)
 	query_t *q;
 	unsigned int o2;
 {
-	return spush(q, 0x0, o2, NULL, USED_O2);
+	return fdbfs_query_spush(q, 0x0, o2, NULL, USED_O2);
 }
 
-int push3(q, o3)
+int fdbfs_query_push3(q, o3)
 	query_t *q;
 	void *o3;
 {
-	return spush(q, 0x0, 0x0, o3, USED_O3);
+	return fdbfs_query_spush(q, 0x0, 0x0, o3, USED_O3);
 }
 
-query_t* new_query(f, stacksize)
+query_t* fdbfs_query_new(f, stacksize)
 	fdbfs_t *f;
 	size_t stacksize;
 {
@@ -198,13 +218,13 @@ query_t* new_query(f, stacksize)
 	n->f = f;
 	
 	if((n->enumh = f->heads.db_enumh) == NULL) {
-		SCERR(die, "No definition in the fdbfs_t structure. Have you called read_specs_from_db()? ");
+		SCERR(die, "No definition in the fdbfs_t structure. Have you called fdbfs_read_specs_from_db()? ");
 		free(n);
 		return NULL;
 	}
 	
 	if((n->cath = f->heads.db_cath) == NULL) {
-		SCERR(die, "No definition in the fdbfs_t structure. Have you called read_specs_from_db()? ");
+		SCERR(die, "No definition in the fdbfs_t structure. Have you called fdbfs_read_specs_from_db()? ");
 		free(n);
 		return NULL;
 	}
@@ -213,7 +233,7 @@ query_t* new_query(f, stacksize)
 	return n;
 }
 
-qreg_t* qreg_compile(regex, case_insens, errmsg)
+qreg_t* fdbfs_qreg_compile(regex, case_insens, errmsg)
 	char *regex;
 	int case_insens;
 	char **errmsg;
@@ -242,7 +262,7 @@ qreg_t* qreg_compile(regex, case_insens, errmsg)
 	return new;
 }
 
-void regex_func(ctx, i, sqval)
+void fdbfs_db_regex_func(ctx, i, sqval)
 	sqlite3_context *ctx;
 	int i;
 	sqlite3_value **sqval;
@@ -282,7 +302,7 @@ void regex_func(ctx, i, sqval)
 	sqlite3_result_int(ctx, orc);
 }
 
-void qreg_destroy(q)
+void fdbfs_qreg_destroy(q)
 	qreg_t *q;
 {
 	destroy_freg(q->re);
@@ -290,11 +310,16 @@ void qreg_destroy(q)
 	free(q);
 }
 
-void free_inst(e)
+/**
+ * @brief Free instruction.
+ *
+ * @param e Instruction to free.
+ */
+static void free_inst(e)
 	inst_t *e;
 {
 	if(e->opcode == OP_REGEXP)
-		qreg_destroy(e->ops.o3);
+		fdbfs_qreg_destroy(e->ops.o3);
 	else if(e->ops.used & US_DYNA) {
 		free(e->ops.o3);
 	} else if(e->ops.used & US_FILE) {
@@ -307,7 +332,7 @@ void free_inst(e)
 	return;
 }
 
-void destroy_query(q)
+void fdbfs_query_destroy(q)
 	query_t *q;
 {
 	inst_t *c, *next;
@@ -325,7 +350,7 @@ void destroy_query(q)
 	free(q);
 }
 
-int qi(q, opcode, op1, op2, op3, used)
+int fdbfs_query_qi(q, opcode, op1, op2, op3, used)
 	query_t *q;
 	int opcode;
 	int op1;
@@ -354,24 +379,15 @@ int qi(q, opcode, op1, op2, op3, used)
 	return 1;
 }
 
-int qne(q) /* Query Next/Execute */
-	query_t *q;
-{
-	switch(q->exec_state) {
-		case init:
-			return query_init_exec(q);
-			break;
-		case more:
-			return query_step(q);
-			break;
-		case finished:
-			return Q_FINISHED;
-	}
 
-	return Q_UNKNOWNSTATE;
-}
-
-
+/**
+ * @brief Get the column name for the specified column index.
+ *
+ * Analogous to sqlite3_column_name(). For internal use only.
+ * @param q Query to operate on.
+ * @param ind Index of column.
+ * @return Name of column.
+ */
 static const char* q_colname(q, ind)
 	query_t *q;
 	int ind;
@@ -390,7 +406,7 @@ static const char* q_colname(q, ind)
 	return NULL;
 }
 
-int query_step(q) /* a pointer to the head of a fields_t list is pushed to the stack by this. */
+int fdbfs_query_step(q) /* a pointer to the head of a fields_t list is pushed to the stack by this. */
 	query_t *q;
 {
 	unsigned int colcount = 0, i = 0;
@@ -423,7 +439,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 	} else {
 		toret = Q_FDBFS_ERROR;
 		q->exec_state = finished;
-		ferr(q->f, die, "sqlite3_step(): %s", sqlite3_errmsg(q->f->db));
+		fdbfs_ferr(q->f, die, "sqlite3_step(): %s", sqlite3_errmsg(q->f->db));
 		sqlite3_finalize(q->cst); /* useless... */
 		return toret;
 	}
@@ -432,7 +448,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 	if(!q->allcols)
 		for(c = q->insthead; c != NULL; c = c->next) {
 			if(c->opcode == OP_SELCN) {
-				push3(q, c->ops.o3);
+				fdbfs_query_push3(q, c->ops.o3);
 			}
 		}
 
@@ -469,7 +485,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 			n->fieldname = strdup(colname);
 		}
 		if(!q->allcols) {
-			pop3(q, (void**)&pname); /* we're supposed to do something with this */
+			fdbfs_query_pop3(q, (void**)&pname); /* we're supposed to do something with this */
 		}
 		if(special != 3) {
 			if(strcmp(n->fieldname, "file") == 0) {
@@ -485,7 +501,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 				n->fmtname = strdup("MIME Type");
 				special = 1;
 			} else {
-				cel = find_catelem_by_name(q->ourcat->headelem, n->fieldname);
+				cel = fdbfs_find_catelem_by_name(q->ourcat->headelem, n->fieldname);
 				if(cel == NULL) {
 #ifdef QUERY_DEBUG
 					printf("No such element named %s\n", n->fieldname);
@@ -550,7 +566,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 		if(special == 0 && n->type == oenumsub) {
 			/* we better hope that cel is what it should be */
 			if(cel != NULL)
-				n->subhead = get_subhead_by_enval(cel->subcatel->enumptr->headelem, *(unsigned int*)val);
+				n->subhead = fdbfs_get_subhead_by_enval(cel->subcatel->enumptr->headelem, *(unsigned int*)val);
 		}
 
 		if(special == 3) {
@@ -575,7 +591,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 	}
 
 	if(toret == Q_NEXT || toret == Q_FINISHED) {
-		if(!push3(q, h)) {
+		if(!fdbfs_query_push3(q, h)) {
 			toret = Q_STACK_FULL;
 		} /* if the application doesn't know what it's doing, we're fucked once we run out of
 		stack space! Make sure that anyone who uses querying knows this!! */
@@ -584,7 +600,7 @@ int query_step(q) /* a pointer to the head of a fields_t list is pushed to the s
 	return toret;
 }
 
-int query_init_exec(q)
+int fdbfs_query_init_exec(q)
 	query_t *q;
 {
 	inst_t *c;
@@ -626,7 +642,7 @@ int query_init_exec(q)
 				if(!(c->ops.used & USED_O3) || c->ops.o3 == NULL)
 					return Q_INVALID_O3;
 				q->catalogue = strdup((char*)c->ops.o3);
-				q->ourcat = find_cathead_by_name(q->cath, q->catalogue);
+				q->ourcat = fdbfs_find_cathead_by_name(q->cath, q->catalogue);
 				if(q->ourcat == NULL)
 					return Q_NO_SUCH_CAT;
 				query_len += strlen(q->catalogue);
@@ -666,7 +682,7 @@ int query_init_exec(q)
 			case OP_UINT:
 				if(!(c->ops.used & USED_O2))
 					return Q_MISSING_OPERAND;
-				query_len += number_size(c->ops.o2); /* traditional because it's unsigned */
+				query_len += fdbfs_number_size(c->ops.o2); /* traditional because it's unsigned */
 				have_cond = 1;
 				break;
 			case OP_INT:
@@ -889,7 +905,7 @@ int query_init_exec(q)
 #endif
 	ec = sqlite3_prepare(q->f->db, qusql, strlen(qusql), &q->cst, &tail);
 	if(ec != SQLITE_OK) {
-		ferr(q->f, die, "prepare of \"%s\": %s", qusql, sqlite3_errmsg(q->f->db));
+		fdbfs_ferr(q->f, die, "prepare of \"%s\": %s", qusql, sqlite3_errmsg(q->f->db));
 		free(qusql);
 		return Q_FDBFS_ERROR;
 	}
@@ -943,14 +959,31 @@ int query_init_exec(q)
 #endif
 
 	if(ec != SQLITE_OK) {
-		ferr(q->f, die, "bind of index %d (opcode %x): %s", indcounter, c->opcode, sqlite3_errmsg(q->f->db));
+		fdbfs_ferr(q->f, die, "bind of index %d (opcode %x): %s", indcounter, c->opcode, sqlite3_errmsg(q->f->db));
 		return Q_FDBFS_ERROR;
 	}
 	
-	return query_step(q);
+	return fdbfs_query_step(q);
 }
 
-void* read_file(f, fn)
+int fdbfs_query_qne(q) /* Query Next/Execute */
+	query_t *q;
+{
+	switch(q->exec_state) {
+		case init:
+			return fdbfs_query_init_exec(q);
+			break;
+		case more:
+			return fdbfs_query_step(q);
+			break;
+		case finished:
+			return Q_FINISHED;
+	}
+
+	return Q_UNKNOWNSTATE;
+}
+
+void* fdbfs_query_read_file(f, fn)
 	fdbfs_t *f;
 	char *fn;
 {
@@ -987,7 +1020,7 @@ void* read_file(f, fn)
 	return tbf;
 }
 
-int query_parse(q, qstr)
+int fdbfs_query_parse(q, qstr)
 	query_t *q;
 	char *qstr;
 {
@@ -1003,18 +1036,18 @@ int query_parse(q, qstr)
 
 	memset(ctb, 0, sizeof(ctb));
 
-	while((trc = qtok(cptr, &token, &to, ctb)) != 0) {
+	while((trc = fdbfs_query_qtok(cptr, &token, &to, ctb)) != 0) {
 		if(token == SPACE)
 			continue;
 		if(trc == -2) {
-			ferr(q->f, die, "NULL regexp in %s!", qstr);
+			fdbfs_ferr(q->f, die, "NULL regexp in %s!", qstr);
 			QParseFree(pa, free);
 			return 0;
 		}
 		q->yytext = ctb;
 		QParse(pa, token, to, q);
 		if(q->f->error.emsg != NULL || q->error) {
-			cferr(q->f, die, "Query parse of '%s'. ", qstr);
+			fdbfs_cferr(q->f, die, "Query parse of '%s'. ", qstr);
 			QParseFree(pa, free);
 			return 0;
 		}
@@ -1026,7 +1059,7 @@ int query_parse(q, qstr)
 	return 1;
 }
 
-char* query_error(rc)
+const char* fdbfs_query_error(rc)
 	int rc;
 {
 	switch(rc) {

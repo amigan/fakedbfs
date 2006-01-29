@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.24 2005/12/23 20:22:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.25 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -41,11 +41,13 @@
 #endif
 #include "dbspec.h"
 /* us */
-#include <dbspecdata.h>
-#include <lexdefines.h>
-#include <fakedbfs.h>
+#include <fakedbfs/dbspecdata.h>
+#include <fakedbfs/lexdefines.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/plugins.h>
+#include <fakedbfs/fields.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.24 2005/12/23 20:22:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.25 2006/01/29 21:03:55 dcp1990 Exp $")
 
 
 #ifdef NO_CALLOC
@@ -61,7 +63,7 @@ void* allocz(size)
 }
 #endif
 
-struct EnumSubElem* free_enum_sub_elem(e, allsub) /* returns next */
+struct EnumSubElem* fdbfs_free_enum_sub_elem(e, allsub) /* returns next */
 	struct EnumSubElem *e;
 	short int allsub; /* are we intentionally freeing allsubs? */
 {
@@ -89,18 +91,18 @@ struct EnumSubElem* free_enum_sub_elem(e, allsub) /* returns next */
 	return nx;
 }
 
-void free_enum_sub_elem_list(head, allsub)
+void fdbfs_free_enum_sub_elem_list(head, allsub)
 	struct EnumSubElem *head;
 	short int allsub;
 {
 	struct EnumSubElem *c = head;
 
 	while (c != NULL) {
-	    c = free_enum_sub_elem(c, allsub);
+	    c = fdbfs_free_enum_sub_elem(c, allsub);
 	}
 }
 
-struct EnumElem* free_enum_elem(e)
+struct EnumElem* fdbfs_free_enum_elem(e)
 	struct EnumElem *e;
 {
 	struct EnumElem *nx;
@@ -111,45 +113,45 @@ struct EnumElem* free_enum_elem(e)
 		free(e->fmtname);
 	/* } */
 	nx = e->next;
-	free_enum_sub_elem_list(e->subhead, 0);
+	fdbfs_free_enum_sub_elem_list(e->subhead, 0);
 	free(e);
 	return nx;
 }
 
-void free_enum_elem_list(head)
+void fdbfs_free_enum_elem_list(head)
 	struct EnumElem *head;
 {
 	struct EnumElem *c = head;
 	while (c != NULL) {
-		c = free_enum_elem(c);
+		c = fdbfs_free_enum_elem(c);
 	}
 }
 
-struct EnumHead* free_enum_head(e)
+struct EnumHead* fdbfs_free_enum_head(e)
 	struct EnumHead *e;
 {
 	struct EnumHead *nx;
 	free(e->name);
-	free_enum_elem_list(e->headelem);
-	free_enum_sub_elem_list(e->allsubs, 1);
+	fdbfs_free_enum_elem_list(e->headelem);
+	fdbfs_free_enum_sub_elem_list(e->allsubs, 1);
 	nx = e->next;
 	free(e);
 	return nx;
 }
 
-void free_enum_head_list(head)
+void fdbfs_free_enum_head_list(head)
 	struct EnumHead *head;
 {
 	struct EnumHead *c = head;
 	
 	while (c != NULL) {
-		c = free_enum_head(c);
+		c = fdbfs_free_enum_head(c);
 	}
 }
 
 /* catalogues */
 
-struct CatElem* free_cat_elem(e)
+struct CatElem* fdbfs_free_cat_elem(e)
 	struct CatElem *e;
 {
 	struct CatElem *nx;
@@ -164,17 +166,17 @@ struct CatElem* free_cat_elem(e)
 	return nx;
 }
 
-void free_cat_elem_list(head)
+void fdbfs_free_cat_elem_list(head)
 	struct CatElem *head;
 {
 	struct CatElem *c = head;
 
 	while (c != NULL) {
-		c = free_cat_elem(c);
+		c = fdbfs_free_cat_elem(c);
 	}
 }
 
-struct CatalogueHead* free_cat_head(e)
+struct CatalogueHead* fdbfs_free_cat_head(e)
 	struct CatalogueHead *e;
 {
 	struct CatalogueHead *nx;
@@ -184,30 +186,30 @@ struct CatalogueHead* free_cat_head(e)
 		free(e->name);
 		free(e->fmtname);
 	}
-	free_cat_elem_list(e->headelem);
+	fdbfs_free_cat_elem_list(e->headelem);
 	nx = e->next;
 	free(e);
 	return nx;
 }
 
-void free_cat_head_list(head)
+void fdbfs_free_cat_head_list(head)
 	struct CatalogueHead *head;
 {
 	struct CatalogueHead *c = head;
 
 	while (c != NULL) {
-		c = free_cat_head(c);
+		c = fdbfs_free_cat_head(c);
 	}
 }
 
-void free_head_members(hd) /* only the heads contained within, not the structure itself */
+void fdbfs_free_head_members(hd) /* only the heads contained within, not the structure itself */
 	Heads *hd;
 {
-	free_cat_head_list(hd->cathead);
-	free_enum_head_list(hd->enumhead);
+	fdbfs_free_cat_head_list(hd->cathead);
+	fdbfs_free_enum_head_list(hd->enumhead);
 }
 
-struct Plugin* destroy_plugin(e)
+static struct Plugin* destroy_plugin(e)
 	struct Plugin *e;
 {
 	struct Plugin *nx;
@@ -221,7 +223,7 @@ struct Plugin* destroy_plugin(e)
 	return nx;
 }
 
-void destroy_plugin_list(h)
+void fdbfs_free_plugin_list(h)
 	struct Plugin *h;
 {
 	struct Plugin *c = h;
@@ -230,7 +232,7 @@ void destroy_plugin_list(h)
 	}
 }
 
-void estr_free(e)
+void fdbfs_estr_free(e)
 	error_t *e;
 {
 	if(e->emsg == NULL) return;
@@ -238,7 +240,7 @@ void estr_free(e)
 	e->emsg = NULL;
 }
 
-fields_t* free_field(e)
+fields_t* fdbfs_free_field(e)
 	fields_t *e;
 {
 	fields_t *nx;
@@ -260,17 +262,17 @@ fields_t* free_field(e)
 	return nx;
 }
 
-void free_field_list(h)
+void fdbfs_free_field_list(h)
 	fields_t *h;
 {
 	fields_t *c = h;
 
 	while (c != NULL) {
-		c = free_field(c);
+		c = fdbfs_free_field(c);
 	}
 }
 
-char* strdupq(s)
+char* fdbfs_strdupq(s)
 	char *s;
 {
 	/* I am indebted to FreeBSD's /usr/src/lib/libc/string/strdup.c */
@@ -291,7 +293,7 @@ char* strdupq(s)
         return (copy); 
 }
 
-void free_answer_t(e)
+void fdbfs_free_answer_t(e)
 	answer_t *e;
 {
 	if(e->ad.string != NULL)
@@ -301,7 +303,7 @@ void free_answer_t(e)
 	free(e);
 }
 
-char *fstrdup(str)
+char *fdbfs_fstrdup(str)
 	const char *str;
 {
 	return strdup(str);

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fedit/commands.c,v 1.5 2005/12/30 01:52:17 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fedit/commands.c,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -37,9 +37,9 @@
 #include <errno.h>
 #include <signal.h>
 
-#include <fakedbfsapps.h>
-#include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.5 2005/12/30 01:52:17 dcp1990 Exp $")
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/fakedbfsapps.h>
+RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $")
 
 #define COMMFLAG_MIN	0x1 /* at least this many args */
 #define COMMFLAG_MAX	0x2 /* at most this many args */
@@ -133,7 +133,7 @@ int exec_command(cm, argc, argv)
 	switch(cm) {
 		case REMOVE_CAT:
 			for(i = 1; i < argc; i++) {
-				if(!rm_catalogue(f, argv[i])) {
+				if(!fdbfs_db_rm_catalogue(f, argv[i])) {
 					fprintf(stderr, "error removing catalogue '%s': %s\n", argv[i], f->error.emsg);
 					return 0;
 				}

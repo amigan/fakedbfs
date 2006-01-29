@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.11 2005/09/06 07:27:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.12 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -35,13 +35,13 @@
 #include <string.h>
 #include <getopt.h>
 
-#include <fakedbfs.h>
-#include <fakedbfsapps.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/fakedbfsapps.h>
 
 #define ARGSPEC "vhad:"
 #define FCREATEVER "0.1"
 
-RCSID("$Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.11 2005/09/06 07:27:22 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fcreatedb/fcreatedb.c,v 1.12 2006/01/29 21:03:55 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int append = 0;
@@ -116,7 +116,7 @@ int main(argc, argv)
 			asprintf(&dbf, "%s/.fakedbfsdb", getenv("HOME"));
 	}
 	
-	f = new_fdbfs(dbf, &estr, DEBUGFUNC_STDERR, 0);
+	f = fdbfs_new(dbf, &estr, DEBUGFUNC_STDERR, 0);
 	if(f == NULL) {
 		fprintf(stderr, "error creating fdbfs instance: %s\n", estr);
 		free(dbf);
@@ -125,21 +125,21 @@ int main(argc, argv)
 		return -1;
 	}
 	if(!append)
-		if(!start_db(f)) {
+		if(!fdbfs_db_start(f)) {
 			fprintf(stderr, "starting DB: %s\n", f->error.emsg);
-			estr_free(&f->error);
+			fdbfs_estr_free(&f->error);
 			free(dbf);
-			destroy_fdbfs(f);
+			fdbfs_destroy(f);
 			free(specf);
 			return -1;
 		}
 
 	printf("Reading specfile %s...\n", specf);
 
-	if(!parse_definition(f, specf)) {
+	if(!fdbfs_dbspec_parse(f, specf)) {
 		fprintf(stderr, "Error parsing: %s\n", f->error.emsg);
-		estr_free(&f->error);
-		destroy_fdbfs(f);
+		fdbfs_estr_free(&f->error);
+		fdbfs_destroy(f);
 		free(dbf);
 		free(specf);
 		return -1;
@@ -147,7 +147,7 @@ int main(argc, argv)
 
 	printf("Database updated.\n");
 
-	destroy_fdbfs(f);
+	fdbfs_destroy(f);
 	free(dbf);
 	free(specf);
 

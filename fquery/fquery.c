@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fquery/fquery.c,v 1.11 2005/11/27 02:51:25 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fquery/fquery.c,v 1.12 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -37,7 +37,6 @@
 #include <errno.h>
 #include <signal.h>
 
-#include <fakedbfsapps.h>
 
 #ifdef UNIX
 #include <sys/types.h>
@@ -48,9 +47,10 @@
 #define FQUERYVER "0.1"
 #define MAXPLEN 1023
 
-#include <fakedbfs.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/fakedbfsapps.h>
 
-RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.11 2005/11/27 02:51:25 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.12 2006/01/29 21:03:55 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
@@ -118,7 +118,7 @@ int print_fields(h)
 				printf("%s (%d)", tbf, *(int*)c->val);
 				break;
 			case oenum:
-				printf("%s (%d)", get_enum_string_by_value(c->ehead->headelem, *(int*)c->val, 1), *(int*)c->val);
+				printf("%s (%d)", fdbfs_get_enum_string_by_value(c->ehead->headelem, *(int*)c->val, 1), *(int*)c->val);
 				break;
 			/* TODO: handle oenumsub */
 			default:
@@ -187,7 +187,7 @@ int main(argc, argv)
 			asprintf(&dbf, "%s/.fakedbfsdb", getenv("HOME"));
 	}
 
-	f = new_fdbfs(dbf, &estr, DEBUGFUNC_STDERR, 1);
+	f = fdbfs_new(dbf, &estr, DEBUGFUNC_STDERR, 1);
 	if(f == NULL) {
 		fprintf(stderr, "error creating fdbfs instance: %s\n", estr);
 		free(dbf);
@@ -195,60 +195,60 @@ int main(argc, argv)
 		return -1;
 	}
 
-	if(!read_specs_from_db(f)) {
+	if(!fdbfs_read_specs_from_db(f)) {
 		fprintf(stderr, "error reading specs from db: %s\n", f->error.emsg);
-		estr_free(&f->error);
+		fdbfs_estr_free(&f->error);
 		free(dbf);
-		destroy_fdbfs(f);
+		fdbfs_destroy(f);
 		return -1;
 	}
 
 	
 	cf = strdup(*argv);
 
-	q = new_query(f, 0x0 /* default */);
+	q = fdbfs_query_new(f, 0x0 /* default */);
 	if(q == NULL) {
 		fprintf(stderr, "error creating query: %s\n", f->error.emsg);
-		estr_free(&f->error);
+		fdbfs_estr_free(&f->error);
 		free(dbf);
 		free(cf);
-		destroy_fdbfs(f);
+		fdbfs_destroy(f);
 		return 1;
 	}
 
-	if(!query_parse(q, cf)) {
+	if(!fdbfs_query_parse(q, cf)) {
 		fprintf(stderr, "error compiling query: %s\n", f->error.emsg);
-		estr_free(&f->error);
+		fdbfs_estr_free(&f->error);
 		free(dbf);
 		free(cf);
-		destroy_query(q);
-		destroy_fdbfs(f);
+		fdbfs_query_destroy(q);
+		fdbfs_destroy(f);
 		return 1;
 	}
 
-	while((rc = qne(q)) == Q_NEXT) {
-		pop3(q, (void*)&ch); /* we don't care if US_DYNA is returned; we know it will be */
+	while((rc = fdbfs_query_qne(q)) == Q_NEXT) {
+		fdbfs_query_pop3(q, (void*)&ch); /* we don't care if US_DYNA is returned; we know it will be */
 		if(full)
 			print_fields(ch);
 		else
 			print_name(ch);
-		free_field_list(ch);
+		fdbfs_free_field_list(ch);
 	}
 
 	if(rc == Q_FDBFS_ERROR) {
 		fprintf(stderr, "error stepping: %s\n", f->error.emsg);
-		estr_free(&f->error);
+		fdbfs_estr_free(&f->error);
 		trc = -2;
 	} else if(rc != Q_FINISHED) {
-		fprintf(stderr, "query execution error: %s\n", query_error(rc));
+		fprintf(stderr, "query execution error: %s\n", fdbfs_query_error(rc));
 		trc = -3;
 	} else {
 		if(full)
 			printf("--END--\n");
 	}
 
-	destroy_query(q);
-	destroy_fdbfs(f);
+	fdbfs_query_destroy(q);
+	fdbfs_destroy(f);
 	free(dbf);
 	free(cf);
 

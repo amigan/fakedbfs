@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.29 2006/01/28 22:35:23 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.30 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -37,34 +37,37 @@
 /* other libraries */
 #include <sqlite3.h>
 /* us */
-#include <fdbfsconfig.h>
-#include <fakedbfs.h>
+#include <fakedbfs/fdbfsconfig.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/db.h>
+#include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.29 2006/01/28 22:35:23 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.30 2006/01/29 21:03:55 dcp1990 Exp $")
 
 
-int db_busy_handler(data, prior)
+/**
+ * @brief Handle busy conditions in the sqlite database. (internal)
+ */
+int fdbfs_db_busy_handler(data, prior)
 	void *data;
 	int prior;
 {
 	fdbfs_t *f = (fdbfs_t *)data;
 
-	debug_info(f, error, "SQLite error: BUSY (%d prior calls)\n", prior);
+	fdbfs_debug_info(f, error, "SQLite error: BUSY (%d prior calls)\n", prior);
 	if(prior < BUSY_RETRIES) {
-		debug_info(f, warning, "Sleeping for 1 second...\n");
+		fdbfs_debug_info(f, warning, "Sleeping for 1 second...\n");
 		sleep(1);
 		return 0;
 	} else {
-		debug_info(f, error, "Aborting query!\n");
+		fdbfs_debug_info(f, error, "Aborting query!\n");
 		return 1;
 	}
 
 	return 2;
 }
 
-
-
-int open_db(f)
+int fdbfs_db_open(f)
 	fdbfs_t *f;
 {
 	int rc;
@@ -73,16 +76,16 @@ int open_db(f)
 		return ERR(die, "open_db: error opening database: %s", sqlite3_errmsg(f->db));
 	}
 
-	sqlite3_busy_handler(f->db, db_busy_handler, f);
+	sqlite3_busy_handler(f->db, fdbfs_db_busy_handler, f);
 
-	rc = sqlite3_create_function(f->db, "regexp", 2, SQLITE_ANY /* not exactly true... */, (void*)f, regex_func, NULL, NULL);
+	rc = sqlite3_create_function(f->db, "regexp", 2, SQLITE_ANY /* not exactly true... */, (void*)f, fdbfs_db_regex_func, NULL, NULL);
 	if(rc != SQLITE_OK) {
 		return ERR(die, "open_db: error creating regexp function: %s", sqlite3_errmsg(f->db));
 	}
 	return 1;
 }
 
-int close_db(f)
+int fdbfs_db_close(f)
 	fdbfs_t *f;
 {
 	int rc;
@@ -92,7 +95,7 @@ int close_db(f)
 	return 1;
 }
 
-int table_exists(f, tname)
+int fdbfs_db_table_exists(f, tname)
 	fdbfs_t *f;
 	char *tname;
 {
@@ -121,7 +124,7 @@ int table_exists(f, tname)
 	return 0;
 }
 
-int cat_exists(f, cat)
+int fdbfs_db_cat_exists(f, cat)
 	fdbfs_t *f;
 	char *cat;
 {
@@ -152,8 +155,7 @@ int cat_exists(f, cat)
 	return num;
 }
 
-
-int create_table(f, tname, tspec)
+int fdbfs_db_create_table(f, tname, tspec)
 	fdbfs_t *f;
 	char *tname;
 	char *tspec;
@@ -171,8 +173,7 @@ int create_table(f, tname, tspec)
 	return 1;
 }
 
-
-const char* gettype(t)
+const char* fdbfs_db_gettype(t)
 	enum DataType t;
 {
 	/* make sure you know what you're doing; we have defaults here */
@@ -200,7 +201,12 @@ const char* gettype(t)
 	return " BLOB";
 }
 
-const char* getcoltype(t)
+/**
+ * @brief Get the column type.
+ *
+ * getcoltype() returns a database-specific type string only for the four basic SQLite types.
+ */
+static const char* getcoltype(t)
 	coltype_t t;
 {
 	switch(t) {
@@ -217,7 +223,7 @@ const char* getcoltype(t)
 	return "BLOB";
 }
 
-int add_column(f, tname, cname, datatype)
+int fdbfs_db_add_column(f, tname, cname, datatype)
 	fdbfs_t *f;
 	char *tname;
 	char *cname;
@@ -237,7 +243,7 @@ int add_column(f, tname, cname, datatype)
 	return 1;
 }
 
-int del_column(f, tname, cname)
+int fdbfs_db_del_column(f, tname, cname)
 	fdbfs_t *f;
 	char *tname;
 	char *cname;
@@ -248,7 +254,7 @@ int del_column(f, tname, cname)
 	return 1;
 }
 
-int add_to_enum_list_table(f, name, tname, specf)
+int fdbfs_db_add_to_enum_list_table(f, name, tname, specf)
 	fdbfs_t *f;
 	char *name;
 	char *tname;
@@ -270,7 +276,7 @@ int add_to_enum_list_table(f, name, tname, specf)
 	return 1;
 }
 
-int add_to_cat_list_table(f, name, alias, tablename, fieldtable, specf)
+int fdbfs_db_add_to_cat_list_table(f, name, alias, tablename, fieldtable, specf)
 	fdbfs_t *f;
 	char *name;
 	char *alias;
@@ -294,7 +300,7 @@ int add_to_cat_list_table(f, name, alias, tablename, fieldtable, specf)
 	return 1;
 }
 
-int add_to_field_desc(f, tablename, name, alias, type, typen)
+int fdbfs_db_add_to_field_desc(f, tablename, name, alias, type, typen)
 	fdbfs_t *f;
 	char *tablename;
 	char *name;
@@ -329,7 +335,7 @@ int add_to_field_desc(f, tablename, name, alias, type, typen)
 	return 1;
 }
 
-int db_delete(f, from, wherecol, wherecmp, whereval)
+int fdbfs_db_delete(f, from, wherecol, wherecmp, whereval)
 	fdbfs_t *f;
 	char *from;
 	char *wherecol;
@@ -350,7 +356,7 @@ int db_delete(f, from, wherecol, wherecmp, whereval)
 	return 1;
 }
 
-int drop_table(f, tablename)
+int fdbfs_db_drop_table(f, tablename)
 	fdbfs_t *f;
 	char *tablename;
 {
@@ -367,8 +373,7 @@ int drop_table(f, tablename)
 	return 1;
 }
 
-	
-int add_enum_elem(f, tname, name, fmtname, value, dtype, subelements)
+int fdbfs_db_add_enum_elem(f, tname, name, fmtname, value, dtype, subelements)
 	fdbfs_t *f;
 	char *tname;
 	char *name;
@@ -411,7 +416,7 @@ int add_enum_elem(f, tname, name, fmtname, value, dtype, subelements)
 	return 1;
 }
 
-int bind_field(f, count, type, value, len, stmt)
+int fdbfs_db_bind_field(f, count, type, value, len, stmt)
 	fdbfs_t *f;
 	int *count;
 	enum DataType type;
@@ -479,7 +484,7 @@ int bind_field(f, count, type, value, len, stmt)
 	return 1;
 }
 
-int get_lastupdate(f, cat, filename)
+int fdbfs_db_get_lastupdate(f, cat, filename)
 	fdbfs_t *f;
 	char *cat;
 	char *filename;
@@ -520,7 +525,7 @@ int get_lastupdate(f, cat, filename)
 	return lu;
 }
 
-int db_mib_add(f, mib, type, data)
+int fdbfs_db_mib_add(f, mib, type, data)
 	fdbfs_t *f;
 	char *mib;
 	enum DataType type;
@@ -591,7 +596,7 @@ int db_mib_add(f, mib, type, data)
 	return 1;
 }
 
-int db_mib_update(f, mib, type, data)
+int fdbfs_db_mib_update(f, mib, type, data)
 	fdbfs_t *f;
 	char *mib;
 	enum DataType type;

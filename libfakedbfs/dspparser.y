@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.5 2005/11/28 00:46:53 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $ */
 %name {DSPParse}
 %include {
 #include <sqlite3.h>
@@ -41,15 +41,18 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #endif
-#include <fakedbfs.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.5 2005/11/28 00:46:53 dcp1990 Exp $")
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/debug.h>
+#include <fakedbfs/dbspecdata.h>
+#include <fakedbfs/fields.h>
+RCSID("$Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $")
 }
 %token_type {Toke}
 %nonassoc ILLEGAL SPACE.
 %nonassoc ENUM ENSUB COMMA UINT.
 %extra_argument {dspdata_t *d}
 %syntax_error {
-	ferr(d->f, die, "Defspec Syntax error near '%s'", d->yytext);
+	fdbfs_ferr(d->f, die, "Defspec Syntax error near '%s'", d->yytext);
 	d->error++;
 	return;
 }
@@ -61,8 +64,8 @@ assignment ::= lvalue ASSIGN rvalue.
 
 lvalue ::= UQSTRING(B). {
 	struct CatElem *ce;
-	if((ce = find_catelem_by_name(d->cat->headelem, B.str)) == NULL) {
-		ferr(d->f, die, "No such element %s in catalogue", B.str);
+	if((ce = fdbfs_find_catelem_by_name(d->cat->headelem, B.str)) == NULL) {
+		fdbfs_ferr(d->f, die, "No such element %s in catalogue", B.str);
 		d->error = 1;
 		free(B.str); /* this causes problems. */
 		break;
@@ -79,7 +82,7 @@ lvalue ::= UQSTRING(B). {
 		d->cf->othtype = ce->enumptr->otherelem->othertype;
 	} else if(d->cf->type == oenumsub) {
 		d->cf->ehead = ce->subcatel->enumptr;
-		d->cf->subparent = find_field_by_ehead(d->fhead, d->cf->ehead);
+		d->cf->subparent = fdbfs_find_field_by_ehead(d->fhead, d->cf->ehead);
 		/* handle subelements */
 	}
 	if(d->lastf != NULL) {
@@ -93,7 +96,7 @@ lvalue ::= UQSTRING(B). {
 
 rvalue ::= SINT(A). {
 	if(d->cf->type != number && d->cf->type != datime /* for now */) {
-		ferr(d->f, die, "Type of field '%s' is not number!", d->cf->fieldname);
+		fdbfs_ferr(d->f, die, "Type of field '%s' is not number!", d->cf->fieldname);
 		break;
 	}
 	d->cf->val = malloc(sizeof(int));
@@ -102,7 +105,7 @@ rvalue ::= SINT(A). {
 
 rvalue ::= STRING(A). {
 	if(d->cf->type != string) {
-		ferr(d->f, die, "Type of field '%s' is not string!", d->cf->fieldname);
+		fdbfs_ferr(d->f, die, "Type of field '%s' is not string!", d->cf->fieldname);
 		free(A.str);
 		break;
 	}
@@ -111,7 +114,7 @@ rvalue ::= STRING(A). {
 
 rvalue ::= FLOAT(A). {
 	if(d->cf->type != real) {
-		ferr(d->f, die, "Type of field '%s' is not float!", d->cf->fieldname);
+		fdbfs_ferr(d->f, die, "Type of field '%s' is not float!", d->cf->fieldname);
 		free(A.flt);
 		break;
 	}
@@ -120,7 +123,7 @@ rvalue ::= FLOAT(A). {
 
 rvalue ::= boolean(A). {
 	if(d->cf->type != boolean && d->cf->type != number) {
-		ferr(d->f, die, "Type of field '%s' is not boolean or number!", d->cf->fieldname);
+		fdbfs_ferr(d->f, die, "Type of field '%s' is not boolean or number!", d->cf->fieldname);
 		break;
 	}
 	d->cf->val = malloc(sizeof(int));
@@ -134,27 +137,27 @@ rvalue ::= bintype OPAREN STRING(A) CPAREN. {
 	struct stat sst;
 #endif
 	if(d->cf->type != binary && d->cf->type != image) {
-		ferr(d->f, die, "Type of field '%s' is not binary or image!", d->cf->fieldname);
+		fdbfs_ferr(d->f, die, "Type of field '%s' is not binary or image!", d->cf->fieldname);
 		free(A.str);
 		break;
 	}
 #ifdef HAVE_MMAP
 	fd = open(fn, O_RDONLY);
 	if(fd < 0) {
-		ferr(d->f, die, "Error opening %s: %s", fn, strerror(errno));
+		fdbfs_ferr(d->f, die, "Error opening %s: %s", fn, strerror(errno));
 		free(fn);
 		break;
 	}
 
 	if((rc = fstat(fd, &sst)) == -1) {
-		ferr(d->f, die, "Couldn't stat fd: %s", strerror(errno));
+		fdbfs_ferr(d->f, die, "Couldn't stat fd: %s", strerror(errno));
 		free(fn);
 		close(fd);
 		break;
 	}
 
 	if((d->cf->val = mmap(NULL, sst.st_size, PROT_READ, 0, fd, 0)) == MAP_FAILED) {
-		ferr(d->f, die, "Couldn't mmap: %s", strerror(errno));
+		fdbfs_ferr(d->f, die, "Couldn't mmap: %s", strerror(errno));
 		d->cf->val = NULL;
 		free(fn);
 		close(fd);
@@ -166,7 +169,7 @@ rvalue ::= bintype OPAREN STRING(A) CPAREN. {
 	close(fd);
 	free(fn);
 #else
-	ferr(d->f, die, "Error opening %s: feature not implemented on this OS", fn);
+	fdbfs_ferr(d->f, die, "Error opening %s: feature not implemented on this OS", fn);
 	free(A.str);
 	break;
 #endif

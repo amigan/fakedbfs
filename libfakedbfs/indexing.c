@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.48 2005/12/31 19:25:03 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.49 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -46,12 +46,18 @@
 /* other libraries */
 #include <sqlite3.h>
 /* us */
-#include <fdbfsregex.h>
-#include <fakedbfs.h>
+#include <fakedbfs/fdbfsregex.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/plugins.h>
+#include <fakedbfs/debug.h>
+#include <fakedbfs/db.h>
+#include <fakedbfs/dbspecdata.h>
+#include <fakedbfs/fields.h>
+#include <fakedbfs/indexing.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.48 2005/12/31 19:25:03 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.49 2006/01/29 21:03:55 dcp1990 Exp $")
 
-int add_file(f, file, catalogue, fields)
+static int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
 	char *file;
 	char *catalogue;
@@ -128,7 +134,7 @@ int add_file(f, file, catalogue, fields)
 #ifdef INDEX_SQL_DEBUG
 		printf("binding field '%s' val ", c->fieldname);
 #endif
-		if(!bind_field(f, &fieldcount, c->type, c->val, c->len, stmt))
+		if(!fdbfs_db_bind_field(f, &fieldcount, c->type, c->val, c->len, stmt))
 			return CERR(die, "add_file(\"%s\"): bind error. ", file);
 	}
 
@@ -142,7 +148,7 @@ int add_file(f, file, catalogue, fields)
 	return 1;
 }
 
-fields_t* fill_in_fields(f, filename)
+static fields_t* fill_in_fields(f, filename)
 	fdbfs_t *f;
 	char *filename;
 {
@@ -197,7 +203,7 @@ fields_t* fill_in_fields(f, filename)
 
 	if(!found) {
 #ifdef PLUGINS_VERBOSE
-		debug_info(f, error, "cannot find plugin to extract metadata for %s!", filename);
+		fdbfs_debug_info(f, error, "cannot find plugin to extract metadata for %s!", filename);
 #endif
 		return NULL;
 	}
@@ -212,7 +218,7 @@ fields_t* fill_in_fields(f, filename)
 	return fh;
 }
 
-void list_subenum(h)
+static void list_subenum(h)
 	struct EnumSubElem *h;
 {
 	struct EnumSubElem *c;
@@ -231,7 +237,7 @@ void list_subenum(h)
 	}
 }
 
-void list_enum(h)
+static void list_enum(h)
 	struct EnumHead *h;
 {
 	struct EnumElem *c;
@@ -248,7 +254,7 @@ void list_enum(h)
 	}
 }
 
-answer_t* askfunc_std(buf, def, fieldname, name, filen, dt, ehead, subhead)
+answer_t* fdbfs_askfunc_std(buf, def, fieldname, name, filen, dt, ehead, subhead)
 	answer_t *buf;
 	answer_t *def;
 	char *fieldname;
@@ -278,10 +284,10 @@ checkagain:
 			printf("%s [%s]> ", fieldname, (def->ad.integer ? "true" : "false"));
 			break;
 		case oenum:
-			printf("%s [%d - '%s'] (? lists)> ", fieldname, def->ad.integer, get_enum_string_by_value(ehead->headelem, def->ad.integer, 1));
+			printf("%s [%d - '%s'] (? lists)> ", fieldname, def->ad.integer, fdbfs_get_enum_string_by_value(ehead->headelem, def->ad.integer, 1));
 			break;
 		case oenumsub:
-			es =  get_enum_sub_string_by_value(subhead, def->ad.integer);
+			es =  fdbfs_get_enum_sub_string_by_value(subhead, def->ad.integer);
 			if(es == NULL)
 				return (answer_t*)0x1;
 			printf("%s sub [%d - '%s'] (? lists)> ", fieldname, def->ad.integer, es);
@@ -347,7 +353,7 @@ checkagain:
 	return buf;
 }
 
-fields_t* find_field_by_name(h, name)
+fields_t* fdbfs_find_field_by_name(h, name)
 	fields_t *h;
 	char *name;
 {
@@ -381,7 +387,7 @@ fields_t* find_field_by_name(h, name)
  * This is for apps that might want to fashion a dialogue during asking. Or we could just use a flag in the
  * fdbfs_t* that tells us whether to do this or not :).
  */
-fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely inefficient
+static fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely inefficient
 					  ....I think. But it sure as hell
 					 isn't the worst. */
 	fdbfs_t *f;
@@ -504,7 +510,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 			}
 
 			if(c->type == oenumsub) {
-				c->subhead = get_subhead_by_enval(c->subparent->ehead->headelem, *(unsigned int*)c->subparent->val);
+				c->subhead = fdbfs_get_subhead_by_enval(c->subparent->ehead->headelem, *(unsigned int*)c->subparent->val);
 			}
 
 			cans = f->askfieldfunc(&cta, &def, c->fmtname, c->fieldname, filen, def.dt, c->ehead, c->subhead);
@@ -581,7 +587,7 @@ fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremely ineff
 }
 
 
-fields_t* find_field_by_ehead(h, e)
+fields_t* fdbfs_find_field_by_ehead(h, e)
 	fields_t *h;
 	struct EnumHead *e;
 {
@@ -595,7 +601,7 @@ fields_t* find_field_by_ehead(h, e)
 	return NULL;
 }
 
-fields_t* find_field_by_ename(h, e)
+fields_t* fdbfs_find_field_by_ename(h, e)
 	fields_t *h;
 	char *e;
 {
@@ -610,7 +616,7 @@ fields_t* find_field_by_ename(h, e)
 	return NULL;
 }
 
-int complete_fields_from_db(f, cat, h)
+static int complete_fields_from_db(f, cat, h)
 	fdbfs_t *f;
 	char *cat;
 	fields_t **h;
@@ -645,7 +651,7 @@ int complete_fields_from_db(f, cat, h)
 	}
 
 	for(cc = ch; cc != NULL; cc = cc->next) {
-		c = find_field_by_name(*h, cc->name);
+		c = fdbfs_find_field_by_name(*h, cc->name);
 		if(c == NULL) {
 			new = allocz(sizeof(*new));
 			new->fieldname = strdup(cc->name);
@@ -670,7 +676,7 @@ int complete_fields_from_db(f, cat, h)
 			}
 			if(new->type == oenumsub) {
 				new->ehead = cc->subcatel->enumptr;
-				new->subparent = find_field_by_ehead(*h, new->ehead);
+				new->subparent = fdbfs_find_field_by_ehead(*h, new->ehead);
 				/* new->subhead = cc->subcatel->enumptr->headelem->subhead; */
 			}
 			if(last != NULL) {
@@ -704,7 +710,53 @@ static void erase_fields(h, fields, oh)
 		}
 }
 
-int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
+static int file_has_changed(f, cat, filename, statstruct)
+	fdbfs_t *f;
+	char *cat;
+	char *filename;
+	void *statstruct; /* we cast later; this is for portability */
+{
+#if defined(UNIX)
+	struct stat s;
+#endif
+	int rc;
+	time_t upd; /* time_t must be signed!!!!! */
+	
+	upd = (time_t)fdbfs_db_get_lastupdate(f, cat, filename);
+
+	if(upd == -1) { /*error*/
+		SCERR(die, "get_lastupdate errored. ");
+		return -1;
+	} else if(upd == -2) {
+		return 1;
+	}
+#if defined(UNIX)
+	if(statstruct == NULL) {
+		rc = stat(filename, &s);
+		if(rc == -1) {
+			ERR(die, "stat failed: %s", strerror(errno));
+			return -1;
+		}
+	} else {
+		memcpy(&s, statstruct, sizeof(s));
+	}
+
+	if(S_ISDIR(s.st_mode)) {
+		return -2; /* a directory */
+	}
+
+	if(s.st_mtime > upd)
+		return 1;
+	else
+		return 0;
+#else
+#	error "No code to stat for mtime under this OS"
+#endif
+
+	return 0;
+}
+
+int fdbfs_index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 	fdbfs_t *f;
 	char *filename;
 	char *cat;
@@ -731,10 +783,10 @@ int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 			if(!forceupdate)
 				return 1;
 		} else if(rc == -2) { /* is a directory */
-			debug_info(f, warning, "in index_file: %s is a directory", filename);
+			fdbfs_debug_info(f, warning, "in index_file: %s is a directory", filename);
 		} else if(rc == -1) { /* hack alert */
-			debug_info(f, warning, "error checking if %s changed: %s", filename, f->error.emsg);
-			estr_free(&f->error);
+			fdbfs_debug_info(f, warning, "error checking if %s changed: %s", filename, f->error.emsg);
+			fdbfs_estr_free(&f->error);
 		}
 	}
 
@@ -773,7 +825,7 @@ int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 		if(!rc) {
 			SCERR(die, "complete fields failed. ");
 			erase_fields(&h, fields, oh);
-			free_field_list(h);
+			fdbfs_free_field_list(h);
 			return 0;
 		}
 
@@ -784,65 +836,19 @@ int index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 	if(!rc) {
 		CERR(die, "error indexing file %s. ", filename);
 		erase_fields(&h, fields, oh);
-		free_field_list(h);
+		fdbfs_free_field_list(h);
 		return 0;
 	}
 	
 	erase_fields(&h, fields, oh);
-	free_field_list(h);
+	fdbfs_free_field_list(h);
 
 	return 1;
 }
 
-int file_has_changed(f, cat, filename, statstruct)
-	fdbfs_t *f;
-	char *cat;
-	char *filename;
-	void *statstruct; /* we cast later; this is for portability */
-{
-#if defined(UNIX)
-	struct stat s;
-#endif
-	int rc;
-	time_t upd; /* time_t must be signed!!!!! */
-	
-	upd = (time_t)get_lastupdate(f, cat, filename);
-
-	if(upd == -1) { /*error*/
-		SCERR(die, "get_lastupdate errored. ");
-		return -1;
-	} else if(upd == -2) {
-		return 1;
-	}
-#if defined(UNIX)
-	if(statstruct == NULL) {
-		rc = stat(filename, &s);
-		if(rc == -1) {
-			ERR(die, "stat failed: %s", strerror(errno));
-			return -1;
-		}
-	} else {
-		memcpy(&s, statstruct, sizeof(s));
-	}
-
-	if(S_ISDIR(s.st_mode)) {
-		return -2; /* a directory */
-	}
-
-	if(s.st_mtime > upd)
-		return 1;
-	else
-		return 0;
-#else
-#	error "No code to stat for mtime under this OS"
-#endif
-
-	return 0;
-}
-
 #if defined(UNIX)
 /* all FTS stuff was heavily inspired by FreeBSD's /usr/src/bin/ls/ls.c */
-int cindexer_dir(f, cat, batch, useplugs, list, options, re, defs) /* this has no prototype in fakedbfs.h; it's less ugly this way. */
+int fdbfs_cindexer_dir(f, cat, batch, useplugs, list, options, re, defs) /* this has no prototype in fakedbfs.h; it's less ugly this way. */
 		fdbfs_t *f;
 		char *cat;
 		int batch;
@@ -858,7 +864,7 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re, defs) /* this has n
 
 	for(c = list; c; c = c->fts_link) {
 		if(c->fts_info == FTS_ERR || c->fts_info == FTS_NS) {
-			debug_info(f, error, "error %s: %s", c->fts_name, strerror(c->fts_errno));
+			fdbfs_debug_info(f, error, "error %s: %s", c->fts_name, strerror(c->fts_errno));
 			c->fts_number = 1;
 			continue;
 		}
@@ -889,14 +895,14 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re, defs) /* this has n
 				free(fpth);
 				continue;
 			} else if(rc == 1) {
-				index_file(f, fpth, cat, batch, useplugs, 2, defs);
+				fdbfs_index_file(f, fpth, cat, batch, useplugs, 2, defs);
 				free(fpth);
 			} else if(rc == -2) { /* is a directory */
 				/* this does nothing; all directories are handled by index_dir() */
 				free(fpth);
 			} else if(rc == -1) { /* hack alert */
-				debug_info(f, warning, "error checking if %s changed: %s", fpth, f->error.emsg);
-				estr_free(&f->error);
+				fdbfs_debug_info(f, warning, "error checking if %s changed: %s", fpth, f->error.emsg);
+				fdbfs_estr_free(&f->error);
 				free(fpth);
 			} else
 				free(fpth);
@@ -911,13 +917,13 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re, defs) /* this has n
 				free(fpth);
 				continue;
 			} else if(rc == 1) {
-				index_file(f, fpth, cat, batch, useplugs, 2, defs);
+				fdbfs_index_file(f, fpth, cat, batch, useplugs, 2, defs);
 				free(fpth);
 			} else if(rc == -2) { /* is a directory */
 				free(fpth);
 			} else if(rc == -1) { /* hack alert */
-				debug_info(f, warning, "error checking if %s changed: %s", fpth, f->error.emsg);
-				estr_free(&f->error);
+				fdbfs_debug_info(f, warning, "error checking if %s changed: %s", fpth, f->error.emsg);
+				fdbfs_estr_free(&f->error);
 				free(fpth);
 			}
 		}
@@ -928,7 +934,7 @@ int cindexer_dir(f, cat, batch, useplugs, list, options, re, defs) /* this has n
 #endif
 
 	
-int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse, defs)
+int fdbfs_index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse, defs)
 	fdbfs_t *f;
 	char **dirs;
 	char *cat;
@@ -965,7 +971,7 @@ int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse, defs)
 
 	chp = fts_children(fpt, 0);
 	if (chp != NULL)
-		rc = cindexer_dir(f, cat, batch, useplugs, chp, 0, re != NULL ? tre : NULL, defs);
+		rc = fdbfs_cindexer_dir(f, cat, batch, useplugs, chp, 0, re != NULL ? tre : NULL, defs);
 
 	if(f == NULL) {
 		ERR(die, "index_dir: cannot open director{y,ies} because of %s", strerror(errno));
@@ -980,12 +986,12 @@ int index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse, defs)
 				break;
 			case FTS_DNR:
 			case FTS_ERR:
-				debug_info(f, error, "%s: %s", p->fts_name, strerror(p->fts_errno));
+				fdbfs_debug_info(f, error, "%s: %s", p->fts_name, strerror(p->fts_errno));
 				break;
 			case FTS_D:
 				/* directory */
 				chp = fts_children(fpt, 0);
-				rc = cindexer_dir(f, cat, batch, useplugs, chp, 0, re != NULL ? tre : NULL, defs);
+				rc = fdbfs_cindexer_dir(f, cat, batch, useplugs, chp, 0, re != NULL ? tre : NULL, defs);
 
 				if(!rc)
 					break;

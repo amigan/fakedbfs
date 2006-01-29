@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfsapps.h,v 1.4 2005/10/04 20:26:40 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfsapps.h,v 1.5 2006/01/29 21:03:55 dcp1990 Exp $ */
 #ifndef HAVE_FAKEDBFSAPPS_H
 #define HAVE_FAKEDBFSAPPS_H 1
 
@@ -37,5 +37,15 @@ extern const char *fakedbfsver;
 extern const char *fakedbfscopyright;
 extern const char *fakedbfsvname;
 extern const int fakedbfsmaj, fakedbfsmin, fakedbfsmic;
+
+#include <fakedbfs/conf.h>
+#include <fakedbfs/db.h>
+#include <fakedbfs/dbspecdata.h>
+#include <fakedbfs/debug.h>
+#include <fakedbfs/fficl.h>
+#include <fakedbfs/fields.h>
+#include <fakedbfs/indexing.h>
+#include <fakedbfs/plugins.h>
+#include <fakedbfs/query.h>
 
 #endif

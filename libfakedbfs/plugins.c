@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * plugins.c - file plugin stuff
  * 
@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.8 2005/12/22 22:14:52 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.9 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdio.h>
@@ -44,20 +44,22 @@
 /* other libraries */
 #include <sqlite3.h>
 /* us */
-#include <fdbfsconfig.h>
-#include <fakedbfs.h>
+#include <fakedbfs/fdbfsconfig.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/plugins.h>
+#include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.8 2005/12/22 22:14:52 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.9 2006/01/29 21:03:55 dcp1990 Exp $")
 
 #define LIBERR(sym) { \
-		debug_info(f, error, "probe_plugin: symbol referece %s failed in %s: %s", sym, fpth, dlerror()); \
+		fdbfs_debug_info(f, error, "probe_plugin: symbol referece %s failed in %s: %s", sym, fpth, dlerror()); \
 		free(fpth); \
 		free(n); \
 		dlclose(libhandle); \
 		return last; \
 	}
 
-struct Plugin* probe_plugin(f, dirpath, filename, last)
+static struct Plugin* probe_plugin(f, dirpath, filename, last)
 	fdbfs_t *f;
 	char *dirpath;
 	char *filename;
@@ -75,7 +77,7 @@ struct Plugin* probe_plugin(f, dirpath, filename, last)
 	snprintf(fpth, len, "%s/%s", dirpath, filename);
 	
 	if((libhandle = dlopen(fpth, RTLD_NOW /* for undef'd stuff */)) == NULL) {
-		debug_info(f, warning, "probe_plugin: trouble loading %s: %s", fpth, dlerror());
+		fdbfs_debug_info(f, warning, "probe_plugin: trouble loading %s: %s", fpth, dlerror());
 		free(fpth);
 		return last;
 	}
@@ -88,7 +90,7 @@ struct Plugin* probe_plugin(f, dirpath, filename, last)
 		LIBERR("plugin_inf");
 	
 	if(n->info->majapi != MAJOR_API_VERSION) {
-		debug_info(f, error, "error! %s (%s v%s)'s majapi (%d) != MAJOR_API_VERSION (%d)! These are incompatible.",
+		fdbfs_debug_info(f, error, "error! %s (%s v%s)'s majapi (%d) != MAJOR_API_VERSION (%d)! These are incompatible.",
 				fpth, n->info->pluginname, n->info->version, n->info->majapi, MAJOR_API_VERSION);
 		free(fpth);
 		free(n);
@@ -97,7 +99,7 @@ struct Plugin* probe_plugin(f, dirpath, filename, last)
 	}
 
 	if(n->info->minapi > MINOR_API_VERSION) {
-		debug_info(f, error, "error! %s (%s v%s)'s minapi (%d) > MINOR_API_VERSION (%d)! These are incompatible.",
+		fdbfs_debug_info(f, error, "error! %s (%s v%s)'s minapi (%d) > MINOR_API_VERSION (%d)! These are incompatible.",
 				fpth, n->info->pluginname, n->info->version, n->info->majapi, MAJOR_API_VERSION);
 		free(fpth);
 		free(n);
@@ -119,7 +121,7 @@ struct Plugin* probe_plugin(f, dirpath, filename, last)
 		LIBERR("extract_from_file()");
 
 	if(!n->init(&emsg)) {
-		debug_info(f, warning, "error: init for %s said: %s", fpth, emsg);
+		fdbfs_debug_info(f, warning, "error: init for %s said: %s", fpth, emsg);
 		free(n);
 		free(fpth);
 		dlclose(libhandle);
@@ -138,7 +140,7 @@ struct Plugin* probe_plugin(f, dirpath, filename, last)
 #endif
 }
 
-struct Plugin* search_plugs(f, plugins, path)
+static struct Plugin* search_plugs(f, plugins, path)
 	fdbfs_t *f;
 	struct Plugin *plugins;
 	char *path;
@@ -185,8 +187,7 @@ struct Plugin* search_plugs(f, plugins, path)
 #endif
 }
 	
-
-int init_plugins(f)
+int fdbfs_plugins_init(f)
 	fdbfs_t *f;
 {
 	char *path;
@@ -222,4 +223,9 @@ int init_plugins(f)
 	return 1;
 }
 
-
+void fdbfs_plugins_set_path(f, path)
+	fdbfs_t *f;
+	char *path;
+{
+	f->conf.pluginpath = strdup(path);
+}

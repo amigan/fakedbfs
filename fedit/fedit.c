@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fedit/fedit.c,v 1.5 2005/12/22 22:22:12 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fedit/fedit.c,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -36,8 +36,6 @@
 #include <getopt.h>
 #include <errno.h>
 #include <signal.h>
-
-#include <fakedbfsapps.h>
 
 #ifdef UNIX
 #include <sys/types.h>
@@ -48,9 +46,10 @@
 #define FEDITVER "0.1"
 #define MAXPLEN 1023
 
-#include <fakedbfs.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/fakedbfsapps.h>
 
-RCSID("$Amigan: fakedbfs/fedit/fedit.c,v 1.5 2005/12/22 22:22:12 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fedit/fedit.c,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
@@ -119,7 +118,7 @@ int main(argc, argv)
 			asprintf(&dbf, "%s/.fakedbfsdb", getenv("HOME"));
 	}
 
-	f = new_fdbfs(dbf, &estr, DEBUGFUNC_STDERR, 1);
+	f = fdbfs_new(dbf, &estr, DEBUGFUNC_STDERR, 1);
 	if(f == NULL) {
 		fprintf(stderr, "error creating fdbfs instance: %s\n", estr);
 		free(dbf);
@@ -127,17 +126,17 @@ int main(argc, argv)
 		return -1;
 	}
 
-	if(!read_specs_from_db(f)) {
+	if(!fdbfs_read_specs_from_db(f)) {
 		fprintf(stderr, "error reading specs from db: %s\n", f->error.emsg);
-		estr_free(&f->error);
+		fdbfs_estr_free(&f->error);
 		free(dbf);
-		destroy_fdbfs(f);
+		fdbfs_destroy(f);
 		return -1;
 	}
 
 	trc = do_commands(argc, argv);
 
-	destroy_fdbfs(f);
+	fdbfs_destroy(f);
 	free(dbf);
 
 	return trc;

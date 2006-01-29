@@ -27,14 +27,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.7 2006/01/11 01:42:46 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.8 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
 #include <errno.h>
-#include <fdbfsregex.h>
 #include <stdio.h>
 #include <id3.h>
 
@@ -44,9 +43,12 @@
 #	include <dirent.h>
 #endif
 
-#include <fakedbfs.h>
+#include <fakedbfs/fdbfsregex.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/plugins.h>
+#include <fakedbfs/fields.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.7 2006/01/11 01:42:46 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.8 2006/01/29 21:03:55 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"

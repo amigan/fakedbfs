@@ -27,9 +27,10 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/dbspecdata.h,v 1.8 2005/12/31 19:25:02 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/dbspecdata.h,v 1.9 2006/01/29 21:03:55 dcp1990 Exp $ */
 #ifndef HAVE_DBSPECDATA_H
 #define HAVE_DBSPECDATA_H 1
+#include <fakedbfs/types.h>
 #define MAXLINE 2048
 #define ALLSUBSTART 6500 /* defining more than this number-1 of subelements leads to
 			  * undefined behaviour. avoid doing so (not like you will anyway)
@@ -71,20 +72,6 @@ typedef struct {
  * alias capability, not ENUM block names)
  * If alias == name with no fc set, this means that no alias was defined.
  */
-enum DataType {
-	number = 1, /* 0 might be used for some error condition later in the DB */
-	boolean,
-	string,
-	fp,
-	image,
-	binary,
-	oenum, /* DO NOT USE FOR "OTHER" IN AN ENUM */
-	oenumsub, /* this either; this is for .sub references */
-	usnumber, /* new type for unsigned numbers */
-	datime, /* date and time; see lastupdate (this is really like number, but treated differently for display
-	purposes */
-	character /* for use with conf only */
-};
 
 /* Enum stuff */
 
@@ -153,6 +140,231 @@ struct CatalogueHead {
 	struct CatElem *headelem;
 	struct CatalogueHead *next; /* God only knows if we will use this... */
 };
+
+/**
+ * @brief Find enum element by name.
+ *
+ * @param h List head to search.
+ * @param name Name to search for.
+ * @return The element we found, or NULL on no match/error.
+ */
+struct EnumElem* fdbfs_find_elem_by_name(struct EnumElem *h, char *name);
+
+/**
+ * @brief Find catalogue element by enumhead.
+ *
+ * @param h List head to search.
+ * @param en Enumhead to search for.
+ * @return The element we found, or NULL on no match/error.
+ */
+struct CatElem* fdbfs_find_catelem_enum(struct CatElem *h, struct EnumHead *en);
+
+/**
+ * @brief Search enum list and return name of element with specified value.
+ *
+ * @param h Head of list.
+ * @param val Value to search for.
+ * @param fmted 1 if formatted name is desired. 0 otherwise.
+ * @return Name of enum element, or NULL if none found.
+ */
+char* fdbfs_get_enum_string_by_value(struct EnumElem *h, unsigned int val, short int fmted);
+
+/**
+ * @brief Get subelement head by value in enum.
+ *
+ * @param h List head to search.
+ * @param val Value to search for.
+ * @return Sub element list, or NULL if no match.
+ */
+struct EnumSubElem* fdbfs_get_subhead_by_enval(struct EnumElem *h, unsigned int val);
+
+/**
+ * @brief Get string in list of enum subelements by value.
+ *
+ * @param h Sub element list head to search.
+ * @param val Value to search for.
+ * @return Name of subelement with specified value, or NULL otherwise.
+ */
+char* fdbfs_get_enum_sub_string_by_value(struct EnumSubElem *h, unsigned int val);
+
+/**
+ * @brief Search list of catalogue heads for a certain name.
+ *
+ * @param h Head of list to search.
+ * @param name Name to search for.
+ * @return The element if found, NULL otherwise.
+ */
+struct CatalogueHead* fdbfs_find_cathead_by_name(struct CatalogueHead *h, char *name);
+
+/**
+ * @brief Search for catalogue element by name.
+ *
+ * @param h Head of list to search.
+ * @param name Name to search for.
+ * @return The element if found, NULL otherwise.
+ */
+struct CatElem* fdbfs_find_catelem_by_name(struct CatElem *h, char *name);
+
+/**
+ * @brief Search for enum head by name.
+ *
+ * @param h Head of list to search.
+ * @param name Name to search for.
+ * @return The element if found, NULL otherwise.
+ */
+struct EnumHead* fdbfs_find_enumhead_by_name(struct EnumHead *h, char *name);
+
+/**
+ * @brief Copy subelement list.
+ *
+ * For use with stuff like the sameas directive. Copies list of subelements.
+ * @param[in] from From list.
+ * @param[out] to To list. This must point to an allocated struct EnumSubElem; subsequent items will be allocated.
+ * @param[in] fajah Father enum element of new list.
+ * @param[in,out] lastval Pointer to integer specifying the value to use. Will be increased to last value when done.
+ * @return Tail element of copied list.
+ */
+struct EnumSubElem* fdbfs_copy_sub_list(
+		struct EnumSubElem *from,
+		struct EnumSubElem *to,
+		struct EnumElem *fajah,
+		int *lastval
+		);
+
+/**
+ * @brief Construct EnumElem list from database enum description table.
+ *
+ * DOes so according to TABLE_FORMAT.
+ * @param f Instance of fakedbfs.
+ * @param table Table to read.
+ * @param e Parent of all elements.
+ * @returns List of EnumElems, or NULL on error.
+ */
+struct EnumElem* fdbfs_enumelems_from_dbtab(fdbfs_t *f, char *table, struct EnumHead *e);
+
+/**
+ * @brief Construct EnumHead list from database.
+ *
+ * @param f Instance of fakedbfs.
+ * @return EnumHead list, or NULL on error.
+ */
+struct EnumHead* fdbfs_enums_from_db(fdbfs_t *f);
+
+/**
+ * @brief Construct CatElem list from catalogue description table.
+ *
+ * @param f Instance of fakedbfs.
+ * @param table Name of catalogue description table.
+ * @param enumhead Head of enums to search when enum element is encountered.
+ * @return CatElem list, or NULL on error.
+ */
+struct CatElem* fdbfs_catelems_from_dbtab(fdbfs_t *f, char *table, struct EnumHead *enumhead);
+
+/**
+ * @brief Construct CatalogueHead list from database.
+ *
+ * @param f Instance of fakedbfs.
+ * @param enumhead EnumHead list to search.
+ * @return CatalogueHead list, or NULL on error.
+ */
+struct CatalogueHead* fdbfs_cats_from_db(fdbfs_t *f, struct EnumHead *enumhead);
+
+/**
+ * @brief Free an EnumSubElem object.
+ *
+ * @param e Object to free.
+ * @param allsub 1 if intentionally freeing allsubs, 0 to ignore allsubs.
+ * @return Next element in list, NULL on error.
+ */
+struct EnumSubElem* fdbfs_free_enum_sub_elem(struct EnumSubElem *e, short int allsub); /* returns next */
+
+/**
+ * @brief Free list of EnumSubElems.
+ *
+ * @param head Head of list.
+ * @param allsub 1 if intentionally freeing allsubs, 0 to ignore allsubs.
+ */
+void fdbfs_free_enum_sub_elem_list(struct EnumSubElem *head, short int allsub);
+
+/**
+ * @brief Free EnumElem object.
+ *
+ * @param e Object to free.
+ * @return Next element in list, NULL on error.
+ */
+struct EnumElem* fdbfs_free_enum_elem(struct EnumElem *e);
+
+/**
+ * @brief Free list of EnumElems.
+ *
+ * @param head List to traverse and free.
+ */
+void fdbfs_free_enum_elem_list(struct EnumElem *head);
+
+/**
+ * @brief Free EnumHead object.
+ *
+ * @param e Object to free.
+ * @return Next element in list, NULL on error.
+ */
+struct EnumHead* fdbfs_free_enum_head(struct EnumHead *e);
+
+/**
+ * @brief Free list of EnumHeads.
+ *
+ * @param head List to traverse and free.
+ */
+void fdbfs_free_enum_head_list(struct EnumHead *head);
+
+/**
+ * @brief Free CatElem object.
+ *
+ * @param e Object to free.
+ * @return Next element, NULL on error.
+ */
+struct CatElem* fdbfs_free_cat_elem(struct CatElem *e);
+
+/**
+ * @brief Free list of CatElems.
+ *
+ * @param head List to traverse and free.
+ */
+void fdbfs_free_cat_elem_list(struct CatElem *head);
+
+/**
+ * @brief Free CatHead object.
+ *
+ * @param e Object to free.
+ * @return Next element, NULL on error.
+ */
+struct CatalogueHead* fdbfs_free_cat_head(struct CatalogueHead *e);
+
+/**
+ * @brief Free list of CatHeads.
+ *
+ * @param head List to traverse and free.
+ */
+void fdbfs_free_cat_head_list(struct CatalogueHead *head);
+
+/**
+ * @brief Free certain members of a Heads object.
+ *
+ * fdbfs_free_head_members() frees the lists specified by both hd->cathead and hd->enumhead.
+ * @param hd Heads object to free from.
+ */
+void fdbfs_free_head_members(Heads *hd);
+
+/**
+ * @brief Parse dbspec.
+ *
+ * Parses the specified specfile and modifies the database accordingly.
+ * Must close and reopen before using other parts of the library to see changes.
+ * @param f Instance of fakedbfs.
+ * @param filename Specfile filename to read.
+ * @return 0 on error.
+ */
+int fdbfs_dbspec_parse(fdbfs_t *f, char *filename);
+
 #define CAT_TABLE_PREFIX "c_"
 #define CAT_FIELD_TABLE_PREFIX "cft_"
 #define ENUM_TABLE_PREFIX "endef_"

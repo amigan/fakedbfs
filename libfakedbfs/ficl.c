@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.2 2006/01/14 19:03:57 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.3 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -41,15 +41,16 @@
 /* other libraries */
 #include <sqlite3.h>
 
-#include <fdbfsconfig.h>
-
-#include <fakedbfs.h>
+#include <fakedbfs/fdbfsconfig.h>
+#include <fakedbfs/fficl.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/debug.h>
 #define FICLBINDINGSVER "0.1"
 
-#define FICLWORD(word)		cword = ficlDictionarySetPrimitive(dict, #word, ficl_word_ ## word, 0x0)
-#define WORDDEF(word)		void ficl_word_ ## word(ficlVm *vm)
+#define FICLWORD(word)		cword = ficlDictionarySetPrimitive(dict, #word, fdbfs_ficl_word_ ## word, 0x0)
+#define WORDDEF(word)		void fdbfs_ficl_word_ ## word(ficlVm *vm)
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.2 2006/01/14 19:03:57 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.3 2006/01/29 21:03:55 dcp1990 Exp $")
 
 
 
@@ -63,11 +64,11 @@ static const struct PluginInfo ficl_inf = {
 	MINOR_API_VERSION
 };
 
-void ficl_output(cb, text) /* HACK! */
+void fdbfs_ficl_output(cb, text) /* HACK! */
 	ficlCallback *cb;
 	char *text;
 {
-	struct FiclState *fs = cb->context;
+	ficlstate_t *fs = cb->context;
 
 	if(fs->do_outp) {
 		if(text != NULL)
@@ -78,7 +79,7 @@ void ficl_output(cb, text) /* HACK! */
 }
 
 
-void ficl_error(cb, text) /* HACK! */
+void fdbfs_ficl_error(cb, text) /* HACK! */
 	ficlCallback *cb;
 	char *text;
 {
@@ -88,7 +89,7 @@ void ficl_error(cb, text) /* HACK! */
 		fflush(stderr);
 }
 
-int ficl_init(f)
+int fdbfs_ficl_init(f)
 	fdbfs_t *f;
 {
 	ficlSystem *fsys;
@@ -99,8 +100,8 @@ int ficl_init(f)
 	f->fst.do_outp = 0; /* supress start messages */
 
 	ficlSystemInformationInitialize(&si);
-	si.textOut = ficl_output;
-	si.errorOut = ficl_error;
+	si.textOut = fdbfs_ficl_output;
+	si.errorOut = fdbfs_ficl_error;
 	si.context = &f->fst;
 
 	fsys = ficlSystemCreate(&si);
@@ -115,10 +116,10 @@ int ficl_init(f)
 	
 	sysdict = ficlSystemGetDictionary(fsys);
 
-	return ficl_addwords(f, sysdict);
+	return fdbfs_ficl_addwords(f, sysdict);
 }
 
-void ficl_destroy(f)
+void fdbfs_ficl_destroy(f)
 	fdbfs_t *f;
 {
 	if(f->fsys != NULL)
@@ -182,7 +183,7 @@ WORDDEF(fmtname)
 	ficlStackPushPointer(dst, tf);
 }
 
-int ficl_addwords(f, dict)
+int fdbfs_ficl_addwords(f, dict)
 	fdbfs_t *f;
 	ficlDictionary *dict;
 {

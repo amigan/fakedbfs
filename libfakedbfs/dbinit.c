@@ -27,7 +27,11 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.43 2006/01/28 22:35:23 dcp1990 Exp $ */
+/**
+ * @file dbinit.c
+ * @brief Database initialisation stuff.
+ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.44 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -38,26 +42,29 @@
 #include <math.h>
 #include "dbspec.h"
 /* us */
-#include <dbspecdata.h>
-#include <lexdefines.h>
-#include <fakedbfs.h>
+#include <fakedbfs/dbspecdata.h>
+#include <fakedbfs/lexdefines.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/db.h>
+#include <fakedbfs/debug.h>
 /* dbspec stuff */
-#define ParseTOKENTYPE Toke
-#define ParseARG_PDECL ,Heads *heads
+#define DSpecParseTOKENTYPE Toke
+#define DSpecParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.43 2006/01/28 22:35:23 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.44 2006/01/29 21:03:55 dcp1990 Exp $")
 
-void *ParseAlloc(void *(*mallocProc)(size_t));
-void ParseFree(void *p, void (*freeProc)(void*));
-extern FILE *yyin;
-typedef struct yy_buffer_state *YY_BUFFER_STATE;
-int yylex(void);
-YY_BUFFER_STATE yy_scan_string(const char *);
-void yy_delete_buffer(YY_BUFFER_STATE);
-void Parse(void *yyp, int yymajor, ParseTOKENTYPE yyminor ParseARG_PDECL);
-void ParseTrace(FILE *TraceFILE, char *zTracePrompt);
+void *DSpecParseAlloc(void *(*mallocProc)(size_t));
+void DSpecParseFree(void *p, void (*freeProc)(void*));
+extern FILE *fdbfs_dsin;
+typedef struct fdbfs_ds_buffer_state *YY_BUFFER_STATE;
+int fdbfs_dslex(void);
+YY_BUFFER_STATE fdbfs_ds_scan_string(const char *);
+void fdbfs_ds_delete_buffer(YY_BUFFER_STATE);
+void DSpecParse(void *yyp, int yymajor, DSpecParseTOKENTYPE yyminor DSpecParseARG_PDECL);
+void DSpecParseTrace(FILE *TraceFILE, char *zTracePrompt);
+void yywrap(void);
 
-char* normalise(s)
+char* fdbfs_normalise(s)
 	char *s;
 {
 	char *n = strdup(s);
@@ -73,60 +80,8 @@ char* normalise(s)
 	}
 	return n;
 }
-int parse_definition(f, filename)
-	fdbfs_t *f;
-	char *filename;
-{
-	Toke tz;
-	int rc;
-	FILE *tf;
-	Heads h;
-	void *parser;
-	
-	memset(&tz, 0, sizeof(tz));
-	memset(&h, 0, sizeof(h));
-	h.instance = f;
-	h.db_enumh = enums_from_db(f);
-	if(h.db_enumh == NULL && f->error.emsg != NULL)
-		return SCERR(die, "parse_definition: enum importation failed. ");
-	h.db_cath = cats_from_db(f, h.db_enumh);
-	if(h.db_cath == NULL && f->error.emsg != NULL)
-		return SCERR(die, "parse_definition: catalogue importation failed. ");
-	if(strcmp(filename, "-") == 0)
-		tf = stdin;
-	else
-		tf = fopen(filename, "r");
-	if(!tf)
-		return ERR(die, "parse_definition: opening %s: %s", filename, strerror(errno));
-	parser = ParseAlloc(malloc);
-	yyin = tf;
-#ifdef PARSERDEBUG
-	ParseTrace(stderr, "PARSER: ");
-#endif
-	while((rc = yylex()) != 0) {
-		tz.num = yylval.number;
-		tz.str = yylval.string;
-#ifdef PARSERDEBUG
-		fprintf(stderr, "rc == %d\n", rc);
-#endif
-		Parse(parser, rc, tz, &h);
-		if(h.err || f->error.emsg != NULL) {
-			ParseFree(parser, free);
-			free_head_members(&h);
-			CERR(die, "parse_definition(f, \"%s\"): error after Parse(). ", filename);
-			fclose(tf);
-			return 0;
-		}
-	}
-	Parse(parser, 0, tz, &h);
-	ParseFree(parser, free);
-	free_enum_head_list(h.db_enumh);
-	free_cat_head_list(h.db_cath);
-	fclose(tf);
-	return make_tables_from_spec(f, filename, &h);
-}
 
-struct EnumElem* find_elem_by_name(h, name)
+struct EnumElem* fdbfs_find_elem_by_name(h, name)
 	struct EnumElem *h;
 	char *name;
 {
@@ -142,7 +97,7 @@ struct EnumElem* find_elem_by_name(h, name)
 	return NULL;
 }
 
-struct CatElem* find_catelem_enum(h, en)
+struct CatElem* fdbfs_find_catelem_enum(h, en)
 	struct CatElem *h;
 	struct EnumHead *en;
 {
@@ -156,7 +111,7 @@ struct CatElem* find_catelem_enum(h, en)
 	return NULL;
 }
 
-char* get_enum_string_by_value(h, val, fmted)
+char* fdbfs_get_enum_string_by_value(h, val, fmted)
 	struct EnumElem *h;
 	unsigned int val;
 	short int fmted;
@@ -171,7 +126,7 @@ char* get_enum_string_by_value(h, val, fmted)
 	return NULL;
 }
 
-struct EnumSubElem* get_subhead_by_enval(h, val)
+struct EnumSubElem* fdbfs_get_subhead_by_enval(h, val)
 	struct EnumElem *h;
 	unsigned int val;
 {
@@ -185,7 +140,7 @@ struct EnumSubElem* get_subhead_by_enval(h, val)
 	return NULL;
 }
 
-char* get_enum_sub_string_by_value(h, val)
+char* fdbfs_get_enum_sub_string_by_value(h, val)
 	struct EnumSubElem *h;
 	unsigned int val;
 {
@@ -199,7 +154,7 @@ char* get_enum_sub_string_by_value(h, val)
 	return NULL;
 }
 
-struct CatalogueHead* find_cathead_by_name(h, name)
+struct CatalogueHead* fdbfs_find_cathead_by_name(h, name)
 	struct CatalogueHead *h;
 	char *name;
 {
@@ -215,7 +170,8 @@ struct CatalogueHead* find_cathead_by_name(h, name)
 	return NULL;
 }
 
-struct CatElem* find_catelem_by_name(h, name)
+
+struct CatElem* fdbfs_find_catelem_by_name(h, name)
 	struct CatElem *h;
 	char *name;
 {
@@ -231,7 +187,7 @@ struct CatElem* find_catelem_by_name(h, name)
 	return NULL;
 }
 
-struct EnumHead* find_enumhead_by_name(h, name)
+struct EnumHead* fdbfs_find_enumhead_by_name(h, name)
 	struct EnumHead *h;
 	char *name;
 {
@@ -247,7 +203,7 @@ struct EnumHead* find_enumhead_by_name(h, name)
 	return NULL;
 }
 
-struct EnumSubElem* copy_sub_list(from, to, fajah, lastval)
+struct EnumSubElem* fdbfs_copy_sub_list(from, to, fajah, lastval)
 	struct EnumSubElem *from;
 	struct EnumSubElem *to; /* must be allocated; subsequent items will be allocated */
 	struct EnumElem *fajah;
@@ -289,30 +245,43 @@ struct EnumSubElem* copy_sub_list(from, to, fajah, lastval)
 
 #define BUFFERSIZE 4096
 
-int init_db_tables(f)
+/**
+ * @brief Initialise database tables.
+ *
+ * @param f Instance of fakedbfs to work on.
+ * @return 0 on error.
+ */
+static int init_db_tables(f)
 	fdbfs_t *f;
 {
 	int rc;
-	rc = create_table(f, "enum_list", "id INTEGER PRIMARY KEY, name TEXT, defined_in_table TEXT, defined_in_specfile TEXT, lastupdated INTEGER");
+	rc = fdbfs_db_create_table(f, "enum_list", "id INTEGER PRIMARY KEY, name TEXT, defined_in_table TEXT, defined_in_specfile TEXT, lastupdated INTEGER");
 	if(!rc) return rc;
-	rc = create_table(f, "cat_list", "id INTEGER PRIMARY KEY, name TEXT, alias TEXT, defined_in_table TEXT, field_desc_table TEXT, defined_in_specfile TEXT, lastupdated INTEGER");
+	rc = fdbfs_db_create_table(f, "cat_list", "id INTEGER PRIMARY KEY, name TEXT, alias TEXT, defined_in_table TEXT, field_desc_table TEXT, defined_in_specfile TEXT, lastupdated INTEGER");
 	if(!rc) return rc;
 	return 1;
 }
 
-size_t number_size(n)
+size_t fdbfs_number_size(n)
 	unsigned int n;
 {
 	return (n == 0) ? 1 : floor(log10(n)) + 1;
 }
 
-size_t signed_size(n)
+size_t fdbfs_signed_size(n)
 	int n;
 {
 	return (n == 0) ? 1 : floor(log10(n)) + (n < 0 ? 2 : 1); /* sign */
 }
 
-char* construct_subelem_field(h)
+/**
+ * @brief Construct subelement field from EnumSubElem list.
+ *
+ * Constructs a subelement field suitable for insertion into the database per the TABLE_FORMAT.
+ * @param h Subelement head to examine.
+ * @return malloc()'d string containing the subelements, NULL on error.
+ */
+static char* construct_subelem_field(h)
 	struct EnumSubElem *h;
 {
 	struct EnumSubElem *c;
@@ -328,7 +297,7 @@ char* construct_subelem_field(h)
 		else
 			size += 1 + 1 + 1;
 
-		size += number_size(c->value);
+		size += fdbfs_number_size(c->value);
 	}
 	buf = malloc(size);
 	if(buf == NULL) {
@@ -352,7 +321,7 @@ char* construct_subelem_field(h)
 	return buf;
 }
 		
-int new_enum(f, specfile, h)
+static int new_enum(f, specfile, h)
 	fdbfs_t *f;
 	char *specfile;
 	struct EnumHead *h;
@@ -365,12 +334,12 @@ int new_enum(f, specfile, h)
 	tablename = malloc(ln);
 	strlcpy(tablename, tabprefix, ln);
 	strlcat(tablename, h->name, ln);
-	if(!create_table(f, tablename, "id INTEGER PRIMARY KEY, name TEXT, fmtname TEXT, value INTEGER, other INTEGER, subelements TEXT")) {
+	if(!fdbfs_db_create_table(f, tablename, "id INTEGER PRIMARY KEY, name TEXT, fmtname TEXT, value INTEGER, other INTEGER, subelements TEXT")) {
 		CERR(die, "new_enum(f, \"%s\", h): error making table. ", specfile);
 		free(tablename);
 		return 0;
 	}
-	if(!add_to_enum_list_table(f, h->name, tablename, specfile)) {
+	if(!fdbfs_db_add_to_enum_list_table(f, h->name, tablename, specfile)) {
 		CERR(die, "new_enum(f, \"%s\", h): error adding to enum list table. ", specfile);
 		free(tablename);
 		return 0;
@@ -378,7 +347,7 @@ int new_enum(f, specfile, h)
 
 	for(ce = h->headelem; ce != NULL; ce = ce->next) {
 		selm = construct_subelem_field(ce->subhead);
-		if(!add_enum_elem(f, tablename, ce->name, ce->fmtname, ce->value, (ce->other ? ce->othertype : oenum), selm)) {
+		if(!fdbfs_db_add_enum_elem(f, tablename, ce->name, ce->fmtname, ce->value, (ce->other ? ce->othertype : oenum), selm)) {
 			free(tablename);
 			if(selm != NULL) free(selm);
 			CERR(die, "new_enum(f, \"%s\", h): error adding enum elem. ", specfile);
@@ -392,7 +361,7 @@ int new_enum(f, specfile, h)
 }
 
 
-int new_catalog(f, specfile, h)
+static int new_catalog(f, specfile, h)
 	fdbfs_t *f;
 	char *specfile;
 	struct CatalogueHead *h;
@@ -417,14 +386,14 @@ int new_catalog(f, specfile, h)
 	strlcpy(fieldtable, fieldpre, fln);
 	strlcat(fieldtable, h->name, fln);
 
-	if(!create_table(f, fieldtable, "id INTEGER PRIMARY KEY, fieldname TEXT, alias TEXT, datatype INTEGER, enumname TEXT, otherfield TEXT")) {
+	if(!fdbfs_db_create_table(f, fieldtable, "id INTEGER PRIMARY KEY, fieldname TEXT, alias TEXT, datatype INTEGER, enumname TEXT, otherfield TEXT")) {
 		CERR(die, "new_catalog(f, \"%s\", h): error creating field table %s. ", specfile, fieldtable);
 		free(tablename);
 		free(fieldtable);
 		return 0;
 	}
 
-	if(!add_to_cat_list_table(f, h->name, h->fmtname, tablename, fieldtable, specfile)) {
+	if(!fdbfs_db_add_to_cat_list_table(f, h->name, h->fmtname, tablename, fieldtable, specfile)) {
 		CERR(die, "new_catalog(f, \"%s\", h): error adding to cat list table. ", specfile);
 		free(tablename);
 		free(fieldtable);
@@ -434,10 +403,10 @@ int new_catalog(f, specfile, h)
 	/* calculate sizes */
 	for(c = h->headelem; c != NULL; c = c->next) {
 		tds += strlen(c->name) + 1 /* comma */
-		       	+ strlen(gettype(c->type) /* gettype includes the space */);
+		       	+ strlen(fdbfs_db_gettype(c->type) /* gettype includes the space */);
 		if(c->type == oenum && c->enumptr->otherelem != NULL)
 			tds += strlen(c->name) + strlen(OTHER_ELEM_PREFIX) + 1 + strlen(c->enumptr->otherelem != NULL ? /* why is this ternary here? */
-					gettype(c->enumptr->otherelem->othertype) : " BLOB" /*universal */);
+					fdbfs_db_gettype(c->enumptr->otherelem->othertype) : " BLOB" /*universal */);
 	}
 	tds += strlen(tdescpref);
 	tdesc = malloc(tds);
@@ -445,11 +414,11 @@ int new_catalog(f, specfile, h)
 
 	/* actual stuff */
 	for(c = h->headelem; c != NULL; c = c->next) {
-		snprintf(ilbuffer, sizeof(ilbuffer), ",%s%s", c->name, gettype(c->type));
+		snprintf(ilbuffer, sizeof(ilbuffer), ",%s%s", c->name, fdbfs_db_gettype(c->type));
 		strlcat(tdesc, ilbuffer, tds);
 		if(c->type == oenum && c->enumptr->otherelem != NULL) {
 			snprintf(ilbuffer, sizeof(ilbuffer), ",%s%s%s", OTHER_ELEM_PREFIX, c->name, c->enumptr->otherelem != NULL ?
-				gettype(c->enumptr->otherelem->othertype) : " BLOB");
+				fdbfs_db_gettype(c->enumptr->otherelem->othertype) : " BLOB");
 			strlcat(tdesc, ilbuffer, tds);
 		}
 		if(c->flags & CATE_USES_FC) {
@@ -464,7 +433,7 @@ int new_catalog(f, specfile, h)
 		else
 			ptname = NULL;
 
-		if(!add_to_field_desc(f, fieldtable, c->name, c->alias, c->type, ptname)) {
+		if(!fdbfs_db_add_to_field_desc(f, fieldtable, c->name, c->alias, c->type, ptname)) {
 			CERR(die, "new_catalog(f, \"%s\", h): error adding to cat field desc. ", specfile);
 			free(tablename);
 			free(fieldtable);
@@ -472,7 +441,7 @@ int new_catalog(f, specfile, h)
 			return 0;
 		}
 	}
-	if(!create_table(f, tablename, tdesc)) {
+	if(!fdbfs_db_create_table(f, tablename, tdesc)) {
 		CERR(die, "new_catalog(f, \"%s\", h): error creating field table %s. ", specfile, fieldtable);
 		free(tablename);
 		free(tdesc);
@@ -485,7 +454,16 @@ int new_catalog(f, specfile, h)
 	return 1;
 }
 
-int make_tables_from_spec(f, sfile, h)
+/**
+ * @brief Make tables from specfile.
+ *
+ * Stores what it finds in the heads in the database.
+ * @param f Instance of fakedbfs to operate on.
+ * @param sfile Filename of specfile.
+ * @param h Heads object to read from.
+ * @return 0 on error.
+ */
+static int make_tables_from_spec(f, sfile, h)
 	fdbfs_t *f;
 	char *sfile;
 	Heads *h;
@@ -497,8 +475,8 @@ int make_tables_from_spec(f, sfile, h)
 	for(ceh = h->enumhead; ceh != NULL; ceh = ceh->next) {
 		if(!new_enum(f, sfile, ceh)) {
 			CERR(die, "make_tables_from_spec(f, \"%s\", h): error adding enum. ", sfile);
-			free_cat_head_list(h->cathead);
-			free_enum_head_list(h->enumhead);
+			fdbfs_free_cat_head_list(h->cathead);
+			fdbfs_free_enum_head_list(h->enumhead);
 			return 0;
 		}
 	}
@@ -506,24 +484,24 @@ int make_tables_from_spec(f, sfile, h)
 	/* catalogues */
 	for(cch = h->cathead; cch != NULL; cch = cch->next) {
 		if(!new_catalog(f, sfile, cch)) {
-			free_cat_head_list(h->cathead);
-			free_enum_head_list(h->enumhead);
+			fdbfs_free_cat_head_list(h->cathead);
+			fdbfs_free_enum_head_list(h->enumhead);
 			CERR(die, "make_tables_from_spec(f, \"%s\", h): error adding catalogue. ", sfile);
 			return 0;
 		}
 	}
 
-	free_cat_head_list(h->cathead);
-	free_enum_head_list(h->enumhead);
+	fdbfs_free_cat_head_list(h->cathead);
+	fdbfs_free_enum_head_list(h->enumhead);
 
 	
 	return 1;
 }
 
-int start_db(f)
+int fdbfs_db_start(f)
 	fdbfs_t *f;
 {
-	if(!table_exists(f, "cat_list")) {
+	if(!fdbfs_db_table_exists(f, "cat_list")) {
 		if(f->error.emsg == NULL) {
 			return init_db_tables(f);
 		} else {
@@ -533,7 +511,16 @@ int start_db(f)
 	return 1;
 }
 
-struct EnumSubElem* subelements_from_field(f, fajah, subs)
+/**
+ * @brief Construct EnumSubElem tree from subelements field.
+ *
+ * Basically the reverse of construct_subelem_field().
+ * @param f Instance of fakedbfs to work on.
+ * @param fajah Father of subelements read.
+ * @param subs Field to parse.
+ * @return EnumSubElem list, or NULL on error.
+ */
+static struct EnumSubElem* subelements_from_field(f, fajah, subs)
 	fdbfs_t *f;
 	struct EnumElem *fajah;
 	char *subs;
@@ -572,8 +559,7 @@ struct EnumSubElem* subelements_from_field(f, fajah, subs)
 	return h;
 }
 
-
-struct EnumElem* enumelems_from_dbtab(f, table, e)
+struct EnumElem* fdbfs_enumelems_from_dbtab(f, table, e)
 	fdbfs_t *f;
 	char *table;
 	struct EnumHead *e;
@@ -633,7 +619,7 @@ struct EnumElem* enumelems_from_dbtab(f, table, e)
 		}
 		
 		if(n->subhead == NULL && f->error.emsg != NULL) {
-			free_enum_elem_list(h);
+			fdbfs_free_enum_elem_list(h);
 			sqlite3_finalize(cst);
 			SCERR(die, "enumelems_from_dbtab: subelements. ");
 			return NULL;
@@ -646,7 +632,7 @@ struct EnumElem* enumelems_from_dbtab(f, table, e)
 	return h;
 }
 	
-struct EnumHead* enums_from_db(f)
+struct EnumHead* fdbfs_enums_from_db(f)
 	fdbfs_t *f;
 {
 	const char *enumlistsql = "SELECT * FROM enum_list;";
@@ -670,7 +656,7 @@ struct EnumHead* enums_from_db(f)
 		tabledef = strdup(sqlite3_column_text(cst, 2));
 		n = allocz(sizeof(*n));
 		n->name = enumname;
-		n->headelem = enumelems_from_dbtab(f, tabledef, n);
+		n->headelem = fdbfs_enumelems_from_dbtab(f, tabledef, n);
 		n->flags |= ENUMH_FROM_DB;
 		free(tabledef);
 
@@ -682,7 +668,7 @@ struct EnumHead* enums_from_db(f)
 		}
 
 		if(n->headelem == NULL && f->error.emsg != NULL) {
-			free_enum_head_list(h);
+			fdbfs_free_enum_head_list(h);
 			sqlite3_finalize(cst);
 			SCERR(die, "enums_from_db: from dbtab error. ");
 			return NULL;
@@ -701,7 +687,7 @@ struct EnumHead* enums_from_db(f)
 	return h;
 }
 
-struct CatElem* catelems_from_dbtab(f, table, enumhead)
+struct CatElem* fdbfs_catelems_from_dbtab(f, table, enumhead)
 	fdbfs_t *f;
 	char *table;
 	struct EnumHead *enumhead;
@@ -740,20 +726,20 @@ struct CatElem* catelems_from_dbtab(f, table, enumhead)
 		n->type = cctype;
 
 		if(cctype == oenum) {
-			n->enumptr = find_enumhead_by_name(enumhead, cenumname);
+			n->enumptr = fdbfs_find_enumhead_by_name(enumhead, cenumname);
 			if(n->enumptr == NULL) {
 				CERR(die, "Cannot find enum named %s! ", cenumname);
 				free(cenumname);
-				free_cat_elem_list(h != NULL ? h : n);
+				fdbfs_free_cat_elem_list(h != NULL ? h : n);
 				sqlite3_finalize(cst);
 				return NULL;
 			}
 		} else if(cctype == oenumsub) {
-			n->subcatel = find_catelem_by_name(h, cenumname);
+			n->subcatel = fdbfs_find_catelem_by_name(h, cenumname);
 			if(n->subcatel == NULL) {
 				CERR(die, "Cannot find cat elem for sub named %s! ", cenumname);
 				free(cenumname);
-				free_cat_elem_list(h != NULL ? h : n);
+				fdbfs_free_cat_elem_list(h != NULL ? h : n);
 				sqlite3_finalize(cst);
 				return NULL;
 			}
@@ -774,7 +760,7 @@ struct CatElem* catelems_from_dbtab(f, table, enumhead)
 	return h;
 }
 
-struct CatalogueHead* cats_from_db(f, enumhead)
+struct CatalogueHead* fdbfs_cats_from_db(f, enumhead)
 	fdbfs_t *f;
 	struct EnumHead* enumhead;
 {
@@ -802,7 +788,7 @@ struct CatalogueHead* cats_from_db(f, enumhead)
 		n->name = catname;
 		n->fmtname = catalias; /* god only knows why I use such liberal naming of
 					  alias and fmtname fields. Maybe I was drunk. */
-		n->headelem = catelems_from_dbtab(f, tabledef, enumhead);
+		n->headelem = fdbfs_catelems_from_dbtab(f, tabledef, enumhead);
 		n->flags |= CATH_FROM_DB;
 
 		free(tabledef);
@@ -815,7 +801,7 @@ struct CatalogueHead* cats_from_db(f, enumhead)
 		}
 
 		if(n->headelem == NULL) {
-			free_cat_head_list(h);
+			fdbfs_free_cat_head_list(h);
 			sqlite3_finalize(cst);
 			SCERR(die, "cats_from_db: from dbtab error. ");
 			return NULL;
@@ -833,13 +819,13 @@ struct CatalogueHead* cats_from_db(f, enumhead)
 	return h;
 }
 
-int rm_catalogue(f, catname)
+int fdbfs_db_rm_catalogue(f, catname)
 	fdbfs_t *f;
 	char *catname;
 {
 	char *ttbl;
 	size_t ttl;
-	if(!db_delete(f, "cat_list", "name", "==", catname)) {
+	if(!fdbfs_db_delete(f, "cat_list", "name", "==", catname)) {
 		SCERR(die, "rm_catalogue: delete error");
 		return 0;
 	}
@@ -847,14 +833,14 @@ int rm_catalogue(f, catname)
 	ttbl = malloc(ttl);
 	strlcpy(ttbl, "c_", ttl);
 	strlcat(ttbl, catname, ttl);
-	if(!drop_table(f, ttbl)) {
+	if(!fdbfs_db_drop_table(f, ttbl)) {
 		SCERR(die, "rm_catalogue: table drop error");
 		free(ttbl);
 		return 0;
 	}
 	strlcpy(ttbl, "cft_", ttl);
 	strlcat(ttbl, catname, ttl);
-	if(!drop_table(f, ttbl)) {
+	if(!fdbfs_db_drop_table(f, ttbl)) {
 		SCERR(die, "rm_catalogue: cft table drop error");
 		free(ttbl);
 		return 0;
@@ -862,4 +848,62 @@ int rm_catalogue(f, catname)
 	free(ttbl);
 
 	return 1;
+}
+
+int fdbfs_dbspec_parse(f, filename)
+	fdbfs_t *f;
+	char *filename;
+{
+	Toke tz;
+	int rc;
+	FILE *tf;
+	Heads h;
+	void *parser;
+	
+	memset(&tz, 0, sizeof(tz));
+	memset(&h, 0, sizeof(h));
+	h.instance = f;
+	h.db_enumh = fdbfs_enums_from_db(f);
+	if(h.db_enumh == NULL && f->error.emsg != NULL)
+		return SCERR(die, "parse_definition: enum importation failed. ");
+	h.db_cath = fdbfs_cats_from_db(f, h.db_enumh);
+	if(h.db_cath == NULL && f->error.emsg != NULL)
+		return SCERR(die, "parse_definition: catalogue importation failed. ");
+	if(strcmp(filename, "-") == 0)
+		tf = stdin;
+	else
+		tf = fopen(filename, "r");
+	if(!tf)
+		return ERR(die, "parse_definition: opening %s: %s", filename, strerror(errno));
+	parser = DSpecParseAlloc(malloc);
+	fdbfs_dsin = tf;
+#ifdef PARSERDEBUG
+	DSpecParseTrace(stderr, "PARSER: ");
+#endif
+	while((rc = fdbfs_dslex()) != 0) {
+		tz.num = yylval.number;
+		tz.str = yylval.string;
+#ifdef PARSERDEBUG
+		fprintf(stderr, "rc == %d\n", rc);
+#endif
+		DSpecParse(parser, rc, tz, &h);
+		if(h.err || f->error.emsg != NULL) {
+			DSpecParseFree(parser, free);
+			fdbfs_free_head_members(&h);
+			CERR(die, "parse_definition(f, \"%s\"): error after DSpecParse(). ", filename);
+			fclose(tf);
+			return 0;
+		}
+	}
+	DSpecParse(parser, 0, tz, &h);
+	DSpecParseFree(parser, free);
+	fdbfs_free_enum_head_list(h.db_enumh);
+	fdbfs_free_cat_head_list(h.db_cath);
+	fclose(tf);
+	return make_tables_from_spec(f, filename, &h);
+}
+
+void fdbfs_dswrap(void)
+{
+	yywrap();
 }

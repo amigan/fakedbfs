@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * fdbfsregex.h - regex stuff (POSIX or pcre)
  * 
@@ -27,10 +27,11 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fdbfsregex.h,v 1.3 2005/12/24 22:11:37 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fdbfsregex.h,v 1.4 2006/01/29 21:03:55 dcp1990 Exp $ */
 #ifndef HAVE_FDBRE_H
 #define HAVE_FDBRE_H 1
-#include <fdbfsconfig.h>
+#include <fakedbfs/types.h>
+#include <fakedbfs/fdbfsconfig.h>
 
 #ifdef USE_PCRE
 #include <pcre.h>
@@ -54,18 +55,18 @@
 #define FREG_OK		0x0
 #define FREG_NOMATCH	0x1
 
-typedef struct {
+struct _freg {
 	REGEX_T re;
 	EXTRA_T extra;
 	int offset; /* only for pcre; don't rely on it */
 	char *errmsg;
 	short int dynamic; /* errmsg malloc()d? */
-} freg_t;
+};
 
-typedef struct {
+struct _fregmatch {
 	int s;
 	int e;
-} fregmatch_t;
+};
 
 
 /* functions */

@@ -27,13 +27,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.16 2005/12/22 21:53:46 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.17 2006/01/29 21:03:55 dcp1990 Exp $ */
 #ifndef HAVE_QUERY_H
 #define HAVE_QUERY_H 1
 #ifndef HAVE_DBSPECDATA_H
-#include <dbspecdata.h>
+#include <fakedbfs/dbspecdata.h>
 #endif
-#include <fdbfsregex.h>
+#include <fakedbfs/fdbfsregex.h>
 
 /* See doc/QUERY_OPCODES for how these are used */
 #define OP_BEGINQ	0x1
@@ -116,7 +116,7 @@ typedef struct {
 	operands_t *stackbase, *top, *csp;
 	size_t stacksize; /* int number of elements, not bytes */
 	size_t items;
-	struct FDBFS *f;
+	fdbfs_t *f;
 	inst_t *insthead;
 	inst_t *lastinst;
 	short int error;
@@ -136,4 +136,217 @@ typedef struct {
 	char *colname;
 	char *tregex;
 } qreg_t;
+
+/**
+ * @brief Create new query object.
+ *
+ * Creates a new query object with the specified stacksize.
+ * @param f Instance of fakedbfs to link to.
+ * @param stacksize If non-zero, number of elements to allocate for stack. Otherwise, DEFAULT_STACK_SIZE.
+ * @return New query object, or NULL on error.
+ */
+query_t* fdbfs_query_new(fdbfs_t *f, size_t stacksize);
+
+/**
+ * @brief Destroy query.
+ *
+ * @param q Query to destroy.
+ */
+void fdbfs_query_destroy(query_t *q);
+
+/**
+ * @brief Queue instruction.
+ *
+ * fdbfs_query_qi() queues an instruction of the specified opcode and operands into the query object for later execution by the VM.
+ * @param q Query to operate on.
+ * @param opcode Opcode of the instruction.
+ * @param op1 O1 of the instruction.
+ * @param op2 O2 of the instruction.
+ * @param op3 O3 of the instruction.
+ * @param used Used flags.
+ * @return Non-zero on success.
+ */
+int fdbfs_query_qi(query_t *q, int opcode, int op1, unsigned int op2, void *op3, int used);
+
+/**
+ * @brief Query next or execute.
+ *
+ * This is cleaner than calling fdbfs_query_init_exec() or fdbfs_query_step(). It decides what needs to be done
+ * based on the execution state of the query. Use it.
+ * @param q Query to control.
+ * @retval Q_FINISHED Query finished executing; reset before running again.
+ * @retval Q_UNKNOWNSTATE Something is royally fucked up. The VM is in a hopeless state of confusion.
+ * @return Same as fdbfs_query_init_exec() and fdbfs_query_step().
+ */
+int fdbfs_query_qne(query_t *q);
+
+/**
+ * @brief Step currently-running query.
+ *
+ * Steps query, pushes fields_t of current result to stack.
+ * @param q Query to step.
+ * @return Various.
+ * @sa query.h
+ */
+int fdbfs_query_step(query_t *q);
+
+/**
+ * @brief Initialise and execute a query.
+ *
+ * This must be called before the query can be stepped. This also steps the query once.
+ * @param q Query to initialise and execute.
+ * @return Various.
+ */
+int fdbfs_query_init_exec(query_t *q);
+
+
+/**
+ * @brief Push a cell to the query stack.
+ *
+ * @param q Query to operate on.
+ * @param o1 Value of o1.
+ * @param o2 Value of o2.
+ * @param o3 Value of o3.
+ * @param used Used flags for this cell.
+ * @sa USED_O1
+ * @sa USED_O2
+ * @sa USED_O3
+ * @sa US_DYNA
+ * @sa US_FILE
+ * @retval 1 Normal.
+ * @retval 0 No more space on stack.
+ */
+int fdbfs_query_spush(query_t *q, int o1, unsigned int o2, void *o3, int used);
+
+/**
+ * @brief Pop cell off stack.
+ *
+ * @param q Query to operate on.
+ * @param[out] bf Place to store popped data.
+ * @retval 1 Normal.
+ * @retval 0 Stack underflow.
+ */
+int fdbfs_query_spop(query_t *q, operands_t *bf);
+
+/**
+ * @brief Pop O1.
+ *
+ * @param q Query to operate on.
+ * @param[out] o1 Place to store O1.
+ * @retval 1 Normal.
+ * @retval 0 Stack underflow.
+ */
+int fdbfs_query_pop1(query_t *q, int *o1);
+
+/**
+ * @brief Pop O2.
+ *
+ * @param q Query to operate on.
+ * @param[out] o2 Place to store O2.
+ * @retval 1 Normal.
+ * @retval 0 Stack underflow.
+ */
+int fdbfs_query_pop2(query_t *q, unsigned int *o2);
+
+/**
+ * @brief Pop O3.
+ *
+ * @param q Query to operate on.
+ * @param[out] o3 Place to store O3.
+ * @retval 1 Normal.
+ * @retval 0 Stack underflow.
+ * @retval US_DYNA Free the data, please (free(o3)).
+ */
+int fdbfs_query_pop3(query_t *q, void **o3);
+
+/**
+ * @brief Push O1.
+ *
+ * @param q Query to operate on.
+ * @param o1 Data to push.
+ * @return Same as fdbfs_query_spush().
+ */
+int fdbfs_query_push1(query_t *q, int o1);
+
+/**
+ * @brief Push O2.
+ *
+ * @param q Query to operate on.
+ * @param o2 Data to push.
+ * @return Same as fdbfs_query_spush().
+ */
+int fdbfs_query_push2(query_t *q, unsigned int o2);
+
+/**
+ * @brief Push O3.
+ *
+ * @param q Query to operate on.
+ * @param o3 Data to push.
+ * @return Same as fdbfs_query_spush().
+ */
+int fdbfs_query_push3(query_t *q, void *o3); /* we could use macros for push*(), but oh well */
+
+/**
+ * @brief Create and compile new qreg object.
+ *
+ * @param regex Regex to compile.
+ * @param case_insens 1 if case-insensitive matching will occur, 0 otherwise.
+ * @param[out] errmsg Set to error message on error; must free().
+ * @return New qreg object, NULL on error.
+ */
+qreg_t* fdbfs_qreg_compile(char *regex, int case_insens, char **errmsg);
+
+/**
+ * @brief Destroy qreg object.
+ *
+ * @param q qreg to destroy.
+ */
+void fdbfs_qreg_destroy(qreg_t *q);
+
+/**
+ * @brief Read file.
+ *
+ * Read the specified file and return a pointer to (usually mmaped) data in it.
+ * This isn't really used very much; also we must add support to get the length of data.
+ * @param f Instance of fakedbfs to use.
+ * @param fn Filename to read.
+ * @return Pointer to data, or NULL on error.
+ */
+void* fdbfs_query_read_file(fdbfs_t *f, char *fn);
+
+/**
+ * @brief Parse a query.
+ *
+ * Converts a query (as defined by the query grammar) into a usable instruction list for the VM.
+ * Applications usually call this directly.
+ * @param q Query to operate on.
+ * @param qstr String to parse.
+ * @return 0 on error.
+ */
+int fdbfs_query_parse(query_t *q, char *qstr);
+
+/**
+ * @brief Tokeinse query
+ *
+ * @param[in,out] cp Pointer to string. Next token will be set here each call.
+ * @param[out] tval Value of current token.
+ * @param[out] toke Token data.
+ * @param[out] ctok Buffer for current token...must point to a buffer of at least 512 bytes.
+ * @return 0 on error.
+ */
+int fdbfs_query_qtok(char **cp, int *tval, Toke *toke, char *ctok /* MUST be a buffer at least 512b long */);
+
+/**
+ * @brief SQLite regex func. For internal use only.
+ */
+void fdbfs_db_regex_func(sqlite3_context *ctx, int i, sqlite3_value **sqval);
+
+/**
+ * @brief Get description for error code.
+ *
+ * @param rc The error code from the various VM control functions.
+ * @return A human-readable string containing the error message.
+ */
+const char* fdbfs_query_error(int rc);
+
 #endif

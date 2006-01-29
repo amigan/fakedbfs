@@ -27,7 +27,11 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.11 2005/12/20 22:38:43 dcp1990 Exp $ */
+/**
+ * @file qtokenise.c
+ * @brief Query tokeniser.
+ */
+/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.12 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -41,14 +45,14 @@
 /* other libraries */
 #include <sqlite3.h>
 /* us */
-#include <query.h>
+#include <fakedbfs/query.h>
 
-#include <fdbfsconfig.h>
+#include <fakedbfs/fdbfsconfig.h>
 
 #include "queryparser.h"
-#include <fakedbfs.h>
+#include <fakedbfs/fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.11 2005/12/20 22:38:43 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.12 2006/01/29 21:03:55 dcp1990 Exp $")
 
 
 /* from SQLite... */
@@ -105,7 +109,7 @@ static int uqstrtok(cp, len)
 	}
 }
 
-size_t toktl(cp, tval)
+static size_t toktl(cp, tval)
 	char *cp;
 	int *tval;
 {
@@ -275,7 +279,7 @@ size_t toktl(cp, tval)
 	/* NOTREACHED */
 }
 
-int extract_token_data(cp, t, len, toke)
+static int extract_token_data(cp, t, len, toke)
 	char *cp;
 	int t;
 	size_t len;
@@ -325,11 +329,8 @@ int extract_token_data(cp, t, len, toke)
 
 	return 1;
 }
-			
 
-
-
-int qtok(cp, tval, toke, ctok)
+int fdbfs_query_qtok(cp, tval, toke, ctok)
 	char **cp;
 	int *tval;
 	Toke *toke;

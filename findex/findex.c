@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/findex/findex.c,v 1.21 2005/12/30 01:34:51 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/findex/findex.c,v 1.22 2006/01/29 21:03:55 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -36,8 +36,8 @@
 #include <getopt.h>
 #include <errno.h>
 
-#include <fakedbfs.h>
-#include <fakedbfsapps.h>
+#include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/fakedbfsapps.h>
 
 #ifdef UNIX
 #include <sys/types.h>
@@ -48,7 +48,7 @@
 #define FINDEXVER "0.1"
 #define MAXPLEN 1023
 
-RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.21 2005/12/30 01:34:51 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/findex/findex.c,v 1.22 2006/01/29 21:03:55 dcp1990 Exp $")
 
 static int dbfu = 0;
 static int recurse = 0;
@@ -100,9 +100,9 @@ int idxus(cf, cat)
 	char *cat;
 {
 	char *cps[] = {cf, NULL}; /* hack, oh well */
-	if(!index_dir(f, cps, cat, 1, (interactive ? 0 : 1), nocase, regex, recurse, defhead)) {
+	if(!fdbfs_index_dir(f, cps, cat, 1, (interactive ? 0 : 1), nocase, regex, recurse, defhead)) {
 		fprintf(stderr, "Error in index_dir: %s\n", f->error.emsg);
-		estr_free(&f->error);
+		fdbfs_estr_free(&f->error);
 		return 0;
 	}
 
@@ -216,7 +216,7 @@ int main(argc, argv)
 			asprintf(&dbf, "%s/.fakedbfsdb", getenv("HOME"));
 	}
 
-	f = new_fdbfs(dbf, &estr, DEBUGFUNC_STDERR, 1);
+	f = fdbfs_new(dbf, &estr, DEBUGFUNC_STDERR, 1);
 	if(f == NULL) {
 		fprintf(stderr, "error creating fdbfs instance: %s\n", estr);
 		free(dbf);
@@ -227,18 +227,18 @@ int main(argc, argv)
 		return -1;
 	}
 
-	if(!read_specs_from_db(f)) {
+	if(!fdbfs_read_specs_from_db(f)) {
 		fprintf(stderr, "error reading specs from db: %s\n", f->error.emsg);
-		estr_free(&f->error);
+		fdbfs_estr_free(&f->error);
 		free(dbf);
 		free(cat);
 		if(tsp != NULL) free(tsp);
 		if(regex != NULL) free(regex);
-		destroy_fdbfs(f);
+		fdbfs_destroy(f);
 		return -1;
 	}
 
-	if((rc = cat_exists(f, cat)) != 1) {
+	if((rc = fdbfs_db_cat_exists(f, cat)) != 1) {
 		switch(rc) {
 			case 0:
 				fprintf(stderr, "Catalogue %s doesn't exist!\n", cat);
@@ -246,30 +246,30 @@ int main(argc, argv)
 				free(cat);
 				if(regex != NULL) free(regex);
 				if(tsp != NULL) free(tsp);
-				destroy_fdbfs(f);
+				fdbfs_destroy(f);
 				return -2;
 			case -1:
 			default:
 				fprintf(stderr, "error checking if catalogue exists: %s\n", f->error.emsg);
-				estr_free(&f->error);
+				fdbfs_estr_free(&f->error);
 				free(dbf);
 				free(cat);
 				if(tsp != NULL) free(tsp);
 				if(regex != NULL) free(regex);
-				destroy_fdbfs(f);
+				fdbfs_destroy(f);
 				return -1;
 		}
 	}
 
 	if(tsp != NULL) {
-		if((defhead = fields_from_dsp(f, tsp)) == NULL) {
+		if((defhead = fdbfs_fields_from_dsp(f, tsp)) == NULL) {
 			fprintf(stderr, "error creating default field list from '%s': %s\n", tsp, f->error.emsg);
-			estr_free(&f->error);
+			fdbfs_estr_free(&f->error);
 			free(dbf);
 			free(cat);
 			free(tsp);
 			if(regex != NULL) free(regex);
-			destroy_fdbfs(f);
+			fdbfs_destroy(f);
 			return -1;
 		}
 	}
@@ -300,9 +300,9 @@ int main(argc, argv)
 
 
 	if(defhead != NULL)
-		free_field_list(defhead);
+		fdbfs_free_field_list(defhead);
 
-	destroy_fdbfs(f);
+	fdbfs_destroy(f);
 	free(dbf);
 	free(cat);
 	if(tsp != NULL) free(tsp);
