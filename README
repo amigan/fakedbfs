@@ -1,7 +1,7 @@
-$Amigan: fakedbfs/README,v 1.10 2005/12/22 22:55:02 dcp1990 Exp $
+$Amigan: fakedbfs/README,v 1.11 2006/01/29 21:08:25 dcp1990 Exp $
 
 This is the fakedbfs distribution, version 2.0.0-RELEASE (Doctor Wu). See the contents of
-doc/ for more information. I know API docs suck now...I plan on changing this with this release.
+doc/ for more information.
 Feel free to email me at <dcp1990@neptune.atopia.net> if you have any questions.
 
 
@@ -19,6 +19,12 @@ vim fdbfsconfig
 sh config.sh tclsh8.4
 make
 (replace tclsh8.4 with the name of tclsh on your system)
+
+If you want API docs, install doxygen and do the following:
+cd doc
+doxygen fakedbfs.doxy
+
+You should now see them in doc/doxy/. Enjoy!
 
 Currently, there are no installation procedures. I will have these next release.
 
