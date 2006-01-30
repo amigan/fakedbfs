@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/README,v 1.13 2006/01/30 21:13:45 dcp1990 Exp $
+$Amigan: fakedbfs/README,v 1.14 2006/01/30 21:26:02 dcp1990 Exp $
 
 This is the fakedbfs distribution, version 2.0.0-RELEASE (Doctor Wu). See the contents of
 doc/ for more information.
@@ -34,9 +34,6 @@ fdbfsconfig options:
 
 platform <unix|amiga|win32>
 	selects target/build platform. This MUST be present.
-
-archwidth <32|64>
-	Set to 64 for 64bit platforms. This MUST be present.
 
 prefix path
 	sets prefix to whatever (default .)
