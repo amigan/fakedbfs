@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fficl.h,v 1.1 2006/01/29 21:04:36 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fficl.h,v 1.2 2006/01/30 20:56:19 dcp1990 Exp $ */
 /**
  * @file fficl.h
  * @brief fakedbfs ficl bindings.
@@ -37,9 +37,85 @@
 #include <fakedbfs/types.h>
 #include <ficl.h>
 
+struct _ficlplug {
+	char *wordprefix; /** < word prefix, must be unique */
+	char *filename; /** < filename of the source */
+	ficlVm *vm; /** < the VM */
+};
+
+
 /* ficl stuff */
+
+/**
+ * @brief Initialise ficl subsystem.
+ *
+ * Creates a new ficlSystem.
+ * @param f Instance of fakedbfs.
+ * @return 0 on error.
+ */
 int fdbfs_ficl_init(fdbfs_t *f);
+
+/**
+ * @brief Destroy ficl subsystem.
+ *
+ * @param f Instance of fakedbfs.
+ */
 void fdbfs_ficl_destroy(fdbfs_t *f);
+
+/**
+ * @brief Add words to ficl system dictionary.
+ *
+ * @param f Instance of fakedbfs.
+ * @param dict Dictionary to add to.
+ * @return 0 on error.
+ */
 int fdbfs_ficl_addwords(fdbfs_t *f, ficlDictionary *dict);
+
+
+/**
+ * @brief Check plugin for file compatibility using ficl subsystem.
+ *
+ * Ficl analogue to (struct Plugin).check_file().
+ * @param fpl ficlplug_t object to operate on.
+ * @param filename Filename to check.
+ * @param errmsg Pointer to char* that will be set to error message on error.
+ * @retval -1 Error occured. Examine and free *errmsg.
+ * @retval 0 Doesn't match.
+ * @retval 1 Matches...this plugin is compatibile with this file.
+ */
+int fdbfs_ficl_p_check_file(ficlplug_t *fpl, char *filename, char **errmsg);
+
+/**
+ * @brief Initialise ficl plugin.
+ *
+ * The usefulness of this is questionable, but...
+ * @param fpl ficlplug_t object to operate on.
+ * @param errmsg Pointer to char* that will be set to error message on error.
+ * @return 0 on error (examine and free *errmsg).
+ */
+int fdbfs_ficl_p_init(ficlplug_t *fpl, char **errmsg);
+
+/**
+ * @brief Shutdown ficl plugin.
+ *
+ * Analogous to (struct Plugin).shutdown().
+ * @param fpl ficlplug_t to operate on.
+ * @param errmsg Pointer to char* that will be set to error message on error.
+ * @return 0 on error (examine and free *errmsg).
+ */
+int fdbfs_ficl_p_shutdown(ficlplug_t *fpl, char **errmsg);
+
+/**
+ * @brief Extract metedata using ficl plugin.
+ *
+ * Analogous to (struct Plugin).extract_from_file().
+ * @param fpl ficlplug_t object to operate on.
+ * @param filename Filename to extract from.
+ * @param errmsg Pointer to char* that will be set to error message on error.
+ * @return List of fields_t for the specified file, or NULL on error (examine
+ * and free *errmsg).
+ */
+fields_t* fdbfs_ficl_p_extract_from_file(ficlplug_t *fpl, char *filename,
+		char **errmsg);
 
 #endif

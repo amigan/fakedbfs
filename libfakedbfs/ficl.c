@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.3 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.4 2006/01/30 20:56:19 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -45,16 +45,18 @@
 #include <fakedbfs/fficl.h>
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/debug.h>
+#include <fakedbfs/plugins.h>
+#include <ficl.h>
 #define FICLBINDINGSVER "0.1"
 
 #define FICLWORD(word)		cword = ficlDictionarySetPrimitive(dict, #word, fdbfs_ficl_word_ ## word, 0x0)
 #define WORDDEF(word)		void fdbfs_ficl_word_ ## word(ficlVm *vm)
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.3 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.4 2006/01/30 20:56:19 dcp1990 Exp $")
 
 
 
-static const struct PluginInfo ficl_inf = {
+const struct PluginInfo fdbfs_ficl_inf = {
 	"",
 	"FORTH plugin",
 	FICLBINDINGSVER,
@@ -195,3 +197,104 @@ int fdbfs_ficl_addwords(f, dict)
 
 	return 1;
 }
+
+static char* word_prefix(fn)
+	char *fn;
+{
+	char *pdelim, *ewd;
+
+	pdelim = strrchr(fn, '/');
+	if(!pdelim)
+		return NULL;
+
+	++pdelim;
+	
+	ewd = strrchr(fn, '.');
+	if(!ewd)
+		return NULL;
+
+	*ewd = '\0';
+	pdelim = strdup(pdelim); /* conserve memory */
+	*ewd = '.';
+
+	return pdelim;
+}
+
+static int parse_ficl_file(f, fp)
+	fdbfs_t *f;
+	ficlplug_t *fp;
+{
+#define BUFSIZE	1024 /* 1k */
+	FILE *fh;
+	char *buffer; /* use the heap, Luke */
+	int rc;
+
+	if(!(fh = fopen(fp->filename, "r"))) {
+		return ERR(die, "Couldn't open %s: %s", fp->filename, strerror(errno));
+	}
+
+	buffer = malloc(BUFSIZE * sizeof(char));
+
+	while(!feof(fh)) {
+		fgets(buffer, BUFSIZE, fh);
+		rc = ficlVmEvaluate(fp->vm, buffer);
+		if(rc != FICL_VM_STATUS_OUT_OF_TEXT) {
+			ERR(die, "ficlVmEvaulate returned %d", rc);
+			free(buffer);
+			fclose(fh);
+			return 0;
+		}
+	}
+	
+	free(buffer);
+	fclose(fh);
+#undef BUFSIZE
+
+	return 1;
+}
+
+
+struct Plugin* fdbfs_ficl_load_ficlplugin(f, plugfile)
+	fdbfs_t *f;
+	char *plugfile;
+{
+	int rc;
+	char *plending;
+	struct Plugin *n;
+
+	plending = plugfile + (strlen(plugfile) - 3);
+	if(strcasecmp(plending, ".4th") != 0) {
+		fdbfs_debug_info(f, error, "Plugin is not a forth plugin.\n");
+		return NULL;
+	}
+
+	n = allocz(sizeof(*n));
+
+	n->info = &fdbfs_ficl_inf;
+	n->flags |= PLUGIN_IS_FICL;
+	n->pl.fplug.vm = ficlSystemCreateVm(f->fsys);
+	if(n->pl.fplug.vm == NULL) {
+		free(n);
+		return NULL;
+	}
+	n->pl.fplug.filename = strdup(plugfile);
+	n->pl.fplug.wordprefix = word_prefix(n->pl.fplug.filename);
+	if(n->pl.fplug.wordprefix == NULL) {
+		free(n->pl.fplug.filename);
+		ficlVmDestroy(n->pl.fplug.vm);
+		free(n);
+		ERR(die, "Couldn't derive wordprefix from file %s", plugfile);
+		return NULL;
+	}
+	rc = parse_ficl_file(f, &n->pl.fplug);
+	if(!rc) {
+		free(n->pl.fplug.filename);
+		ficlVmDestroy(n->pl.fplug.vm);
+		free(n);
+		SCERR(die, "Error reading plugin ");
+		return NULL;
+	}
+
+	return n;
+}
+		

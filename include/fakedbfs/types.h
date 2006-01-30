@@ -53,6 +53,7 @@ typedef struct _dspdata dspdata_t;
 typedef struct _freg freg_t;
 typedef struct _fregmatch fregmatch_t;
 typedef struct _ficlstate ficlstate_t;
+typedef struct _ficlplug ficlplug_t;
 typedef union _ansdata ansdata_t;
 typedef union Data data_t;
 

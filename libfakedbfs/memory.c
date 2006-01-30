@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.25 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.26 2006/01/30 20:56:19 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 #include <fakedbfs/plugins.h>
 #include <fakedbfs/fields.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.25 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.26 2006/01/30 20:56:19 dcp1990 Exp $")
 
 
 #ifdef NO_CALLOC
@@ -215,7 +215,7 @@ static struct Plugin* destroy_plugin(e)
 	struct Plugin *nx;
 
 #ifdef UNIX
-	dlclose(e->libhandle);
+	dlclose(e->pl.libhandle);
 #endif
 	nx = e->next;
 	free(e);

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.8 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.9 2006/01/30 20:56:20 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -48,12 +48,12 @@
 #include <fakedbfs/plugins.h>
 #include <fakedbfs/fields.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.8 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.9 2006/01/30 20:56:20 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
 
-struct PluginInfo plugin_inf = {
+const struct PluginInfo plugin_inf = {
 	"mp3/ogg/wav", /* extensions supported */
 	"Music", /* name */
 	MUSICPLUGINVER, /* version */
