@@ -1,9 +1,10 @@
 include ../globals.mk
+include ../config.mk
 OBJECTS= dictionary.o system.o fileaccess.o float.o double.o prefix.o search.o softcore.o stack.o tools.o vm.o primitives.o bit.o lzuncompress.o ansi.o utility.o hash.o callback.o word.o extras.o
 HEADERS= ficl.h ficlplatform/ansi.h
 #
 # Flags for shared library
-TARGET=  -ansi -DFICL_ANSI  -ggdb # riscos MOTO_CPU32 
+TARGET=  -ansi $(FICLPLATFORM)  -ggdb # riscos MOTO_CPU32 
 SHFLAGS = -fPIC
 CFLAGS= -O $(SHFLAGS) $(TARGET)
 LIB = ar cr

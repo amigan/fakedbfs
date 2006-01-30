@@ -21,6 +21,19 @@ proc platform {pf} {
 	}
 }
 
+proc archwidth {width} {
+	global mfh
+	if {$width != 32 && $width != 64} {
+		puts "Error: archwidth is not one of 32 or 64"
+		exit 1;
+	}
+	if {$width == 64} {
+		puts $mfh "FICLPLATFORM=-DFICL_ANSI64"
+	} else {
+		puts $mfh "FICLPLATFORM=-DFICL_ANSI"
+	}
+}
+
 proc pcre {pcreconfpath} {
 	global platf
 	global mfh

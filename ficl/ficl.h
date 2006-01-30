@@ -161,6 +161,8 @@ extern "C" {
 
 #if defined(FICL_ANSI)
 	#include "ficlplatform/ansi.h"
+#elif defined(FICL_ANSI64)
+	#include "ficlplatform/ansi64.h"
 #elif defined(_WIN32)
 	#include "ficlplatform/win32.h"
 #elif defined (FREEBSD_ALPHA)

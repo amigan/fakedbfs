@@ -1,6 +1,7 @@
-# $Amigan: fakedbfs/fdbfsconfig,v 1.5 2005/12/24 22:44:54 dcp1990 Exp $
+# $Amigan: fakedbfs/fdbfsconfig,v 1.6 2006/01/30 21:13:45 dcp1990 Exp $
 # this is for Unix...
 platform unix
+archwidth 32
 prefix /usr/local
 #freedebug
 # no dmalloc...
