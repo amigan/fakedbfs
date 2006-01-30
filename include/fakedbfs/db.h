@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/db.h,v 1.2 2006/01/30 22:08:17 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/db.h,v 1.3 2006/01/30 22:11:18 dcp1990 Exp $ */
 /**
  * @file db.h
  * @brief Database driver stuff
@@ -133,7 +133,7 @@ int fdbfs_db_add_to_enum_list_table(fdbfs_t *f, char *name, char *tname, char *s
 /**
  * @brief Add an entry to the cat_list table.
  *
- * fdbfs_db_add_to_cat_list_table9) adds an entry to the cat list table.
+ * fdbfs_db_add_to_cat_list_table() adds an entry to the cat list table.
  * @param f The instance of fakedbfs.
  * @param name The name of the catalogue.
  * @param alias The friendly alias of the catalogue.
