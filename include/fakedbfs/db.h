@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/db.h,v 1.1 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/db.h,v 1.2 2006/01/30 22:08:17 dcp1990 Exp $ */
 /**
  * @file db.h
  * @brief Database driver stuff
@@ -121,7 +121,7 @@ int fdbfs_db_del_column(fdbfs_t *f, char *tname, char *cname);
 /**
  * @brief Add an entry to the enum_list table.
  *
- * fdbfs_db_add_to_enum_list_table9) adds an entry to the enum list table.
+ * fdbfs_db_add_to_enum_list_table() adds an entry to the enum list table.
  * @param f The instance of fakedbfs.
  * @param name The name of the enum.
  * @param tname The table that the enum is defined in.
