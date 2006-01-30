@@ -1,8 +1,9 @@
-$Amigan: fakedbfs/CHANGELOG,v 1.17 2006/01/29 21:11:47 dcp1990 Exp $
+$Amigan: fakedbfs/CHANGELOG,v 1.18 2006/01/30 22:00:26 dcp1990 Exp $
 
 Changelog
 
 2.0.0-RELEASE ("Doctor Wu")
+*New logo. YEAH!!!!
 *THE GREAT RENAMING....most symbols start with fdbfs_ now, and stuff has been split up. Major changes.
 *doxygen API docs...finally!
 *Thanks to fez (new amd64 workstation), this code should now be mostly 64bit clean. I also made some changes to ficl to make it 64bit clean.
