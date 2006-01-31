@@ -34,6 +34,9 @@
 #ifndef HAVE_FDBFSTYPES_H
 #define HAVE_FDBFSTYPES_H
 
+#ifndef _SQLITE3_H_
+#include <sqlite3.h> /* for sqlite3 type */
+#endif
 
 #define FLOATTYPE double
 
@@ -54,6 +57,7 @@ typedef struct _freg freg_t;
 typedef struct _fregmatch fregmatch_t;
 typedef struct _ficlstate ficlstate_t;
 typedef struct _ficlplug ficlplug_t;
+typedef struct _db db_t;
 typedef union _ansdata ansdata_t;
 typedef union Data data_t;
 
@@ -77,6 +81,10 @@ enum DataType {
 	datime, /* date and time; see lastupdate (this is really like number, but treated differently for display
 	purposes */
 	character /* for use with conf only */
+};
+
+struct _db {
+	sqlite3 *db;
 };
 
 struct _fields {
