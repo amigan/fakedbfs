@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fedit/commands.c,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fedit/commands.c,v 1.7 2006/01/31 17:53:03 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -39,7 +39,7 @@
 
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/fakedbfsapps.h>
-RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.7 2006/01/31 17:53:03 dcp1990 Exp $")
 
 #define COMMFLAG_MIN	0x1 /* at least this many args */
 #define COMMFLAG_MAX	0x2 /* at most this many args */
@@ -71,7 +71,7 @@ struct command {
 
 struct command cmds[] = {
 	{"rmcat", REMOVE_CAT, 1, COMMFLAG_MIN /* args are a list of catalogues to remove */},
-	{"editrec", EDIT_REC, 2 /* two arguments: first is a query specifying which to edit, second is a defspec */, COMMFLAG_EQU},
+	{"editrec", EDIT_REC, 3 /* three arguments: first is the catalogue, second is a query specifying which to edit, third is a defspec */, COMMFLAG_EQU},
 	{"iedit", IEDIT_REC, 0, COMMFLAG_EQU},
 	{"rmrec", REMOVE_REC, 1, COMMFLAG_MIN /* args are just a bunch of querys specifying what to delete */},
 	{"dumpcat", EXPORT_CAT, 1, COMMFLAG_MAX /* if an argument is given, it is the name of a file to dump to, otherwise stdout */},
@@ -147,6 +147,7 @@ int exec_command(cm, argc, argv)
 				}
 			}
 			break;
+		case EDIT_REC: /* <catalogue> <query> <defspec> */
 		default:
 			fprintf(stderr, "command not implemented!\n");
 			return 0;
