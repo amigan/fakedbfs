@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * dspparser.y - parser for default specs
  * 
@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.7 2006/01/31 17:26:26 dcp1990 Exp $ */
 %name {DSPParse}
 %include {
 #include <sqlite3.h>
@@ -45,7 +45,7 @@
 #include <fakedbfs/debug.h>
 #include <fakedbfs/dbspecdata.h>
 #include <fakedbfs/fields.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.7 2006/01/31 17:26:26 dcp1990 Exp $")
 }
 %token_type {Toke}
 %nonassoc ILLEGAL SPACE.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * indexing.c - indexing code
  * 
@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.49 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.50 2006/01/31 17:26:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/indexing.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.49 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.50 2006/01/31 17:26:26 dcp1990 Exp $")
 
 static int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * queryparser.y - Parser for the query language. Turns it into a compiled query_t
  * 
@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.7 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.8 2006/01/31 17:26:26 dcp1990 Exp $ */
 %name {QParse}
 %include {
 #include <sqlite3.h>
@@ -37,7 +37,7 @@
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/query.h>
 #include <fakedbfs/debug.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.7 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/queryparser.y,v 1.8 2006/01/31 17:26:26 dcp1990 Exp $")
 }
 %token_type {Toke}
 %nonassoc ASSIGN BW_OR BW_AND ILLEGAL SPACE.

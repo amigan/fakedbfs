@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * query.c - query code (namely the virtual machine)
  * See doc/QUERY_OPCODES for how all of this works.
@@ -34,7 +34,7 @@
  *
  * @sa query.h
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.39 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.40 2006/01/31 17:26:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -62,7 +62,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.39 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.40 2006/01/31 17:26:26 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke

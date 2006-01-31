@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * qtokenise.c - tokeniser for query parser
  * 
@@ -31,7 +31,7 @@
  * @file qtokenise.c
  * @brief Query tokeniser.
  */
-/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.12 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.13 2006/01/31 17:26:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -52,7 +52,7 @@
 #include "queryparser.h"
 #include <fakedbfs/fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.12 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.13 2006/01/31 17:26:26 dcp1990 Exp $")
 
 
 /* from SQLite... */

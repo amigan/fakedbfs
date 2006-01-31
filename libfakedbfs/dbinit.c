@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * dbinit.c - DB initialisation
  * 
@@ -31,7 +31,7 @@
  * @file dbinit.c
  * @brief Database initialisation stuff.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.44 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.45 2006/01/31 17:26:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -51,7 +51,7 @@
 #define DSpecParseTOKENTYPE Toke
 #define DSpecParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.44 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.45 2006/01/31 17:26:26 dcp1990 Exp $")
 
 void *DSpecParseAlloc(void *(*mallocProc)(size_t));
 void DSpecParseFree(void *p, void (*freeProc)(void*));

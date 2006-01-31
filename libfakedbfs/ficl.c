@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * ficl.c - ficl plugin bindings
  * 
@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.4 2006/01/30 20:56:19 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.5 2006/01/31 17:26:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -52,7 +52,7 @@
 #define FICLWORD(word)		cword = ficlDictionarySetPrimitive(dict, #word, fdbfs_ficl_word_ ## word, 0x0)
 #define WORDDEF(word)		void fdbfs_ficl_word_ ## word(ficlVm *vm)
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.4 2006/01/30 20:56:19 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.5 2006/01/31 17:26:26 dcp1990 Exp $")
 
 
 

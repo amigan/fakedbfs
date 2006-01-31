@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * fregex.c - FDBFS regexp library abstraction layer
  * 
@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.8 2006/01/30 21:28:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.9 2006/01/31 17:26:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/fdbfsregex.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.8 2006/01/30 21:28:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.9 2006/01/31 17:26:26 dcp1990 Exp $")
 
 int frinitialise(fr)
 	freg_t *fr;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * memory.c - allocation and free functions
  * 
@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.26 2006/01/30 20:56:19 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.27 2006/01/31 17:26:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 #include <fakedbfs/plugins.h>
 #include <fakedbfs/fields.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.26 2006/01/30 20:56:19 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.27 2006/01/31 17:26:26 dcp1990 Exp $")
 
 
 #ifdef NO_CALLOC

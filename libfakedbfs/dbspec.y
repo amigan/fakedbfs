@@ -1,7 +1,7 @@
 /* Grammar for db spec files
- * (C)2005, Dan Ponte
+ * (C)2005-2006, Dan Ponte
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.25 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.26 2006/01/31 17:26:26 dcp1990 Exp $ */
 %include {
 #include <sqlite3.h>
 #include <stdlib.h>
@@ -10,7 +10,7 @@
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/dbspecdata.h>
 #include <fakedbfs/debug.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.25 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbspec.y,v 1.26 2006/01/31 17:26:26 dcp1990 Exp $")
 extern int fdbfs_chrcnt, fdbfs_lincnt;
 extern char *fdbfs_dstext;
 }
