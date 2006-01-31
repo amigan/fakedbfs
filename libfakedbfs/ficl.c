@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.5 2006/01/31 17:26:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.6 2006/01/31 17:43:09 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -52,7 +52,7 @@
 #define FICLWORD(word)		cword = ficlDictionarySetPrimitive(dict, #word, fdbfs_ficl_word_ ## word, 0x0)
 #define WORDDEF(word)		void fdbfs_ficl_word_ ## word(ficlVm *vm)
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.5 2006/01/31 17:26:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.6 2006/01/31 17:43:09 dcp1990 Exp $")
 
 
 
@@ -201,7 +201,8 @@ int fdbfs_ficl_addwords(f, dict)
 static char* word_prefix(fn)
 	char *fn;
 {
-	char *pdelim, *ewd;
+	char *pdelim, *ewd, *ns;
+	size_t ln;
 
 	pdelim = strrchr(fn, '/');
 	if(!pdelim)
@@ -214,10 +215,13 @@ static char* word_prefix(fn)
 		return NULL;
 
 	*ewd = '\0';
-	pdelim = strdup(pdelim); /* conserve memory */
+	ln = strlen(pdelim) + 1;
+	ns = malloc(ln + 1);
+	strlcpy(ns, pdelim, ln);
+	strlcat(ns, "_", ln);
 	*ewd = '.';
 
-	return pdelim;
+	return ns;
 }
 
 static int parse_ficl_file(f, fp)
@@ -297,4 +301,3 @@ struct Plugin* fdbfs_ficl_load_ficlplugin(f, plugfile)
 
 	return n;
 }
-		
