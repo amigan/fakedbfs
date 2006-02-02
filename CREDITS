@@ -1,7 +1,13 @@
-$Amigan: fakedbfs/CREDITS,v 1.3 2006/01/02 03:49:13 dcp1990 Exp $
+$Amigan: fakedbfs/CREDITS,v 1.4 2006/02/02 22:50:35 dcp1990 Exp $
 
 (C)2005-2006, Dan Ponte
 
 Special thanks to Caelian and pillBOX for their help with debugging my memory issues.
 
 ficl (http://ficl.sourceforge.net/) is (C)1997-2001, John Sadler.
+
+Also thanks to the SQLite developers, creators of what is quite possibly the best damned database
+library on the planet. And thanks of course to the people who bring you vim. And to the FreeBSD project,
+who made this whole thing possible (must I remind you what my development machines run?).
+
+Ok, this is starting to sound like an academy award. I'll stop.
