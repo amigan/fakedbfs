@@ -1272,15 +1272,15 @@ void ErrorMsg(const char *filename, int lineno, const char *format, ...){
   va_start(ap, format);
   /* Prepare a prefix to be prepended to every output line */
   if( lineno>0 ){
-    sprintf(prefix,"%.*s:%d: ",PREFIXLIMIT-10,filename,lineno);
+    snprintf(prefix,PREFIXLIMIT+10,"%.*s:%d: ",PREFIXLIMIT-10,filename,lineno);
   }else{
-    sprintf(prefix,"%.*s: ",PREFIXLIMIT-10,filename);
+    snprintf(prefix,PREFIXLIMIT-10,"%.*s: ",PREFIXLIMIT-10,filename);
   }
   prefixsize = strlen(prefix);
   availablewidth = LINEWIDTH - prefixsize;
 
   /* Generate the error message */
-  vsprintf(errmsg,format,ap);
+  vsnprintf(errmsg,ERRMSGSIZE,format,ap);
   va_end(ap);
   errmsgsize = strlen(errmsg);
   /* Remove trailing '\n's from the error message. */
@@ -1331,7 +1331,7 @@ static void handle_D_option(char *z){
     fprintf(stderr,"out of memory\n");
     exit(1);
   }
-  strcpy(*paz, z);
+  strncpy(*paz, z, strlen(z)); /* XXX: insecure as fuck, oh well */
   for(z=*paz; *z && *z!='='; z++){}
   *z = 0;
 }
@@ -2578,16 +2578,18 @@ char *suffix;
 {
   char *name;
   char *cp;
+  size_t nlen;
 
-  name = malloc( strlen(lemp->filename) + strlen(suffix) + 5 );
+  nlen = strlen(lemp->filename) + strlen(suffix) + 5;
+  name = malloc(nlen);
   if( name==0 ){
     fprintf(stderr,"Can't allocate space for a filename.\n");
     exit(1);
   }
-  strcpy(name,lemp->filename);
+  strlcpy(name,lemp->filename, nlen);
   cp = strrchr(name,'.');
   if( cp ) *cp = 0;
-  strcat(name,suffix);
+  strlcat(name,suffix,nlen);
   return name;
 }
 
@@ -2757,7 +2759,7 @@ struct lemon *lemp;
     while( cfp ){
       char buf[20];
       if( cfp->dot==cfp->rp->nrhs ){
-        sprintf(buf,"(%d)",cfp->rp->index);
+        snprintf(buf,sizeof(buf),"(%d)",cfp->rp->index);
         fprintf(fp,"    %5s ",buf);
       }else{
         fprintf(fp,"          ");
@@ -2803,7 +2805,7 @@ int modemask;
     c = *cp;
     *cp = 0;
     path = (char *)malloc( strlen(argv0) + strlen(name) + 2 );
-    if( path ) sprintf(path,"%s/%s",argv0,name);
+    if( path ) snprintf(path,strlen(argv0)+strlen(name)+2,"%s/%s",argv0,name);
     *cp = c;
   }else{
     extern char *getenv();
@@ -2816,7 +2818,7 @@ int modemask;
         if( cp==0 ) cp = &pathlist[strlen(pathlist)];
         c = *cp;
         *cp = 0;
-        sprintf(path,"%s/%s",pathlist,name);
+        snprintf(path,strlen(pathlist)+strlen(name)+2,"%s/%s",pathlist,name);
         *cp = c;
         if( c==0 ) pathlist = "";
         else pathlist = &cp[1];
@@ -2896,9 +2898,9 @@ struct lemon *lemp;
 
   cp = strrchr(lemp->filename,'.');
   if( cp ){
-    sprintf(buf,"%.*s.lt",(int)(cp-lemp->filename),lemp->filename);
+    snprintf(buf,sizeof(buf),"%.*s.lt",(int)(cp-lemp->filename),lemp->filename);
   }else{
-    sprintf(buf,"%s.lt",lemp->filename);
+    snprintf(buf,sizeof(buf),"%s.lt",lemp->filename);
   }
   if( access(buf,004)==0 ){
     tpltname = buf;
@@ -3061,9 +3063,9 @@ PRIVATE char *append_str(char *zText, int n, int p1, int p2){
   while( n-- > 0 ){
     c = *(zText++);
     if( c=='%' && zText[0]=='d' ){
-      sprintf(zInt, "%d", p1);
+      snprintf(zInt, 40, "%d", p1);
       p1 = p2;
-      strcpy(&z[used], zInt);
+      strncpy(&z[used], zInt, strlen(zInt));
       used += strlen(&z[used]);
       zText++;
       n--;
@@ -3266,7 +3268,7 @@ int mhflag;                 /* True if generating makeheaders output */
         fprintf(stderr,"Out of memory.\n");
         exit(1);
       }
-      strcpy(types[hash],stddt);
+      strlcpy(types[hash],stddt, arraysize);
     }
   }
 
@@ -3628,7 +3630,7 @@ int mhflag;     /* Output in makeheaders format if true */
   /* Generate a table containing the symbolic name of every symbol
   */
   for(i=0; i<lemp->nsymbol; i++){
-    sprintf(line,"\"%s\",",lemp->symbols[i]->name);
+    snprintf(line,LINESIZE,"\"%s\",",lemp->symbols[i]->name);
     fprintf(out,"  %-15s",line);
     if( (i&3)==3 ){ fprintf(out,"\n"); lineno++; }
   }
@@ -3766,7 +3768,7 @@ struct lemon *lemp;
   in = file_open(lemp,".h","rb");
   if( in ){
     for(i=1; i<lemp->nterminal && fgets(line,LINESIZE,in); i++){
-      sprintf(pattern,"#define %s%-30s %2d\n",prefix,lemp->symbols[i]->name,i);
+      snprintf(pattern,LINESIZE,"#define %s%-30s %2d\n",prefix,lemp->symbols[i]->name,i);
       if( strcmp(line,pattern) ) break;
     }
     fclose(in);
@@ -3934,7 +3936,7 @@ char *y;
 
   z = Strsafe_find(y);
   if( z==0 && (z=malloc( strlen(y)+1 ))!=0 ){
-    strcpy(z,y);
+    strlcpy(z,y, strlen(y)+1);
     Strsafe_insert(z);
   }
   MemoryCheck(z);
