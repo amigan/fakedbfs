@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.10 2006/02/23 19:11:32 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.11 2006/02/23 21:26:01 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -36,6 +36,8 @@
 #include <errno.h>
 #include <stdio.h>
 #include <id3.h>
+#include <vorbis/vorbisfile.h>
+#include <vorbis/codec.h>
 
 #ifdef UNIX
 #	include <sys/types.h>
@@ -49,7 +51,7 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.10 2006/02/23 19:11:32 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.11 2006/02/23 21:26:01 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
@@ -65,7 +67,8 @@ const struct PluginInfo plugin_inf = {
 };
 
 
-int plugin_init(errmsg)
+int plugin_init(f, errmsg)
+	fdbfs_t *f;
 	char **errmsg;
 {
 	void *asd;
@@ -74,13 +77,15 @@ int plugin_init(errmsg)
 	return 1;
 }
 
-int plugin_shutdown(errmsg)
+int plugin_shutdown(f, errmsg)
+	fdbfs_t *f;
 	char **errmsg;
 {
 	return 1;
 }
 
-int check_file(filename, errmsg)
+int check_file(f, filename, errmsg)
+	fdbfs_t *f;
 	char *filename;
 	char **errmsg;
 {
@@ -258,6 +263,37 @@ int add_int_field(name, fmtname, th, tc, value)
 	return 1;
 }
 
+static int add_str_field(name, fmtname, th, tc, value)
+	char *name;
+	char *fmtname;
+	fields_t **th;
+	fields_t **tc;
+	char *value;
+{
+	fields_t *n;
+
+	n = malloc(sizeof(*n));
+	memset(n, 0, sizeof(*n));
+	n->type = string;
+
+	if(*th == NULL) {
+		*th = n;
+		*tc = n;
+	} else if(*tc != NULL) {
+		(*tc)->next = n;
+		*tc = n;
+	} else {
+		free(n);
+		return 0;
+	}
+
+	n->fieldname = strdup(name);
+	n->fmtname = strdup(fmtname);
+	n->val = value;
+
+	return 1;
+}
+
 int add_image_field(name, fmtname, th, tc, value, sz)
 	char *name;
 	char *fmtname;
@@ -353,13 +389,163 @@ fields_t* extract_from_mp3(filename, errmsg)
 	return h;
 }
 
+#define CMTDELIM '='
+#define CMT_ARTIST	0x1
+#define CMT_ALBUM	0x2
+#define CMT_TITLE	0x3
+#define CMT_TRACK	0x4
+#define CMT_YEAR	0x5
+#define CMT_DISC	0x6
+#define CMT_UNKNOWN	0xFF
+static int comment_tagname(cstr, clen, rdat)
+	char *cstr;
+	size_t clen;
+	char **rdat;
+{
+	char obf[clen + 1];
+	char *equ, *val;
+	int rv = CMT_UNKNOWN;
+	
+	strlcpy(obf, cstr, sizeof(obf));
+
+	if((equ = strchr(obf, CMTDELIM)) == NULL)
+		return CMT_UNKNOWN;
+
+	*equ = '\0';
+	val = equ + 1;
+
+	if(strcasecmp(obf, "artist") == 0) {
+		rv = CMT_ARTIST;
+	} else if(strcasecmp(obf, "album") == 0) {
+		rv = CMT_ALBUM;
+	} else if(strcasecmp(obf, "title") == 0) {
+		rv = CMT_TITLE;
+	} else if(strcasecmp(obf, "tracknumber") == 0 || strcasecmp(obf, "track") == 0) {
+		rv = CMT_TRACK;
+	} else if(strcasecmp(obf, "date") == 0 || strcasecmp(obf, "year") == 0) {
+		rv = CMT_YEAR;
+	} else if(strcasecmp(obf, "disc") == 0) {
+		rv = CMT_DISC;
+	}
+	
+	if(rv != CMT_UNKNOWN)
+		*rdat = strdup(val);
+
+	return rv;
+}
+
+static int fields_from_vcomments(vf, errmsg, c, h)
+	OggVorbis_File *vf;
+	char **errmsg;
+	fields_t **c, **h;
+{
+	char *cs;
+	int i;
+	vorbis_comment *vc;
+
+	if((vc = ov_comment(vf, -1)) == NULL) {
+		*errmsg = "ov_comment error";
+		return 0;
+	}
+
+	for(i = 0; i < vc->comments; i++) {
+		switch(comment_tagname(vc->user_comments[i], vc->comment_lengths[i], &cs)) {
+			case CMT_ARTIST:
+				add_str_field(ARTISTNAME, ARTISTFMT, h, c, cs);
+				break;
+			case CMT_ALBUM:
+				add_str_field(ALBUMNAME, ALBUMFMT, h, c, cs);
+				break;
+			case CMT_TITLE:
+				add_str_field(TITLENAME, TITLEFMT, h, c, cs);
+				break;
+			case CMT_TRACK:
+				add_int_field(TRACKNAME, TRACKFMT, h, c, atoi(cs));
+				free(cs);
+				break;
+			case CMT_DISC:
+				add_int_field(DISCNAME, DISCFMT, h, c, atoi(cs));
+				free(cs);
+				break;
+			case CMT_YEAR:
+				add_int_field(YEARNAME, YEARFMT, h, c, atoi(cs));
+				free(cs);
+				break;
+		}
+	}
+	
+	return 1;
+}
+
 fields_t* extract_from_ogg(filename, errmsg)
 	char *filename;
 	char **errmsg;
 {
 	fields_t *h = NULL, *c = NULL, *mime;
+	FILE *oggf;
+	OggVorbis_File *vf;
+	int rc;
 
+	if(!(oggf = fopen(filename, "r"))) {
+		char emsg[128];
+		snprintf(emsg, 128, "Can't open %s for reading: %s", filename, strerror(errno));
+		*errmsg = strdup(emsg);
+		return NULL;
+	}
+
+	vf = malloc(sizeof(*vf));
+
+	if((rc = ov_open(oggf, vf, NULL, 0)) < 0) {
+		char *em;
+		char emsg[128];
+		switch(rc) {
+			case OV_EREAD:
+				em = "Could not read";
+				break;
+			case OV_ENOTVORBIS:
+				em = "Not vorbis";
+				break;
+			case OV_EVERSION:
+				em = "Vorbis version mismatch";
+				break;
+			case OV_EBADHEADER:
+				em = "Invalid bitstream header";
+				break;
+			case OV_EFAULT:
+				em = "Internal libvorbis fault";
+				break;
+			default:
+				em = "Unknown error";
+		}
+		snprintf(emsg, 128, "Can't open %s with libvorbis: %s", filename, em);
+		free(vf);
+		*errmsg = strdup(emsg);
+		return NULL;
+	}
+
+	rc = fields_from_vcomments(vf, errmsg, &c, &h);
+	if(!rc) {
+		char *oem;
+		char emsg[128];
+		oem = *errmsg;
+		snprintf(emsg, 128, "Can't grab vorbis comments from file %s: %s", filename, oem);
+		*errmsg = strdup(emsg);
+		ov_clear(vf);
+		free(vf);
+		fclose(oggf);
+		return h;
+	}
+
+	ov_clear(vf);
+	free(vf);
+	fclose(oggf);
+
+	/* XXX: make this beautiful-er; if we can't get certain vorbis comment data, fall
+	 * back on the filename
+	 */
+#if 0
 	match_filename(filename, errmsg, &c, &h);
+#endif
 
 	mime = allocz(sizeof(*mime));
 	mime->fieldname = strdup("mime");
@@ -372,7 +558,23 @@ fields_t* extract_from_ogg(filename, errmsg)
 	return h;
 }
 
-fields_t* extract_from_file(filename, errmsg)
+static fields_t* extract_from_flac(filename, errmsg)
+	char *filename;
+	char **errmsg;
+{
+	fields_t *h = NULL, *c = NULL;
+
+	/* TODO: implement FLAC vorbis comment stuff */
+	
+	add_str_field("mime", "MIME type", &h, &c, strdup("audio/x-flac"));
+	match_filename(filename, errmsg, &c, &h);
+
+	return h;
+}
+	
+
+fields_t* extract_from_file(f, filename, errmsg)
+	fdbfs_t *f;
 	char *filename;
 	char **errmsg;
 {
@@ -393,17 +595,15 @@ fields_t* extract_from_file(filename, errmsg)
 
 	if(strcasecmp(ext, WAVEXT) == 0) {
 		match_filename(filename, errmsg, &c, &h);
+		add_str_field("mime", "MIME type", &h, &c, strdup("audio/x-wav"));
 		return h;
 	}
 
 	ext = (filename + strlen(filename)) - strlen(FLACEXT);
 
 	if(strcasecmp(ext, FLACEXT) == 0) {
-		match_filename(filename, errmsg, &c, &h);
-		return h;
+		return extract_from_flac(filename, errmsg);
 	}
 
-
 	return NULL;
-
 }

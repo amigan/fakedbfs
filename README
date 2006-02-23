@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/README,v 1.14 2006/01/30 21:26:02 dcp1990 Exp $
+$Amigan: fakedbfs/README,v 1.15 2006/02/23 21:26:00 dcp1990 Exp $
 
 This is the fakedbfs distribution, version 2.0.0-RELEASE (Doctor Wu). See the contents of
 doc/ for more information.
@@ -8,7 +8,7 @@ Feel free to email me at <dcp1990@neptune.atopia.net> if you have any questions.
 REQUIRES:
 -A Unix system (win32 and amiga currently not supported...I want to support them but have better things to do than cater to windows users)
 -sqlite-3.2.7 or later installed
--id3lib if you want to build plugins/music/
+-id3lib, libogg, and libvorbis if you want to build plugins/music/
 
 This was primarily developed on FreeBSD. While I have made it a point to try to make stuff portable,
 it may have problems building on systems such as Linux or Solaris. Please, mail me if you have such problems!

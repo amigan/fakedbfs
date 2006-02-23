@@ -3,7 +3,7 @@ include ../../config.mk
 include ../../globals.mk
 LDFLAGS=-L/usr/local/lib
 CPPFLAGS+=-I../../include -I../../ficl
-LIBS=-lid3 -lstdc++ -lz $(LIBEXT)
+LIBS=-lid3 -lstdc++ -lz -logg -lvorbis -lvorbisfile $(LIBEXT)
 SRCS=music.c
 OBJS=music.o
 #OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'

@@ -27,23 +27,24 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/plugins.h,v 1.2 2006/01/30 20:56:19 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/plugins.h,v 1.3 2006/02/23 21:26:00 dcp1990 Exp $ */
 /**
  * @file plugins.h
  * @brief Plugin stuff.
  */
 #ifndef HAVE_FDBFS_PLUGINS_H
 #define HAVE_FDBFS_PLUGINS_H
+#include <fakedbfs/types.h>
 #include <fakedbfs/fficl.h>
 
 
 struct Plugin {
 	const struct PluginInfo *info;
 	
-	int (*init)(char **errmsg);
-	int (*shutdown)(char **errmsg);
-	int (*check_file)(char *filename, char **errmsg);
-	fields_t* (*extract_from_file)(char *filename, char **errmsg);
+	int (*init)(fdbfs_t *f, char **errmsg);
+	int (*shutdown)(fdbfs_t *f, char **errmsg);
+	int (*check_file)(fdbfs_t *f, char *filename, char **errmsg);
+	fields_t* (*extract_from_file)(fdbfs_t *f, char *filename, char **errmsg);
 
 	union {
 		void *libhandle; /* if shared */
