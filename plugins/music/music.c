@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.9 2006/01/30 20:56:20 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.10 2006/02/23 19:11:32 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,14 +47,15 @@
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/plugins.h>
 #include <fakedbfs/fields.h>
+#include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.9 2006/01/30 20:56:20 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.10 2006/02/23 19:11:32 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
 
 const struct PluginInfo plugin_inf = {
-	"mp3/ogg/wav", /* extensions supported */
+	"mp3/ogg/wav/flac", /* extensions supported */
 	"Music", /* name */
 	MUSICPLUGINVER, /* version */
 	"Dan Ponte <dcp1990@neptune.atopia.net>", /* author */
@@ -100,6 +101,11 @@ int check_file(filename, errmsg)
 	ext = (filename + strlen(filename)) - strlen(WAVEXT);
 
 	if(strcasecmp(ext, WAVEXT) == 0)
+		return 1;
+
+	ext = (filename + strlen(filename)) - strlen(FLACEXT);
+
+	if(strcasecmp(ext, FLACEXT) == 0)
 		return 1;
 
 	return 0;
@@ -353,7 +359,7 @@ fields_t* extract_from_ogg(filename, errmsg)
 {
 	fields_t *h = NULL, *c = NULL, *mime;
 
-	match_filename(filename, errmsg, &h, &c);
+	match_filename(filename, errmsg, &c, &h);
 
 	mime = allocz(sizeof(*mime));
 	mime->fieldname = strdup("mime");
@@ -386,9 +392,17 @@ fields_t* extract_from_file(filename, errmsg)
 	ext = (filename + strlen(filename)) - strlen(WAVEXT);
 
 	if(strcasecmp(ext, WAVEXT) == 0) {
-		match_filename(filename, errmsg, &h, &c);
+		match_filename(filename, errmsg, &c, &h);
 		return h;
 	}
+
+	ext = (filename + strlen(filename)) - strlen(FLACEXT);
+
+	if(strcasecmp(ext, FLACEXT) == 0) {
+		match_filename(filename, errmsg, &c, &h);
+		return h;
+	}
+
 
 	return NULL;
 
