@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.50 2006/01/31 17:26:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.51 2006/02/23 16:05:41 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/indexing.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.50 2006/01/31 17:26:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.51 2006/02/23 16:05:41 dcp1990 Exp $")
 
 static int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -767,15 +767,6 @@ int fdbfs_index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 {
 	int rc = 0;
 	fields_t *c = NULL, *h = NULL, *oh = NULL;
-#ifdef UNIX
-	char respath[PATH_MAX];
-#endif
-
-#ifdef UNIX
-	if(realpath(filename, respath) != NULL) {
-		filename = respath;
-	}
-#endif
 
 	if(rc != 2) {
 		rc = file_has_changed(f, cat, filename, NULL);
@@ -861,6 +852,8 @@ int fdbfs_cindexer_dir(f, cat, batch, useplugs, list, options, re, defs) /* this
 	int rc;
 	FTSENT *c;
 	char *fpth;
+	char respath[PATH_MAX];
+	size_t fplen;
 
 	for(c = list; c; c = c->fts_link) {
 		if(c->fts_info == FTS_ERR || c->fts_info == FTS_NS) {
@@ -880,15 +873,22 @@ int fdbfs_cindexer_dir(f, cat, batch, useplugs, list, options, re, defs) /* this
 				return 0;
 			}
 
+
+			
 #if 0
-			char cwdbf[1024];
 			fplen = strlen(c->fts_path) + 1 /* null */ + strlen(c->fts_name);
+#endif
+			fplen = c->fts_pathlen + 1 + c->fts_namelen;
 			fpth = malloc(fplen * sizeof(char));
 			strlcpy(fpth, c->fts_path, fplen);
 			strlcat(fpth, c->fts_name, fplen);
-			printf(" cwd %s path == '%s', name == '%s', accpath == '%s'\n", getcwd(cwdbf, 1023), c->fts_path, c->fts_name, c->fts_accpath);
-#endif
+			if(realpath(fpth, respath) != NULL) {
+				free(fpth);
+				fpth = strdup(respath);
+			}
+#if 0
 			fpth = strdup(c->fts_name);
+#endif
 
 			rc = file_has_changed(f, cat, fpth, c->fts_statp);
 			if(rc == 0) {
@@ -910,7 +910,14 @@ int fdbfs_cindexer_dir(f, cat, batch, useplugs, list, options, re, defs) /* this
 #if 0
 			printf("path == '%s', name == '%s', accpath == '%s'\n", c->fts_path, c->fts_name, c->fts_accpath);
 #endif
-			fpth = strdup(c->fts_name);
+			fplen = c->fts_pathlen + 1 + c->fts_namelen;
+			fpth = malloc(fplen * sizeof(char));
+			strlcpy(fpth, c->fts_path, fplen);
+			strlcat(fpth, c->fts_name, fplen);
+			if(realpath(fpth, respath) != NULL) {
+				free(fpth);
+				fpth = strdup(respath);
+			}
 
 			rc = file_has_changed(f, cat, fpth, c->fts_statp);
 			if(rc == 0) {

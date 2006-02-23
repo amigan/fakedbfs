@@ -1,5 +1,4 @@
-$Amigan: fakedbfs/BUGS,v 1.4 2005/12/30 01:32:06 dcp1990 Exp $
+$Amigan: fakedbfs/BUGS,v 1.5 2006/02/23 16:05:41 dcp1990 Exp $
 
 BUGS as of 2.0 ("Doctor Wu"):
 *Memory leaks. Big time.
-*realpath(3) and CWD fuckishness
