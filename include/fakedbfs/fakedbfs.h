@@ -31,7 +31,7 @@
  * @file fakedbfs.h
  * @brief Main header file.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.71 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.72 2006/02/23 21:45:58 dcp1990 Exp $ */
 #include <fakedbfs/types.h>
 
 #include <fakedbfs/fdbfsconfig.h>
@@ -59,7 +59,7 @@
 #define SCERR(act, fmt) fdbfs_cferr(f, act, fmt)
 #define _unused       __attribute__((__unused__))
 
-#define MAJOR_API_VERSION 1
+#define MAJOR_API_VERSION 2
 #define MINOR_API_VERSION 0
 
 #define FAKEDBFSVER "2.0.0" /* major changes with major incompat changes, minor with minor incompat, micro with additions, bugfixes, and security fixes */
