@@ -78,8 +78,7 @@ enum DataType {
 	oenum, /* DO NOT USE FOR "OTHER" IN AN ENUM */
 	oenumsub, /* this either; this is for .sub references */
 	usnumber, /* new type for unsigned numbers */
-	datime, /* date and time; see lastupdate (this is really like number, but treated differently for display
-	purposes */
+	datime, /* date and time; see lastupdate (this is really like number, but treated differently for display purposes */
 	character /* for use with conf only */
 };
 

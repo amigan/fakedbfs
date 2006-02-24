@@ -31,7 +31,7 @@
  * @file fields.h
  * @brief fields ans answer stuff.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fields.h,v 1.1 2006/01/29 21:04:36 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fields.h,v 1.2 2006/02/24 17:33:46 dcp1990 Exp $ */
 #ifndef HAVE_FDBFS_FIELDS_H
 #define HAVE_FDBFS_FIELDS_H
 
@@ -94,4 +94,40 @@ fields_t* fdbfs_fields_from_dsp(fdbfs_t *f, char *tsp);
  */
 void fdbfs_free_answer_t(answer_t *e);
 
+/**
+ * @brief Add integer element to fields_t list.
+ * 
+ * @param name Name of element.
+ * @param fmtname Friendly name of element.
+ * @param[in,out] th Pointer to pointer containing address of head of list (will initialise if NULL)
+ * @param[in,out] tc Pointer to pointer containing address of last element on list (will set to last element).
+ * @param value The value to set the element to.
+ * @return 0 on error (*th and *tc will remain unchanged)
+ */
+int fdbfs_field_add_int(char *name, char *fmtname, fields_t **th, fields_t **tc, int value);
+
+/**
+ * @brief Add string element to fields_t list.
+ * 
+ * @param name Name of element.
+ * @param fmtname Friendly name of element.
+ * @param[in,out] th Pointer to pointer containing address of head of list (will initialise if NULL)
+ * @param[in,out] tc Pointer to pointer containing address of last element on list (will set to last element).
+ * @param value The value to set the element to. (not copied)
+ * @return 0 on error (*th and *tc will remain unchanged)
+ */
+int fdbfs_field_add_string(char *name, char *fmtname, fields_t **th, fields_t **tc, char *value);
+
+/**
+ * @brief Add image element to fields_t list.
+ * 
+ * @param name Name of element.
+ * @param fmtname Friendly name of element.
+ * @param[in,out] th Pointer to pointer containing address of head of list (will initialise if NULL)
+ * @param[in,out] tc Pointer to pointer containing address of last element on list (will set to last element).
+ * @param value The value to set the element to. (not copied)
+ * @param sz The length of the data.
+ * @return 0 on error (*th and *tc will remain unchanged)
+ */
+int fdbfs_field_add_image(char *name, char *fmtname, fields_t **th, fields_t **tc, void *value, size_t sz);
 #endif

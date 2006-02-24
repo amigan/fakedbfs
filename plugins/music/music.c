@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.13 2006/02/24 08:01:02 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.14 2006/02/24 17:33:46 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -52,7 +52,7 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.13 2006/02/24 08:01:02 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.14 2006/02/24 17:33:46 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
@@ -272,102 +272,6 @@ int match_filename(filename, errmsg, tc, th)
 	return 1;
 }
 
-int add_int_field(name, fmtname, th, tc, value)
-	char *name;
-	char *fmtname;
-	fields_t **th;
-	fields_t **tc;
-	int value;
-{
-	fields_t *n;
-
-	n = malloc(sizeof(*n));
-	memset(n, 0, sizeof(*n));
-	n->type = number;
-
-	if(*th == NULL) {
-		*th = n;
-		*tc = n;
-	} else if(*tc != NULL) {
-		(*tc)->next = n;
-		*tc = n;
-	} else {
-		free(n);
-		return 0;
-	}
-
-	n->fieldname = strdup(name);
-	n->fmtname = strdup(fmtname);
-	n->val = malloc(sizeof(value));
-	*(int*)n->val = value;
-
-	return 1;
-}
-
-static int add_str_field(name, fmtname, th, tc, value)
-	char *name;
-	char *fmtname;
-	fields_t **th;
-	fields_t **tc;
-	char *value;
-{
-	fields_t *n;
-
-	n = malloc(sizeof(*n));
-	memset(n, 0, sizeof(*n));
-	n->type = string;
-
-	if(*th == NULL) {
-		*th = n;
-		*tc = n;
-	} else if(*tc != NULL) {
-		(*tc)->next = n;
-		*tc = n;
-	} else {
-		free(n);
-		return 0;
-	}
-
-	n->fieldname = strdup(name);
-	n->fmtname = strdup(fmtname);
-	n->val = value;
-
-	return 1;
-}
-
-int add_image_field(name, fmtname, th, tc, value, sz)
-	char *name;
-	char *fmtname;
-	fields_t **th;
-	fields_t **tc;
-	void *value;
-	size_t sz;
-{
-	fields_t *n;
-
-	n = malloc(sizeof(*n));
-	memset(n, 0, sizeof(*n));
-	n->type = image;
-
-	if(*th == NULL) {
-		*th = n;
-		*tc = n;
-	} else if(*tc != NULL) {
-		(*tc)->next = n;
-		*tc = n;
-	} else {
-		free(n);
-		return 0;
-	}
-
-	n->fieldname = strdup(name);
-	n->fmtname = strdup(fmtname);
-	n->val = value;
-	n->len = sz;
-
-	return 1;
-}
-
 
 fields_t* extract_from_mp3(filename, errmsg, usetag)
 	char *filename;
@@ -398,7 +302,7 @@ fields_t* extract_from_mp3(filename, errmsg, usetag)
 				cv = malloc(sizeof(char) * 6); /* y10k compliant!!! */
 				ID3Field_GetASCII(tfield, cv, 5);
 				tval = atoi(cv);
-				add_int_field(YEARNAME, YEARFMT, &h, &c, tval);
+				fdbfs_field_add_int(YEARNAME, YEARFMT, &h, &c, tval);
 				free(cv);
 			}
 		}
@@ -415,14 +319,14 @@ fields_t* extract_from_mp3(filename, errmsg, usetag)
 			if(tsz != 0) {
 				tdta = malloc(tsz);
 				ID3Field_GetBINARY(tfield, tdta, tsz);
-				add_image_field(ACOVERNAME, ACOVERFMT, &h, &c, tdta, tsz);
+				fdbfs_field_add_image(ACOVERNAME, ACOVERFMT, &h, &c, tdta, tsz);
 			}
 		}
 
 		ID3Tag_Delete(t);
 	}
 
-	add_str_field("mime", "MIME type", &h, &c, strdup("audio/mpeg"));
+	fdbfs_field_add_string("mime", "MIME type", &h, &c, strdup("audio/mpeg"));
 
 	return h;
 }
@@ -489,24 +393,24 @@ static int fields_from_vcomments(vf, errmsg, c, h)
 	for(i = 0; i < vc->comments; i++) {
 		switch(comment_tagname(vc->user_comments[i], vc->comment_lengths[i], &cs)) {
 			case CMT_ARTIST:
-				add_str_field(ARTISTNAME, ARTISTFMT, h, c, cs);
+				fdbfs_field_add_string(ARTISTNAME, ARTISTFMT, h, c, cs);
 				break;
 			case CMT_ALBUM:
-				add_str_field(ALBUMNAME, ALBUMFMT, h, c, cs);
+				fdbfs_field_add_string(ALBUMNAME, ALBUMFMT, h, c, cs);
 				break;
 			case CMT_TITLE:
-				add_str_field(TITLENAME, TITLEFMT, h, c, cs);
+				fdbfs_field_add_string(TITLENAME, TITLEFMT, h, c, cs);
 				break;
 			case CMT_TRACK:
-				add_int_field(TRACKNAME, TRACKFMT, h, c, atoi(cs));
+				fdbfs_field_add_int(TRACKNAME, TRACKFMT, h, c, atoi(cs));
 				free(cs);
 				break;
 			case CMT_DISC:
-				add_int_field(DISCNAME, DISCFMT, h, c, atoi(cs));
+				fdbfs_field_add_int(DISCNAME, DISCFMT, h, c, atoi(cs));
 				free(cs);
 				break;
 			case CMT_YEAR:
-				add_int_field(YEARNAME, YEARFMT, h, c, atoi(cs));
+				fdbfs_field_add_int(YEARNAME, YEARFMT, h, c, atoi(cs));
 				free(cs);
 				break;
 		}
@@ -590,7 +494,7 @@ fields_t* extract_from_ogg(filename, errmsg, usetags)
 	match_filename(filename, errmsg, &c, &h);
 #endif
 
-	add_str_field("mime", "MIME type", &h, &c, strdup("application/ogg"));
+	fdbfs_field_add_string("mime", "MIME type", &h, &c, strdup("application/ogg"));
 
 	return h;
 }
@@ -606,24 +510,24 @@ static int fields_from_flac_vcomm(h, c, errmsg, vc)
 	for(i = 0; i < vc->num_comments; i++) {
 		switch(comment_tagname(vc->comments[i].entry, vc->comments[i].length, &cs)) {
 			case CMT_ARTIST:
-				add_str_field(ARTISTNAME, ARTISTFMT, h, c, cs);
+				fdbfs_field_add_string(ARTISTNAME, ARTISTFMT, h, c, cs);
 				break;
 			case CMT_ALBUM:
-				add_str_field(ALBUMNAME, ALBUMFMT, h, c, cs);
+				fdbfs_field_add_string(ALBUMNAME, ALBUMFMT, h, c, cs);
 				break;
 			case CMT_TITLE:
-				add_str_field(TITLENAME, TITLEFMT, h, c, cs);
+				fdbfs_field_add_string(TITLENAME, TITLEFMT, h, c, cs);
 				break;
 			case CMT_TRACK:
-				add_int_field(TRACKNAME, TRACKFMT, h, c, atoi(cs));
+				fdbfs_field_add_int(TRACKNAME, TRACKFMT, h, c, atoi(cs));
 				free(cs);
 				break;
 			case CMT_DISC:
-				add_int_field(DISCNAME, DISCFMT, h, c, atoi(cs));
+				fdbfs_field_add_int(DISCNAME, DISCFMT, h, c, atoi(cs));
 				free(cs);
 				break;
 			case CMT_YEAR:
-				add_int_field(YEARNAME, YEARFMT, h, c, atoi(cs));
+				fdbfs_field_add_int(YEARNAME, YEARFMT, h, c, atoi(cs));
 				free(cs);
 				break;
 		}
@@ -658,7 +562,7 @@ static fields_t* extract_from_flac(filename, errmsg, usetags)
 		match_filename(filename, errmsg, &c, &h);
 	}
 	
-	add_str_field("mime", "MIME type", &h, &c, strdup("audio/x-flac"));
+	fdbfs_field_add_string("mime", "MIME type", &h, &c, strdup("audio/x-flac"));
 
 	return h;
 }
@@ -692,7 +596,7 @@ fields_t* extract_from_file(f, filename, errmsg)
 
 	if(strcasecmp(ext, WAVEXT) == 0) {
 		match_filename(filename, errmsg, &c, &h);
-		add_str_field("mime", "MIME type", &h, &c, strdup("audio/x-wav"));
+		fdbfs_field_add_string("mime", "MIME type", &h, &c, strdup("audio/x-wav"));
 		return h;
 	}
 
