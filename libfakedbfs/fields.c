@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/fields.c,v 1.1 2006/02/24 17:33:46 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/fields.c,v 1.2 2006/02/24 17:45:05 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #include <fakedbfs/debug.h>
 #include <fakedbfs/fields.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/fields.c,v 1.1 2006/02/24 17:33:46 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/fields.c,v 1.2 2006/02/24 17:45:05 dcp1990 Exp $")
 
 static int field_append(name, fmtname, th, tc, type, value, len)
 	char *name;
@@ -63,6 +63,7 @@ static int field_append(name, fmtname, th, tc, type, value, len)
 
 	if(*th == NULL) {
 		*th = n;
+		*tc = n;
 	} else if(*tc != NULL) {
 		(*tc)->next = n;
 		*tc = n;
