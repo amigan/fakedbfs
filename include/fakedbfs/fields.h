@@ -29,9 +29,9 @@
  */
 /**
  * @file fields.h
- * @brief fields ans answer stuff.
+ * @brief fields and answer stuff.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fields.h,v 1.2 2006/02/24 17:33:46 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fields.h,v 1.3 2006/02/24 18:32:33 dcp1990 Exp $ */
 #ifndef HAVE_FDBFS_FIELDS_H
 #define HAVE_FDBFS_FIELDS_H
 
