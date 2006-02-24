@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.11 2006/02/23 21:26:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.12 2006/02/24 08:01:02 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdio.h>
@@ -49,7 +49,7 @@
 #include <fakedbfs/plugins.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.11 2006/02/23 21:26:00 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.12 2006/02/24 08:01:02 dcp1990 Exp $")
 
 #define LIBERR(sym) { \
 		fdbfs_debug_info(f, error, "probe_plugin: symbol referece %s failed in %s: %s", sym, fpth, dlerror()); \
@@ -71,6 +71,7 @@ static struct Plugin* probe_plugin(f, dirpath, filename, last)
 	char *emsg;
 	size_t len;
 	struct Plugin *n;
+	void *cptr;
 
 	len = strlen(dirpath) + 1 /* slash */ + strlen(filename) + 1 /* null */;
 	fpth = malloc(len * sizeof(char));
@@ -107,7 +108,7 @@ static struct Plugin* probe_plugin(f, dirpath, filename, last)
 		return last;
 	}
 
-	n->init = (int(*)(fdbfs_t*, char**))dlfunc(libhandle, "plugin_init");
+	n->init = (int(*)(fdbfs_t*, char**, void**))dlfunc(libhandle, "plugin_init");
 	if(n->init == NULL)
 		LIBERR("plugin_init()");
 	n->shutdown = (int(*)(fdbfs_t*, char **))dlfunc(libhandle, "plugin_shutdown");
@@ -120,13 +121,15 @@ static struct Plugin* probe_plugin(f, dirpath, filename, last)
 	if(n->extract_from_file == NULL)
 		LIBERR("extract_from_file()");
 
-	if(!n->init(f, &emsg)) {
+	if(!n->init(f, &emsg, &cptr)) {
 		fdbfs_debug_info(f, warning, "error: init for %s said: %s", fpth, emsg);
 		free(n);
 		free(fpth);
 		dlclose(libhandle);
 		return last;
 	}
+
+	n->cptr = cptr;
 
 	if(last != NULL)
 		last->next = n;
@@ -221,6 +224,40 @@ int fdbfs_plugins_init(f)
 
 	free(path);
 	return 1;
+}
+
+int fdbfs_plugin_set_cptr(f, pinf, dat)
+	fdbfs_t *f;
+	const struct PluginInfo *pinf;
+	void *dat;
+{
+	struct Plugin *c;
+
+	for(c = f->plugins; c != NULL; c = c->next) {
+		if(c->info == pinf) { /* this is the same plugin */ 
+			c->cptr = dat;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+int fdbfs_plugin_get_cptr(f, pinf, dat)
+	fdbfs_t *f;
+	const struct PluginInfo *pinf;
+	void **dat;
+{
+	struct Plugin *c;
+
+	for(c = f->plugins; c != NULL; c = c->next) {
+		if(c->info == pinf) { /* this is the same plugin */ 
+			*dat = c->cptr;
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 void fdbfs_plugins_set_path(f, path)

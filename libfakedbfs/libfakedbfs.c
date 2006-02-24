@@ -31,7 +31,7 @@
  * @file libfakedbfs.c
  * @brief Main libfakedbfs functions.
  */
-/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.21 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.22 2006/02/24 08:01:02 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -49,7 +49,7 @@
 
 
 #ifndef lint
-RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.21 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.22 2006/02/24 08:01:02 dcp1990 Exp $")
 /** @brief fakedbfs version. */
 const char *fakedbfsver _unused = FAKEDBFSVER;
 /** @brief fakedbfs version name */
@@ -88,13 +88,13 @@ fdbfs_t *fdbfs_new(dbfile, error, debugf, useplugins)
 	if(useplugins) {
 		if(getenv(FDBFSPLUGENV) != NULL)
 			fdbfs_plugins_set_path(f, getenv(FDBFSPLUGENV));
-		fdbfs_plugins_init(f);
 		if(!fdbfs_conf_init(f)) {
 			*error = strdup(f->error.emsg);
 			fdbfs_estr_free(&f->error);
 			free(f);
 			return NULL;
 		}
+		fdbfs_plugins_init(f);
 		if(!fdbfs_ficl_init(f)) {
 			*error = strdup("Couldn't initialise ficl system");
 			fdbfs_estr_free(&f->error);

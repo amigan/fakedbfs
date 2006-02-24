@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.12 2006/02/24 06:55:07 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.13 2006/02/24 08:01:02 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -52,7 +52,7 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.12 2006/02/24 06:55:07 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.13 2006/02/24 08:01:02 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
@@ -67,14 +67,48 @@ const struct PluginInfo plugin_inf = {
 	MINOR_API_VERSION /* minor api version */
 };
 
+struct MusicConfig {
+	short pfns;
+};
 
-int plugin_init(f, errmsg)
+
+#define MIB_TEST(mib)	cgret = fdbfs_conf_get(f, mib, &dat); \
+	if(cgret == -1 || cgret != boolean) { \
+		cgret = boolean; dat.integer = 0; \
+		if(!fdbfs_conf_set(f, mib, cgret, dat))  { \
+			*errmsg = strdup("MIB set"); return 0; \
+		} \
+	}
+int plugin_init(f, errmsg, cpt)
 	fdbfs_t *f;
 	char **errmsg;
+	void **cpt;
 {
 	void *asd;
+	struct MusicConfig *mc;
+	enum DataType cgret;
+	union Data dat;
+	short pref = 0;
+
 	asd = (void*)ID3_v1_genre_description; /* stupid unused warning */
-	/* do nothing */
+	
+	MIB_TEST(OGG_PREFER_MIB);
+	if(dat.integer)
+		pref |= PREFER_OGG_FN;
+
+	MIB_TEST(MP3_PREFER_MIB);
+	if(dat.integer)
+		pref |= PREFER_MP3_FN;
+
+	MIB_TEST(FLAC_PREFER_MIB);
+	if(dat.integer)
+		pref |= PREFER_FLAC_FN;
+
+	mc = allocz(sizeof(*mc));
+	mc->pfns = pref;
+
+	*cpt = mc;
+
 	return 1;
 }
 
@@ -82,6 +116,12 @@ int plugin_shutdown(f, errmsg)
 	fdbfs_t *f;
 	char **errmsg;
 {
+	struct MusicConfig *mc;
+
+	if(fdbfs_plugin_get_cptr(f, &plugin_inf, (void**)&mc)) {
+		free(mc);
+	}
+
 	return 1;
 }
 
@@ -329,63 +369,60 @@ int add_image_field(name, fmtname, th, tc, value, sz)
 }
 
 
-fields_t* extract_from_mp3(filename, errmsg)
+fields_t* extract_from_mp3(filename, errmsg, usetag)
 	char *filename;
 	char **errmsg;
+	short usetag; /* XXX: unused-ish as yet */
 {
 	ID3Tag *t;
 	ID3Frame *cfr;
 	char *cv;
-	fields_t *h = NULL, *c = NULL, *mime;
+	fields_t *h = NULL, *c = NULL;
 
 	if(!match_filename(filename, errmsg, &c, &h))
 		return NULL;
 
-	t = ID3Tag_New();
+	if(usetag) {
+		t = ID3Tag_New();
 
-	ID3Tag_Link(t, filename);
+		ID3Tag_Link(t, filename);
 
-	cfr = ID3Tag_FindFrameWithID(t, ID3FID_YEAR);
-	if(cfr != NULL) {
-		int tval;
-		size_t tsz;
-		ID3Field *tfield;
-		tfield = ID3Frame_GetField(cfr, ID3FN_TEXT);
-		tsz = ID3Field_Size(tfield);
-		if(tsz > 0) {
-			cv = malloc(sizeof(char) * 6); /* y10k compliant!!! */
-			ID3Field_GetASCII(tfield, cv, 5);
-			tval = atoi(cv);
-			add_int_field(YEARNAME, YEARFMT, &h, &c, tval);
-			free(cv);
+		cfr = ID3Tag_FindFrameWithID(t, ID3FID_YEAR);
+		if(cfr != NULL) {
+			int tval;
+			size_t tsz;
+			ID3Field *tfield;
+			tfield = ID3Frame_GetField(cfr, ID3FN_TEXT);
+			tsz = ID3Field_Size(tfield);
+			if(tsz > 0) {
+				cv = malloc(sizeof(char) * 6); /* y10k compliant!!! */
+				ID3Field_GetASCII(tfield, cv, 5);
+				tval = atoi(cv);
+				add_int_field(YEARNAME, YEARFMT, &h, &c, tval);
+				free(cv);
+			}
 		}
+
+		cfr = ID3Tag_FindFrameWithID(t, ID3FID_PICTURE); /* album cover */
+		if(cfr != NULL) {
+			void *tdta;
+			size_t tsz;
+			ID3Field *tfield;
+			tfield = ID3Frame_GetField(cfr, ID3FN_PICTURETYPE);
+
+			tsz = ID3Field_Size(tfield);
+
+			if(tsz != 0) {
+				tdta = malloc(tsz);
+				ID3Field_GetBINARY(tfield, tdta, tsz);
+				add_image_field(ACOVERNAME, ACOVERFMT, &h, &c, tdta, tsz);
+			}
+		}
+
+		ID3Tag_Delete(t);
 	}
 
-	cfr = ID3Tag_FindFrameWithID(t, ID3FID_PICTURE); /* album cover */
-	if(cfr != NULL) {
-		void *tdta;
-		size_t tsz;
-		ID3Field *tfield;
-		tfield = ID3Frame_GetField(cfr, ID3FN_PICTURETYPE);
-
-		tsz = ID3Field_Size(tfield);
-
-		if(tsz != 0) {
-			tdta = malloc(tsz);
-			ID3Field_GetBINARY(tfield, tdta, tsz);
-			add_image_field(ACOVERNAME, ACOVERFMT, &h, &c, tdta, tsz);
-		}
-	}
-
-	ID3Tag_Delete(t);
-
-	mime = allocz(sizeof(*mime));
-	mime->fieldname = strdup("mime");
-	mime->fmtname = strdup("MIME type");
-	mime->type = string;
-	mime->val = strdup("audio/mpeg");
-	mime->next = h;
-	h = mime;
+	add_str_field("mime", "MIME type", &h, &c, strdup("audio/mpeg"));
 
 	return h;
 }
@@ -478,68 +515,73 @@ static int fields_from_vcomments(vf, errmsg, c, h)
 	return 1;
 }
 
-fields_t* extract_from_ogg(filename, errmsg)
+fields_t* extract_from_ogg(filename, errmsg, usetags)
 	char *filename;
 	char **errmsg;
+	short usetags;
 {
-	fields_t *h = NULL, *c = NULL, *mime;
+	fields_t *h = NULL, *c = NULL;
 	FILE *oggf;
 	OggVorbis_File *vf;
 	int rc;
 
-	if(!(oggf = fopen(filename, "r"))) {
-		char emsg[128];
-		snprintf(emsg, 128, "Can't open %s for reading: %s", filename, strerror(errno));
-		*errmsg = strdup(emsg);
-		return NULL;
-	}
-
-	vf = malloc(sizeof(*vf));
-
-	if((rc = ov_open(oggf, vf, NULL, 0)) < 0) {
-		char *em;
-		char emsg[128];
-		switch(rc) {
-			case OV_EREAD:
-				em = "Could not read";
-				break;
-			case OV_ENOTVORBIS:
-				em = "Not vorbis";
-				break;
-			case OV_EVERSION:
-				em = "Vorbis version mismatch";
-				break;
-			case OV_EBADHEADER:
-				em = "Invalid bitstream header";
-				break;
-			case OV_EFAULT:
-				em = "Internal libvorbis fault";
-				break;
-			default:
-				em = "Unknown error";
+	if(usetags) {
+		if(!(oggf = fopen(filename, "r"))) {
+			char emsg[128];
+			snprintf(emsg, 128, "Can't open %s for reading: %s", filename, strerror(errno));
+			*errmsg = strdup(emsg);
+			return NULL;
 		}
-		snprintf(emsg, 128, "Can't open %s with libvorbis: %s", filename, em);
-		free(vf);
-		*errmsg = strdup(emsg);
-		return NULL;
-	}
 
-	rc = fields_from_vcomments(vf, errmsg, &c, &h);
-	if(!rc) {
-		char *oem;
-		char emsg[128];
-		oem = *errmsg;
-		snprintf(emsg, 128, "Can't grab vorbis comments from file %s: %s", filename, oem);
-		*errmsg = strdup(emsg);
+		vf = malloc(sizeof(*vf));
+
+		if((rc = ov_open(oggf, vf, NULL, 0)) < 0) {
+			char *em;
+			char emsg[128];
+			switch(rc) {
+				case OV_EREAD:
+					em = "Could not read";
+					break;
+				case OV_ENOTVORBIS:
+					em = "Not vorbis";
+					break;
+				case OV_EVERSION:
+					em = "Vorbis version mismatch";
+					break;
+				case OV_EBADHEADER:
+					em = "Invalid bitstream header";
+					break;
+				case OV_EFAULT:
+					em = "Internal libvorbis fault";
+					break;
+				default:
+					em = "Unknown error";
+			}
+			snprintf(emsg, 128, "Can't open %s with libvorbis: %s", filename, em);
+			free(vf);
+			*errmsg = strdup(emsg);
+			return NULL;
+		}
+
+		rc = fields_from_vcomments(vf, errmsg, &c, &h);
+		if(!rc) {
+			char *oem;
+			char emsg[128];
+			oem = *errmsg;
+			snprintf(emsg, 128, "Can't grab vorbis comments from file %s: %s", filename, oem);
+			*errmsg = strdup(emsg);
+			ov_clear(vf);
+			free(vf);
+			fclose(oggf);
+			return h;
+		}
+
 		ov_clear(vf);
 		free(vf);
 		fclose(oggf);
-		return h;
+	} else {
+		match_filename(filename, errmsg, &c, &h);
 	}
-
-	ov_clear(vf);
-	free(vf);
-	fclose(oggf);
 
 	/* XXX: make this beautiful-er; if we can't get certain vorbis comment data, fall
 	 * back on the filename
@@ -548,13 +590,7 @@ fields_t* extract_from_ogg(filename, errmsg)
 	match_filename(filename, errmsg, &c, &h);
 #endif
 
-	mime = allocz(sizeof(*mime));
-	mime->fieldname = strdup("mime");
-	mime->fmtname = strdup("MIME type");
-	mime->type = string;
-	mime->val = strdup("application/ogg");
-	mime->next = h;
-	h = mime;
+	add_str_field("mime", "MIME type", &h, &c, strdup("application/ogg"));
 
 	return h;
 }
@@ -596,31 +632,33 @@ static int fields_from_flac_vcomm(h, c, errmsg, vc)
 	return 1;
 }
 
-static fields_t* extract_from_flac(filename, errmsg)
+static fields_t* extract_from_flac(filename, errmsg, usetags)
 	char *filename;
 	char **errmsg;
+	short usetags;
 {
 	fields_t *h = NULL, *c = NULL;
 	FLAC__StreamMetadata *fsm;
 	int rc;
 
-	if(FLAC__metadata_get_tags(filename, &fsm) == false) {
-		char emsg[128];
-		snprintf(emsg, 128, "Error getting FLAC metadata for %s", filename);
-		*errmsg = strdup(emsg);
-		return NULL;
-	}
+	if(usetags) {
+		if(FLAC__metadata_get_tags(filename, &fsm) == false) {
+			char emsg[128];
+			snprintf(emsg, 128, "Error getting FLAC metadata for %s", filename);
+			*errmsg = strdup(emsg);
+			return NULL;
+		}
 
-	rc = fields_from_flac_vcomm(&h, &c, errmsg, &fsm->data.vorbis_comment);
-	FLAC__metadata_object_delete(fsm);
-	if(!rc) {
-		return h;
+		rc = fields_from_flac_vcomm(&h, &c, errmsg, &fsm->data.vorbis_comment);
+		FLAC__metadata_object_delete(fsm);
+		if(!rc) {
+			return h;
+		}
+	} else {
+		match_filename(filename, errmsg, &c, &h);
 	}
 	
 	add_str_field("mime", "MIME type", &h, &c, strdup("audio/x-flac"));
-#if 0
-	match_filename(filename, errmsg, &c, &h);
-#endif
 
 	return h;
 }
@@ -633,16 +671,22 @@ fields_t* extract_from_file(f, filename, errmsg)
 {
 	char *ext;
 	fields_t *h = NULL, *c = NULL;
+	struct MusicConfig *mc;
+
+	if(!fdbfs_plugin_get_cptr(f, &plugin_inf, (void**)&mc)) {
+		*errmsg = strdup("Getting cptr");
+		return NULL;
+	}
 
 	ext = (filename + strlen(filename)) - strlen(MP3EXT);
 
 	if(strcasecmp(ext, MP3EXT) == 0)
-		return extract_from_mp3(filename, errmsg);
+		return extract_from_mp3(filename, errmsg, !(mc->pfns & PREFER_MP3_FN));
 	
 	ext = (filename + strlen(filename)) - strlen(OGGEXT);
 
 	if(strcasecmp(ext, OGGEXT) == 0)
-		return extract_from_ogg(filename, errmsg);
+		return extract_from_ogg(filename, errmsg, !(mc->pfns & PREFER_OGG_FN));
 
 	ext = (filename + strlen(filename)) - strlen(WAVEXT);
 
@@ -655,7 +699,7 @@ fields_t* extract_from_file(f, filename, errmsg)
 	ext = (filename + strlen(filename)) - strlen(FLACEXT);
 
 	if(strcasecmp(ext, FLACEXT) == 0) {
-		return extract_from_flac(filename, errmsg);
+		return extract_from_flac(filename, errmsg, !(mc->pfns & PREFER_FLAC_FN));
 	}
 
 	return NULL;

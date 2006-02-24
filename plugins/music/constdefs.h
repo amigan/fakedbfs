@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/constdefs.h,v 1.4 2006/02/23 19:11:32 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/constdefs.h,v 1.5 2006/02/24 08:01:02 dcp1990 Exp $ */
 
 #define MP3EXT ".mp3"
 #define OGGEXT ".ogg"
@@ -58,3 +58,11 @@
 
 #define DISCNAME "disc"
 #define DISCFMT "Disc"
+
+#define OGG_PREFER_MIB	"fdbfs.plugins.music.prefer_ogg_fn"
+#define MP3_PREFER_MIB	"fdbfs.plugins.music.prefer_mp3_fn"
+#define FLAC_PREFER_MIB	"fdbfs.plugins.music.prefer_flac_fn"
+
+#define	PREFER_OGG_FN	0x1
+#define	PREFER_MP3_FN	0x2
+#define	PREFER_FLAC_FN	0x4

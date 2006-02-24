@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/plugins.h,v 1.3 2006/02/23 21:26:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/plugins.h,v 1.4 2006/02/24 08:01:02 dcp1990 Exp $ */
 /**
  * @file plugins.h
  * @brief Plugin stuff.
@@ -41,7 +41,7 @@
 struct Plugin {
 	const struct PluginInfo *info;
 	
-	int (*init)(fdbfs_t *f, char **errmsg);
+	int (*init)(fdbfs_t *f, char **errmsg, void **cptr);
 	int (*shutdown)(fdbfs_t *f, char **errmsg);
 	int (*check_file)(fdbfs_t *f, char *filename, char **errmsg);
 	fields_t* (*extract_from_file)(fdbfs_t *f, char *filename, char **errmsg);
@@ -50,6 +50,8 @@ struct Plugin {
 		void *libhandle; /* if shared */
 		ficlplug_t fplug;
 	} pl;
+
+	void *cptr; /* client data */
 			
 	int flags;
 	struct Plugin *next;
@@ -81,4 +83,26 @@ void fdbfs_plugins_set_path(fdbfs_t *f, char *path);
  * @param h Head of list.
  */
 void fdbfs_free_plugin_list(struct Plugin *h);
+
+/**
+ * @brief Set client data.
+ *
+ * Sets an internal pointer to an arbitrary value for later retrieval.
+ *
+ * @param f fakedbfs instance to operate on.
+ * @param pinf PluginInfo structure identifying this plugin;; must be the same pointer that was registered with.
+ * @param dat Where to store the data.
+ */
+int fdbfs_plugin_set_cptr(fdbfs_t *f, const struct PluginInfo *pinf, void *dat);
+
+/**
+ * @brief Get client data.
+ *
+ * Retrieves value set with fdbfs_plugin_set_cptr().
+ *
+ * @param f fakedbfs instance to operate on.
+ * @param pinf PluginInfo structure identifying this plugin;; must be the same pointer that was registered with.
+ * @param[out] dat The data to set to.
+ */
+int fdbfs_plugin_get_cptr(fdbfs_t *f, const struct PluginInfo *pinf, void **dat);
 #endif
