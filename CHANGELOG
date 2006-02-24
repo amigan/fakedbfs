@@ -1,10 +1,10 @@
-$Amigan: fakedbfs/CHANGELOG,v 1.19 2006/02/23 21:26:00 dcp1990 Exp $
+$Amigan: fakedbfs/CHANGELOG,v 1.20 2006/02/24 06:55:07 dcp1990 Exp $
 
 Changelog
 
 2.0.0-RELEASE ("Doctor Wu")
 *Plugin API changed; now passed an fdbfs_t*
-*Added support for FLAC filename matching and vorbis tags to music plugin
+*Added support for FLAC and ogg vorbis tags to music plugin
 *Fixed bugs with extracting data from filenames for music plugin
 *Fixed path bugs with indexer
 *New logo. YEAH!!!!

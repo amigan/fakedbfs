@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/TODO,v 1.30 2006/02/23 21:29:47 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.31 2006/02/24 06:55:07 dcp1990 Exp $
 
 TODO as of 2.0-RELEASE (double stars means "must do before release of 2.0-RELEASE", usually for reasons
 of not having to deal with large-scale API and DB format changes [this is a major version, after all]):
@@ -10,7 +10,6 @@ of not having to deal with large-scale API and DB format changes [this is a majo
   API for them, and change all code that adds simple fields to use them
 **Add a genericised interface for setting MIME types (instead of our current "just add a field called mime" way)
 **Add entry birth time field to DB (quick!)
-**Add support for flac vorbis comments to the music plugin
 *Write more plugins
 *Write more specfiles
 *Document every API function

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.11 2006/02/23 21:26:01 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.12 2006/02/24 06:55:07 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -38,6 +38,7 @@
 #include <id3.h>
 #include <vorbis/vorbisfile.h>
 #include <vorbis/codec.h>
+#include <FLAC/metadata.h>
 
 #ifdef UNIX
 #	include <sys/types.h>
@@ -51,7 +52,7 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.11 2006/02/23 21:26:01 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.12 2006/02/24 06:55:07 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
@@ -558,16 +559,68 @@ fields_t* extract_from_ogg(filename, errmsg)
 	return h;
 }
 
+static int fields_from_flac_vcomm(h, c, errmsg, vc)
+	fields_t **h, **c;
+	char **errmsg;
+	FLAC__StreamMetadata_VorbisComment *vc;
+{
+	int i;
+	char *cs;
+
+	for(i = 0; i < vc->num_comments; i++) {
+		switch(comment_tagname(vc->comments[i].entry, vc->comments[i].length, &cs)) {
+			case CMT_ARTIST:
+				add_str_field(ARTISTNAME, ARTISTFMT, h, c, cs);
+				break;
+			case CMT_ALBUM:
+				add_str_field(ALBUMNAME, ALBUMFMT, h, c, cs);
+				break;
+			case CMT_TITLE:
+				add_str_field(TITLENAME, TITLEFMT, h, c, cs);
+				break;
+			case CMT_TRACK:
+				add_int_field(TRACKNAME, TRACKFMT, h, c, atoi(cs));
+				free(cs);
+				break;
+			case CMT_DISC:
+				add_int_field(DISCNAME, DISCFMT, h, c, atoi(cs));
+				free(cs);
+				break;
+			case CMT_YEAR:
+				add_int_field(YEARNAME, YEARFMT, h, c, atoi(cs));
+				free(cs);
+				break;
+		}
+	}
+
+	return 1;
+}
+
 static fields_t* extract_from_flac(filename, errmsg)
 	char *filename;
 	char **errmsg;
 {
 	fields_t *h = NULL, *c = NULL;
+	FLAC__StreamMetadata *fsm;
+	int rc;
 
-	/* TODO: implement FLAC vorbis comment stuff */
+	if(FLAC__metadata_get_tags(filename, &fsm) == false) {
+		char emsg[128];
+		snprintf(emsg, 128, "Error getting FLAC metadata for %s", filename);
+		*errmsg = strdup(emsg);
+		return NULL;
+	}
+
+	rc = fields_from_flac_vcomm(&h, &c, errmsg, &fsm->data.vorbis_comment);
+	FLAC__metadata_object_delete(fsm);
+	if(!rc) {
+		return h;
+	}
 	
 	add_str_field("mime", "MIME type", &h, &c, strdup("audio/x-flac"));
+#if 0
 	match_filename(filename, errmsg, &c, &h);
+#endif
 
 	return h;
 }
