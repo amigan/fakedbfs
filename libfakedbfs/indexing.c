@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.52 2006/02/23 21:26:00 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.53 2006/02/24 17:56:19 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/indexing.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.52 2006/02/23 21:26:00 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.53 2006/02/24 17:56:19 dcp1990 Exp $")
 
 static int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -112,8 +112,8 @@ static int add_file(f, file, catalogue, fields)
 
 	/* begin SQLite specific stuff */
 	
-	sql = sqlite3_mprintf("INSERT OR REPLACE INTO %s (file, lastupdate %s) VALUES('%q', %d %s);",
-			tablename, sqlkeys, file, time(NULL), sqlvals);
+	sql = sqlite3_mprintf("INSERT OR REPLACE INTO %s (file, lastupdate, ctime %s) VALUES('%q', %d, %d %s);",
+			tablename, sqlkeys, file, time(NULL), time(NULL), sqlvals);
 #ifdef INDEX_SQL_DEBUG
 	printf("SQL in indexer: %s\n", sql);
 #endif

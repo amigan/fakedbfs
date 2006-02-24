@@ -31,7 +31,7 @@
  * @file dbinit.c
  * @brief Database initialisation stuff.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.45 2006/01/31 17:26:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.46 2006/02/24 17:56:19 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -51,7 +51,7 @@
 #define DSpecParseTOKENTYPE Toke
 #define DSpecParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.45 2006/01/31 17:26:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.46 2006/02/24 17:56:19 dcp1990 Exp $")
 
 void *DSpecParseAlloc(void *(*mallocProc)(size_t));
 void DSpecParseFree(void *p, void (*freeProc)(void*));
@@ -370,7 +370,7 @@ static int new_catalog(f, specfile, h)
 	char *tdesc;
 	char *tablename, *fieldtable;
 	char ilbuffer[512];
-	const char *tdescpref = "id INTEGER PRIMARY KEY, file TEXT UNIQUE, lastupdate INTEGER, mime TEXT";
+	const char *tdescpref = "id INTEGER PRIMARY KEY, file TEXT UNIQUE, lastupdate INTEGER, ctime INTEGER, mime TEXT";
 	const char *tnamepre = CAT_TABLE_PREFIX;
 	const char *fieldpre = CAT_FIELD_TABLE_PREFIX;
 	size_t tds = 1;

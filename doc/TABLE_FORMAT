@@ -57,7 +57,7 @@ FORMAT OF USER-DEFINED TABLES:
 2.0 Catalogue table format
 	The catalogue tables created using this command:
 
-CREATE TABLE c_<catname> (id INTEGER PRIMARY KEY, file TEXT UNIQUE, lastupdate INTEGER, mime TEXT, ...);
+CREATE TABLE c_<catname> (id INTEGER PRIMARY KEY, file TEXT UNIQUE, lastupdate INTEGER, ctime INTEGER, mime TEXT, ...);
 
 Fields:
 id - primary key
@@ -66,6 +66,8 @@ file - full pathname to the file. There is a unique constraint for easy updating
 
 lastupdate - the last time the file entry was updated, either during an index or
 manual edit.
+
+ctime - the birth time of this entry (when it was first added).
 
 mime - the MIME type of the file.
 

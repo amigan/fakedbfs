@@ -1,8 +1,9 @@
-$Amigan: fakedbfs/CHANGELOG,v 1.20 2006/02/24 06:55:07 dcp1990 Exp $
+$Amigan: fakedbfs/CHANGELOG,v 1.21 2006/02/24 17:56:19 dcp1990 Exp $
 
 Changelog
 
 2.0.0-RELEASE ("Doctor Wu")
+*Added ctime field to database
 *Plugin API changed; now passed an fdbfs_t*
 *Added support for FLAC and ogg vorbis tags to music plugin
 *Fixed bugs with extracting data from filenames for music plugin

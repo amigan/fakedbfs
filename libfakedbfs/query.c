@@ -34,7 +34,7 @@
  *
  * @sa query.h
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.40 2006/01/31 17:26:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.41 2006/02/24 17:56:19 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -62,7 +62,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.40 2006/01/31 17:26:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.41 2006/02/24 17:56:19 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -500,6 +500,10 @@ int fdbfs_query_step(q) /* a pointer to the head of a fields_t list is pushed to
 				n->type = string;
 				n->fmtname = strdup("MIME Type");
 				special = 1;
+			} else if(strcmp(n->fieldname, "ctime") == 0) {
+				n->type = datime;
+				n->fmtname = strdup("Created");
+				special = 2;
 			} else {
 				cel = fdbfs_find_catelem_by_name(q->ourcat->headelem, n->fieldname);
 				if(cel == NULL) {

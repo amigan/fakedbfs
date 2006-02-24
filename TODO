@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/TODO,v 1.31 2006/02/24 06:55:07 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.32 2006/02/24 17:56:19 dcp1990 Exp $
 
 TODO as of 2.0-RELEASE (double stars means "must do before release of 2.0-RELEASE", usually for reasons
 of not having to deal with large-scale API and DB format changes [this is a major version, after all]):
@@ -7,9 +7,8 @@ of not having to deal with large-scale API and DB format changes [this is a majo
 *portable findex indexer (in addition to FTS)
 **Finish (or at least make usable) fedit utility
 **Bring music.c's add_int_field and add_str_field (and add other) functions into the libfakedbfs proper, make a neat
-  API for them, and change all code that adds simple fields to use them
+  API for them, and change all code that adds simple fields to use them )half done, still have to convert existing code)
 **Add a genericised interface for setting MIME types (instead of our current "just add a field called mime" way)
-**Add entry birth time field to DB (quick!)
 *Write more plugins
 *Write more specfiles
 *Document every API function
