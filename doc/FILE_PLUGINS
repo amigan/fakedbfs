@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/doc/FILE_PLUGINS,v 1.6 2006/02/23 21:26:00 dcp1990 Exp $
+$Amigan: fakedbfs/doc/FILE_PLUGINS,v 1.7 2006/02/24 08:03:03 dcp1990 Exp $
 
 How to write file plugins
 	By Dan Ponte
@@ -10,7 +10,7 @@ employed. A file plugin must contain the following functions and globals:
 
 struct PluginInfo plugin_inf;
 
-int plugin_init(fdbfs_t *f, char **errmsg);
+int plugin_init(fdbfs_t *f, char **errmsg, void **cptr);
 
 int plugin_shutdown(fdbfs_t *f, char **errmsg);
 
@@ -53,11 +53,12 @@ struct PluginInfo {
 
 --
 
-int plugin_init(fdbfs_t *f, char **errmsg);
+int plugin_init(fdbfs_t *f, char **errmsg, void **cptr);
 
 This function is called when the plugin is first loaded. If an error occurs,
 return 0 and set *errmsg to a _dynamically-allocated_ string. Otherwise, return 1
-and set *errmsg to NULL.
+and set *errmsg to NULL. *cptr can be set to an arbitrary value if desired, which can
+be later retrieved using fdbfs_plugin_get_cptr().
 
 --
 
