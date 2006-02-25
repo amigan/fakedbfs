@@ -31,7 +31,7 @@
  * @file fakedbfs.h
  * @brief Main header file.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.73 2006/02/25 06:42:15 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.74 2006/02/25 09:52:13 dcp1990 Exp $ */
 #include <fakedbfs/types.h>
 
 #include <fakedbfs/fdbfsconfig.h>
@@ -95,15 +95,6 @@
 
 
 
-#define CN_FLAG_LEAF	0x1	/* leaf node; actually holds data */
-#define CN_DYNA_DATA	0x2	/* free(data.pointer.ptr); ...I know I could check type but this is easier */
-#define CN_DYNA_STR	0x4	/* free(data.string); */
-#define CN_FLAG_ROOT	0x8	/* we are the root branch */
-
-#define ROOT_NODE_TAG	"fdbfs"
-#define CONFTABLE	"config"
-#define CONFTABLESPEC	"id INTEGER PRIMARY KEY, mib TEXT UNIQUE," \
-       " type INTEGER, value BLOB"
 
 struct PluginInfo {
 	const char *extensions; /* a list of file extensions, not including dots, that

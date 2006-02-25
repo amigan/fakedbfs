@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.18 2006/02/25 07:26:48 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.19 2006/02/25 09:52:13 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 #include <fakedbfs/db.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.18 2006/02/25 07:26:48 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.19 2006/02/25 09:52:13 dcp1990 Exp $")
 
 static void conf_node_link_parent(parent, n)
 	confnode_t *parent, *n;
@@ -133,7 +133,7 @@ static confnode_t* conf_search_tag(parent, name)
 	return NULL;
 }
 
-static confnode_t* conf_search_mib(p, mib)
+confnode_t* fdbfs_conf_search_mib(p, mib)
 	confnode_t *p;
 	char *mib; /* not const! */
 {
@@ -367,7 +367,7 @@ enum DataType fdbfs_conf_get(f, mib, data)
 	char *mibcpy = strdup(mib);
 	confnode_t *tnode;
 
-	tnode = conf_search_mib(f->rconf, mibcpy);
+	tnode = fdbfs_conf_search_mib(f->rconf, mibcpy);
 	free(mibcpy);
 
 	if(tnode == NULL) {
@@ -391,7 +391,7 @@ int fdbfs_conf_set(f, mib, type, data) /* this routine is dedicated to Genesis' 
 	confnode_t *tnode;
 	short dynamic = 0;
 
-	tnode = conf_search_mib(f->rconf, mibcpy);
+	tnode = fdbfs_conf_search_mib(f->rconf, mibcpy);
 
 	switch(type) {
 		case string:

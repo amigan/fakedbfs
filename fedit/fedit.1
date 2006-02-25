@@ -1,0 +1,140 @@
+.\" El manpage-o for fcreatedb
+.\" (C)2005, Dan Ponte
+.\" $Amigan: fakedbfs/fedit/fedit.1,v 1.1 2006/02/25 09:52:13 dcp1990 Exp $
+.Dd Februrary 25, 2006
+.Dt FEDIT 1
+.Os
+.Sh NAME
+.Nm fedit
+.Nd edit various parts of the fakedbfs database
+.Sh SYNOPSIS
+.Nm
+.Op Fl hv
+.Op Fl d Ar dbfile
+.Ar command
+.Op arguments ...
+.Sh DESCRIPTION
+.Nm
+is part of the
+.Em fakedbfs
+distribution. It is used to prepare databases for use by the various other
+utilities in the distribution.
+.Pp
+.Nm
+accepts one mandatory argument,
+.Ar command .
+A list of commands is in
+.Sx COMMANDS .
+.Pp
+One can also use the
+.Ar d
+argument to specify the database to use; by default it is either the value of
+the FAKEDBFSDB environment variable, or $HOME/.fakedbfsdb. This convention is
+followed by all utilities in this distribution, and should be followed for other
+applications using the libfakedbfs library.
+.Pp
+.Nm
+recognizes the following command line options:
+.Bl -tag -width indent
+.It Fl h
+Print a short usage message.
+.It Fl v
+Print the library version, the
+.Nm
+utility version, and other information.
+.It Fl d Ar dbfile
+Use
+.Ar dbfile
+as the database instead of the default.
+.El
+.Sh COMMANDS
+Currently implemented commands include:
+.Bl -tag -width indent
+.It rmcat Ar catalogue Op .. Ar catalogueN
+Removes any
+.Ar catalogue Ns s
+specified.
+.It lscats
+Lists all catalogues in the database.
+.It Xo lsconf Oo Ar mib1
+\&..
+.Ar mibN Oc
+.Xc
+With no arguments, prints all MIBs in the configuration database; otherwise, prints
+only the MIBs specified (or their branches).
+.It setconf Ar mib Ns = Ns Ar typemod Ns : Ns Ar value Op ...
+Sets
+.Ar mib
+to
+.Ar value
+of type
+.Ar typemod .
+See
+.Sx TYPE MODIFIERS
+for a list of possible values for
+.Ar typemod .
+.El
+.Sh TYPE MODIFIERS
+The following type modifiers are supported (upper or lowercase works):
+.Bl -tag -width indent
+.It N
+An integer, akin to an
+.Em int .
+.It U
+An unsigned integer.
+.It B
+A boolean value; either
+.Em true
+or
+.Em false
+.It F
+A floating point number, with the same precision as a
+.Em double .
+.It L
+A wide integer, having the same size as a
+.Em long long
+(usually 64 bits).
+.It M
+An unsigned wide integer.
+.It S
+A string; it needn't (and shouldn't) be quoted.
+.It C
+A character.
+.It D
+A time, in Unix epoch format (see
+.Xr time 3 ) .
+.El
+.Sh DIAGNOSTICS
+The
+.Nm
+utility will print whatever error messages it gets from the library to
+.Em stderr .
+These usually will include a recursing list of errors as each function returns;
+see
+.Xr libfakedbfs 3
+for more information.
+.Sh ENVIRONMENT
+The FAKEDBFSDB is the only environment variable that
+.Nm
+uses. See above for use information.
+.Sh FILES
+.Bl -tag -width fdbfs
+.It Pa ~/.fakedbfsdb
+default database file
+.El
+.Sh SEE ALSO
+.Xr libfakedbfs 3 ,
+.Xr specfile 5 ,
+.Xr findex 1 ,
+.Xr fedit 1 ,
+.Xr fquery 1
+.Sh HISTORY
+The
+.Nm
+utility appeared in fakedbfs v1.1.0, and became somewhat useful in fakedbfs v2.0.0 (Doctor Wu).
+.Sh BUGS
+None; this utility is perfect, if a tad sparse in functionality at the moment.
+.Sh AUTHOR
+Dan Ponte <dcp1990@neptune.atopia.net>
+.Pp
+Web: http://www.theamigan.net/fakedbfs/

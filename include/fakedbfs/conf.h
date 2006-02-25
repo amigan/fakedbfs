@@ -31,10 +31,21 @@
  * @file conf.h
  * @brief Configuration subsystem header.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/conf.h,v 1.1 2006/01/29 21:04:36 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/conf.h,v 1.2 2006/02/25 09:52:13 dcp1990 Exp $ */
 #ifndef HAVE_FDBFS_CONF_H
 #define HAVE_FDBFS_CONF_H
 #include <fakedbfs/types.h>
+
+#define CN_FLAG_LEAF	0x1	/* leaf node; actually holds data */
+#define CN_DYNA_DATA	0x2	/* free(data.pointer.ptr); ...I know I could check type but this is easier */
+#define CN_DYNA_STR	0x4	/* free(data.string); */
+#define CN_FLAG_ROOT	0x8	/* we are the root branch */
+
+#define ROOT_NODE_TAG	"fdbfs"
+#define CONFTABLE	"config"
+#define CONFTABLESPEC	"id INTEGER PRIMARY KEY, mib TEXT UNIQUE," \
+       " type INTEGER, value BLOB"
+
 
 struct _config {
 	char *pluginpath; /* search path, delimited by pipes (``|'') */
@@ -58,4 +69,13 @@ enum DataType fdbfs_conf_get(fdbfs_t *f, char *mib, union Data *data);
 int fdbfs_conf_set(fdbfs_t *f, char *mib, enum DataType type, union Data data);
 void fdbfs_conf_destroy_tree(confnode_t *t);
 confnode_t* fdbfs_conf_node_create(char *tag, confnode_t *parent, int leaf);
+
+/**
+ * @brief Search for confnode_t in tree.
+ *
+ * @param p Parent to search.
+ * @param mib MIB to search for.
+ * @return confnode_t pointer, or NULL if cannot find or other error.
+ */
+confnode_t* fdbfs_conf_search_mib(confnode_t *p, char *mib);
 #endif

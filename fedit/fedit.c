@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Dan Ponte
+ * Copyright (c) 2005-2006, Dan Ponte
  *
  * fedit.c - database editing utility
  * 
@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fedit/fedit.c,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fedit/fedit.c,v 1.7 2006/02/25 09:52:13 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -42,14 +42,14 @@
 #include <sys/stat.h>
 #endif
 
-#define ARGSPEC "vhfd:"
+#define ARGSPEC "vhd:"
 #define FEDITVER "0.1"
 #define MAXPLEN 1023
 
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/fakedbfsapps.h>
 
-RCSID("$Amigan: fakedbfs/fedit/fedit.c,v 1.6 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fedit/fedit.c,v 1.7 2006/02/25 09:52:13 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
@@ -59,7 +59,7 @@ int do_commands(int, char**);
 
 void version(void)
 {
-	printf("fedit v%s. (C)2005, Dan Ponte.\n"
+	printf("fedit v%s. (C)2005-2006, Dan Ponte.\n"
 		       "Under the BSD license; see the source for more details.\n"
 		       "fakedbfs library v%s ('%s'). Originally built for v%s.\n%s\n"
 		       "Visit http://www.theamigan.net/fakedbfs/ for more info.\n",
@@ -69,7 +69,7 @@ void version(void)
 void usage(pn)
 	char *pn;
 {
-	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] [-f] command [arguments]\n",
+	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] command [arguments ...]\n",
 			pn, pn);
 }
 
