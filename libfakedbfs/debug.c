@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/debug.c,v 1.4 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/debug.c,v 1.5 2006/02/25 07:12:31 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -41,7 +41,7 @@
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/debug.c,v 1.4 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/debug.c,v 1.5 2006/02/25 07:12:31 dcp1990 Exp $")
 
 struct EnumSubElem* fdbfs_debug_dump_enum_sub_elem(e, allsub) /* returns next */
 	struct EnumSubElem *e;
@@ -186,3 +186,15 @@ void fdbfs_debug_dump_fields(h)
 
 	printf("\n");
 }
+
+void fdbfs_debug_dump_confnode(c)
+	confnode_t *c;
+{
+	for(; c != NULL; c = c->next) {
+		printf("n %s data %p %s children:\n", c->tag, c->data.string, c->flags & CN_FLAG_LEAF ? "(leaf)"  : "");
+		fdbfs_debug_dump_confnode(c->child);
+		printf("--%s end--\n", c->tag);
+	}
+}
+
+

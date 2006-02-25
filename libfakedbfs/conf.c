@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.16 2006/02/25 06:42:15 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.17 2006/02/25 07:12:31 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 #include <fakedbfs/db.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.16 2006/02/25 06:42:15 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.17 2006/02/25 07:12:31 dcp1990 Exp $")
 
 static void conf_node_link_parent(parent, n)
 	confnode_t *parent, *n;
@@ -354,16 +354,6 @@ int fdbfs_conf_read_from_db(f)
 	sqlite3_finalize(cst);
 
 	return 1;
-}
-
-static void dump_confnode(c)
-	confnode_t *c;
-{
-	for(; c != NULL; c = c->next) {
-		printf("n %s data %p %s children:\n", c->tag, c->data.string, c->flags & CN_FLAG_LEAF ? "(leaf)"  : "");
-		dump_confnode(c->child);
-		printf("--%s end--\n", c->tag);
-	}
 }
 
 enum DataType fdbfs_conf_get(f, mib, data)

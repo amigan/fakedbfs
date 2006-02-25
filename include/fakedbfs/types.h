@@ -119,6 +119,7 @@ struct _Toke {
 union Data {
 	int integer;
 	long long linteger;
+	unsigned long long uslinteger;
 	unsigned int usint;
 	char *string;
 	char character;

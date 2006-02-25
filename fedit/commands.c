@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fedit/commands.c,v 1.7 2006/01/31 17:53:03 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fedit/commands.c,v 1.8 2006/02/25 07:12:31 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -36,10 +36,13 @@
 #include <getopt.h>
 #include <errno.h>
 #include <signal.h>
+#include <time.h>
 
 #include <fakedbfs/fakedbfs.h>
+#include <fakedbfs/types.h>
+#include <fakedbfs/conf.h>
 #include <fakedbfs/fakedbfsapps.h>
-RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.7 2006/01/31 17:53:03 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.8 2006/02/25 07:12:31 dcp1990 Exp $")
 
 #define COMMFLAG_MIN	0x1 /* at least this many args */
 #define COMMFLAG_MAX	0x2 /* at most this many args */
@@ -59,6 +62,8 @@ enum command_n {
 	EXPORT_CSPECS, /* export all specs */
 	REMOVE_ENUM, /* remove enum */
 	EDIT_ENUM, /* edit enumeration */
+	LIST_CONF, /* show conf */
+	SET_CONF, /* set conf MIB */
 	LIST_CATS /* list catalogues */
 };
 	
@@ -81,6 +86,8 @@ struct command cmds[] = {
 	{"rmenum", REMOVE_ENUM, 1, COMMFLAG_MIN /* arg is list of enum names to remove; this will break other cats! */},
 	{"editenum", EDIT_ENUM, 0, COMMFLAG_EQU /* implemented when EDIT_CSPEC is */},
 	{"lscats", LIST_CATS, 0, COMMFLAG_EQU /* list names of cats */},
+	{"lsconf", LIST_CONF, 0, COMMFLAG_MIN /* MIBs to show */},
+	{"setconf", SET_CONF, 1, COMMFLAG_MIN /* form of mib=value */},
 	{NULL, 0, 0, 0} /* terminator */
 };
 
@@ -147,6 +154,57 @@ int exec_command(cm, argc, argv)
 				}
 			}
 			break;
+		case LIST_CONF:
+			{
+				union Data dta;
+				enum DataType dt;
+
+				if(argc == 1) {
+					/* XXX: list all MIBs */
+					fdbfs_debug_dump_confnode(f->rconf);
+				} else for(i = 1; i < argc; i++) {
+					dt = fdbfs_conf_get(f, argv[i], &dta);
+					printf("%s: ", argv[i]);
+					switch(dt) {
+						case number:
+							printf("%d", dta.integer);
+							break;
+						case usnumber:
+							printf("%u", dta.usint);
+							break;
+						case boolean:
+							printf("%s", dta.integer ? "true" : "false");
+							break;
+						case string:
+							printf("'%s'", dta.string);
+							break;
+						case fp:
+							printf("%g", dta.fp);
+							break;
+						case datime:
+							printf("%s (%lld)", ctime((const time_t *)&dta.linteger), dta.linteger);
+							break;
+						case character:
+							printf("%c (%d, hex %x, oct %o)", dta.character, dta.character, dta.character, dta.character);
+							break;
+						case bigint:
+							printf("%lld", dta.linteger);
+							break;
+						case usbigint:
+							printf("%llu", dta.uslinteger);
+							break;
+						case -1:
+							printf("error!");
+							break;
+						default:
+							printf("datatype not supported");
+							break;
+					}
+					printf("\n");
+				}
+			}
+			break;
+
 		case EDIT_REC: /* <catalogue> <query> <defspec> */
 		default:
 			fprintf(stderr, "command not implemented!\n");

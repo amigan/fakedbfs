@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/debug.h,v 1.1 2006/01/29 21:04:36 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/debug.h,v 1.2 2006/02/25 07:12:31 dcp1990 Exp $ */
 /**
  * @file debug.h
  * @brief Debug and error handling.
@@ -50,3 +50,10 @@ void fdbfs_debug_dump_cat_head_list(struct CatalogueHead *head);
 void fdbfs_debug_dump_head_members(Heads *hd);
 int fdbfs_debug_info(fdbfs_t *f, enum ErrorAction sev, char *fmt, ...);
 void fdbfs_estr_free(error_t *e);
+
+/**
+ * @brief Dump confnode_t and children
+ *
+ * @param c confnode_t to dump.
+ */
+void fdbfs_debug_dump_confnode(confnode_t *c);
