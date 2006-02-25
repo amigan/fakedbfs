@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fedit/commands.c,v 1.9 2006/02/25 09:52:13 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fedit/commands.c,v 1.10 2006/02/25 19:09:54 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -45,7 +45,7 @@
 #include <fakedbfs/types.h>
 #include <fakedbfs/conf.h>
 #include <fakedbfs/fakedbfsapps.h>
-RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.9 2006/02/25 09:52:13 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.10 2006/02/25 19:09:54 dcp1990 Exp $")
 
 #define COMMFLAG_MIN	0x1 /* at least this many args */
 #define COMMFLAG_MAX	0x2 /* at most this many args */
@@ -160,7 +160,13 @@ static void cn_print_leaf(c, mib)
 			printf("%g", dta.fp);
 			break;
 		case datime:
-			printf("%s (%lld)", ctime((const time_t *)&dta.linteger), dta.linteger);
+			{
+				char *ctm = ctime((const time_t *)&dta.linteger);
+				char *cts = strchr(ctm, '\n');
+				if(cts)
+					*cts = '\0';
+				printf("%s (%lld)", ctm, dta.linteger);
+			}
 			break;
 		case character:
 			printf("%c (%d, hex %x, oct %o)", dta.character, dta.character, dta.character, dta.character);
@@ -226,7 +232,7 @@ static void do_lsconf(argc, argv)
 
 	if(argc == 1) {
 		/* XXX: list all MIBs */
-		lsc_precurs("", f->rconf);
+		lsc_precurs("", f->rconf->child);
 	} else for(i = 1; i < argc; i++) {
 		c = fdbfs_conf_search_mib(f->rconf, argv[i]);
 		if(c == NULL) {
