@@ -31,7 +31,7 @@
  * @file fakedbfs.h
  * @brief Main header file.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.72 2006/02/23 21:45:58 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.73 2006/02/25 06:42:15 dcp1990 Exp $ */
 #include <fakedbfs/types.h>
 
 #include <fakedbfs/fdbfsconfig.h>
@@ -140,6 +140,7 @@ struct PluginInfo {
 union _ansdata {
 	char *string; /* this and vd will be free()d if they aren't NULL, no exceptions. Hence, make them dynamic. */
 	int integer; /* applies to enums and subenums as well */
+	long long linteger; /* long integer */
 	FLOATTYPE fp;
 	void *vd;
 };

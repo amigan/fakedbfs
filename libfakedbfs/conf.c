@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.15 2006/02/24 08:01:02 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.16 2006/02/25 06:42:15 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 #include <fakedbfs/db.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.15 2006/02/24 08:01:02 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.16 2006/02/25 06:42:15 dcp1990 Exp $")
 
 static void conf_node_link_parent(parent, n)
 	confnode_t *parent, *n;
@@ -317,6 +317,11 @@ int fdbfs_conf_read_from_db(f)
 			case usnumber:
 			case character:
 				data.integer = sqlite3_column_int(cst, 2);
+				break;
+			case datime:
+			case bigint:
+			case usbigint:
+				data.linteger = sqlite3_column_int64(cst, 2);
 				break;
 			case string:
 				data.string = strdup(sqlite3_column_text(cst, 2));

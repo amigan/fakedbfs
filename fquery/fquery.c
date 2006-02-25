@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fquery/fquery.c,v 1.12 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fquery/fquery.c,v 1.13 2006/02/25 06:42:15 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -50,7 +50,7 @@
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/fakedbfsapps.h>
 
-RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.12 2006/01/29 21:03:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.13 2006/02/25 06:42:15 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
@@ -104,6 +104,9 @@ int print_fields(h)
 			case number:
 				printf("%d (%x)", *(int*)c->val, *(int*)c->val);
 				break;
+			case bigint:
+				printf("%lld (%llx)", *(long long int*)c->val, *(long long int*)c->val);
+				break;
 			case boolean:
 				printf("%s", *(int*)c->val ? "true" : "false");
 				break;
@@ -115,7 +118,7 @@ int print_fields(h)
 				if((nl = strrchr(tbf, '\n')) != NULL) {
 					*nl = '\0'; /* shave off the newline */
 				}
-				printf("%s (%d)", tbf, *(int*)c->val);
+				printf("%s (%lld)", tbf, *(long long int*)c->val);
 				break;
 			case oenum:
 				printf("%s (%d)", fdbfs_get_enum_string_by_value(c->ehead->headelem, *(int*)c->val, 1), *(int*)c->val);

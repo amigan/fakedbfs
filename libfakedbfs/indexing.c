@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.53 2006/02/24 17:56:19 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.54 2006/02/25 06:42:15 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/indexing.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.53 2006/02/24 17:56:19 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.54 2006/02/25 06:42:15 dcp1990 Exp $")
 
 static int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -276,9 +276,13 @@ checkagain:
 	switch(dt) {
 		case number:
 		case character:
-		case datime: /* fugly; oh well */
 		case usnumber:
 			printf("%s [%d]> ", fieldname, def->ad.integer);
+			break;
+		case datime: /* fugly; oh well */
+		case bigint:
+		case usbigint:
+			printf("%s [%lld]> ", fieldname, def->ad.linteger);
 			break;
 		case boolean:
 			printf("%s [%s]> ", fieldname, (def->ad.integer ? "true" : "false"));
@@ -322,10 +326,14 @@ checkagain:
 
 	switch(dt) {
 		case number:
-		case datime:
 		case usnumber: /* incorrect! oh well...shuts the compiler up. we don't use usnumber yet anyway */
 		case character:
 			buf->ad.integer = atoi(bf);
+			break;
+		case datime:
+		case usbigint:
+		case bigint:
+			buf->ad.linteger = atol(bf);
 			break;
 		case boolean:
 			if(*bf == 't')
@@ -431,13 +439,17 @@ static fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremel
 				def.dt = ctype;
 				switch(c->type) {
 					case number:
-					case datime:
 					case usnumber:
 					case boolean:
 					case oenum:
 					case oenumsub:
 					case character:
 						def.ad.integer = *(int*)cval;
+						break;
+					case datime:
+					case bigint:
+					case usbigint:
+						def.ad.linteger = *(int64_t*)cval;
 						break;
 					case string:
 						def.ad.string = (char*)cval;
@@ -489,12 +501,16 @@ static fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremel
 			def.dt = ctype;
 			switch((hasoth ? c->othtype : c->type)) {
 				case number:
-				case datime:
 				case usnumber:
 				case boolean:
 				case oenum:
 				case oenumsub:
 					def.ad.integer = *(int*)cval;
+					break;
+				case datime:
+				case bigint:
+				case usbigint:
+					def.ad.linteger = *(int64_t*)cval;
 					break;
 				case string:
 					def.ad.string = (char*)cval;
@@ -527,7 +543,6 @@ static fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremel
 					case oenum:
 					case oenumsub:
 					case number:
-					case datime:
 					case usnumber:
 					case boolean:
 						if(hasoth) {
@@ -541,6 +556,22 @@ static fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremel
 								free(c->val);
 							c->val = malloc(sizeof(int));
 							*(int*)c->val = cta.ad.integer;
+						}
+						break;
+					case datime:
+					case usbigint:
+					case bigint:
+						if(hasoth) {
+							if(c->otherval != NULL)
+								free(c->otherval);
+							c->otherval = malloc(sizeof(int64_t));
+							*(int64_t*)c->otherval = cta.ad.linteger;
+						} else {
+							hasoth = 0;
+							if(c->val != NULL)
+								free(c->val);
+							c->val = malloc(sizeof(int64_t));
+							*(int64_t*)c->val = cta.ad.linteger;
 						}
 						break;
 					case string:

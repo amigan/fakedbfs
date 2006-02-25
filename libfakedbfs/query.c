@@ -34,7 +34,7 @@
  *
  * @sa query.h
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.41 2006/02/24 17:56:19 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.42 2006/02/25 06:42:15 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -62,7 +62,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.41 2006/02/24 17:56:19 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.42 2006/02/25 06:42:15 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -535,9 +535,14 @@ int fdbfs_query_step(q) /* a pointer to the head of a fields_t list is pushed to
 			}
 		}
 		switch(sqlite3_column_type(q->cst, i)) {
-			case SQLITE_INTEGER:
-				val = malloc(sizeof(int));
-				*(int*)val = sqlite3_column_int(q->cst, i);
+			case SQLITE_INTEGER: /* XXX: we need to be 64bit clean */
+				if(n->type == datime || n->type == bigint) {
+					val = malloc(sizeof(int64_t));
+					*(int64_t*)val = sqlite3_column_int64(q->cst, i);
+				} else {
+					val = malloc(sizeof(int));
+					*(int*)val = sqlite3_column_int(q->cst, i);
+				}
 				break;
 			case SQLITE_FLOAT:
 				val = malloc(sizeof(FLOATTYPE));

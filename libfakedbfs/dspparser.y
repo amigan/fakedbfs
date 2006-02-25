@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.7 2006/01/31 17:26:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.8 2006/02/25 06:42:15 dcp1990 Exp $ */
 %name {DSPParse}
 %include {
 #include <sqlite3.h>
@@ -45,7 +45,7 @@
 #include <fakedbfs/debug.h>
 #include <fakedbfs/dbspecdata.h>
 #include <fakedbfs/fields.h>
-RCSID("$Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.7 2006/01/31 17:26:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dspparser.y,v 1.8 2006/02/25 06:42:15 dcp1990 Exp $")
 }
 %token_type {Toke}
 %nonassoc ILLEGAL SPACE.
@@ -95,7 +95,7 @@ lvalue ::= UQSTRING(B). {
 }
 
 rvalue ::= SINT(A). {
-	if(d->cf->type != number && d->cf->type != datime /* for now */) {
+	if(d->cf->type != number && d->cf->type != datime /* XXX: for now; datime is long! */) {
 		fdbfs_ferr(d->f, die, "Type of field '%s' is not number!", d->cf->fieldname);
 		break;
 	}

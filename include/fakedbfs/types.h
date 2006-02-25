@@ -79,7 +79,9 @@ enum DataType {
 	oenumsub, /* this either; this is for .sub references */
 	usnumber, /* new type for unsigned numbers */
 	datime, /* date and time; see lastupdate (this is really like number, but treated differently for display purposes */
-	character /* for use with conf only */
+	character, /* for use with conf only */
+	bigint, /* 64 bits */
+	usbigint
 };
 
 struct _db {
@@ -116,6 +118,7 @@ struct _Toke {
 
 union Data {
 	int integer;
+	long long linteger;
 	unsigned int usint;
 	char *string;
 	char character;

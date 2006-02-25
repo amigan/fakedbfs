@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.31 2006/01/31 17:26:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.32 2006/02/25 06:42:15 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -42,7 +42,7 @@
 #include <fakedbfs/db.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.31 2006/01/31 17:26:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.32 2006/02/25 06:42:15 dcp1990 Exp $")
 
 
 /**
@@ -184,6 +184,8 @@ const char* fdbfs_db_gettype(t)
 		case oenum:
 		case oenumsub:
 		case datime:
+		case bigint:
+		case usbigint:
 		case character:
 			return " INTEGER DEFAULT 0";
 			break;
@@ -431,7 +433,6 @@ int fdbfs_db_bind_field(f, count, type, value, len, stmt)
 		case usnumber:
 		case boolean:
 		case oenum:
-		case datime:
 		case oenumsub:
 		case character:
 #ifdef INDEX_SQL_DEBUG
@@ -439,6 +440,13 @@ int fdbfs_db_bind_field(f, count, type, value, len, stmt)
 #endif
 			if(sqlite3_bind_int(stmt, (*count)++, value != NULL ? *(int*)value : 0x0) != SQLITE_OK) {
 				return ERR(die, "bind_int: %s", sqlite3_errmsg(f->db));
+			}
+			break;
+		case datime:
+		case bigint:
+		case usbigint:
+			if(sqlite3_bind_int64(stmt, (*count)++, value != NULL ? *(int64_t*)value : 0x0) != SQLITE_OK) {
+				return ERR(die, "bind_wideint: %s", sqlite3_errmsg(f->db));
 			}
 			break;
 		case string:
@@ -563,9 +571,13 @@ int fdbfs_db_mib_add(f, mib, type, data)
 		case number:
 		case usnumber:
 		case boolean:
-		case datime:
 		case character:
 			rc = sqlite3_bind_int(cst, 3, data.integer);
+			break;
+		case datime:
+		case usbigint:
+		case bigint:
+			rc = sqlite3_bind_int64(cst, 3, (int64_t)data.linteger);
 			break;
 		case string:
 			rc = sqlite3_bind_text(cst, 3, data.string, strlen(data.string), SQLITE_STATIC);
@@ -634,9 +646,13 @@ int fdbfs_db_mib_update(f, mib, type, data)
 		case number:
 		case usnumber:
 		case boolean:
-		case datime:
 		case character:
 			rc = sqlite3_bind_int(cst, 2, data.integer);
+			break;
+		case datime:
+		case usbigint:
+		case bigint:
+			rc = sqlite3_bind_int64(cst, 2, (int64_t)data.linteger);
 			break;
 		case string:
 			rc = sqlite3_bind_text(cst, 2, data.string, strlen(data.string), SQLITE_STATIC);
