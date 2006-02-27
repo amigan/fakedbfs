@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fedit/fedit.c,v 1.7 2006/02/25 09:52:13 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fedit/fedit.c,v 1.8 2006/02/27 19:45:31 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -36,6 +36,10 @@
 #include <getopt.h>
 #include <errno.h>
 #include <signal.h>
+#ifdef HAVE_READLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
 
 #ifdef UNIX
 #include <sys/types.h>
@@ -49,7 +53,7 @@
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/fakedbfsapps.h>
 
-RCSID("$Amigan: fakedbfs/fedit/fedit.c,v 1.7 2006/02/25 09:52:13 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fedit/fedit.c,v 1.8 2006/02/27 19:45:31 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
@@ -65,6 +69,43 @@ void version(void)
 		       "Visit http://www.theamigan.net/fakedbfs/ for more info.\n",
 		       FEDITVER, fakedbfsver, fakedbfsvname, FAKEDBFSVER, fakedbfscopyright);
 }
+#define BUFSIZE	2048
+#define MELEMS	20
+#ifdef WANT_SHELL
+int do_shell(void)
+{
+	char *inbuf = malloc(BUFSIZE); /* use the heap, luke */
+	char *rstr;
+	char *agv[MELEMS];
+	int argc;
+	int rc;
+
+	while(1) {
+#ifdef HAVE_READLINE
+		rstr = readline("fakedbfs> ");
+		strlcpy(inbuf, rstr, BUFSIZE);
+#else
+		printf("fakedbfs> ");
+		fgets(inbuf, BUFSIZE, stdin);
+#endif
+		if(cmd_split(inbuf, agv, MELEMS, &argc)) {
+			rc = check_builtins(argc, agv);
+			if(rc == 0)
+				break;
+			switch(rc) {
+				case -1:
+					continue;
+					break;
+				default:
+					do_commands(argc, agv);
+					break;
+			}
+		}
+	}
+
+	return 1;
+}
+#endif
 
 void usage(pn)
 	char *pn;
