@@ -31,7 +31,7 @@
  * @file dbinit.c
  * @brief Database initialisation stuff.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.46 2006/02/24 17:56:19 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.47 2006/03/06 05:12:26 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -51,7 +51,7 @@
 #define DSpecParseTOKENTYPE Toke
 #define DSpecParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.46 2006/02/24 17:56:19 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.47 2006/03/06 05:12:26 dcp1990 Exp $")
 
 void *DSpecParseAlloc(void *(*mallocProc)(size_t));
 void DSpecParseFree(void *p, void (*freeProc)(void*));
@@ -360,9 +360,54 @@ static int new_enum(f, specfile, h)
 	return 1;
 }
 
-
-static int new_catalog(f, specfile, h)
+static int new_cft(f, h)
 	fdbfs_t *f;
+	struct CatalogueHead *h;
+{
+	struct CatElem *c;
+	char *fieldtable;
+	const char *fieldpre = CAT_FIELD_TABLE_PREFIX;
+	const size_t fln = sizeof(char) * (strlen(h->name) + strlen(fieldpre) + 3);
+	char *ptname;
+	
+	fieldtable = malloc(fln);
+	
+	strlcpy(fieldtable, fieldpre, fln);
+	strlcat(fieldtable, h->name, fln);
+
+	if(!fdbfs_db_create_table(f, fieldtable, "id INTEGER PRIMARY KEY, fieldname TEXT, alias TEXT, datatype INTEGER, enumname TEXT, otherfield TEXT")) {
+		CERR(die, "new_cft(f, h): error creating field table %s. ", fieldtable);
+		free(fieldtable);
+		return 0;
+	}
+
+	/* actual stuff */
+	for(c = h->headelem; c != NULL; c = c->next) {
+		if(c->flags & CATE_USES_FC && c->alias == NULL) {
+			c->alias = strdup(c->name);
+			*c->alias = toupper(*c->alias);
+		}
+
+		if(c->type == oenum)
+			ptname = c->enumptr->name;
+		else if(c->type == oenumsub)
+			ptname = c->subcatel->name;
+		else
+			ptname = NULL;
+
+		if(!fdbfs_db_add_to_field_desc(f, fieldtable, c->name, c->alias, c->type, ptname)) {
+			SCERR(die, "new_cft(f, h): error adding to cat field desc. ");
+			free(fieldtable);
+			return 0;
+		}
+	}
+	free(fieldtable);
+	return 1;
+}
+
+static int new_catalog(f, name, specfile, h)
+	fdbfs_t *f;
+	char *name;
 	char *specfile;
 	struct CatalogueHead *h;
 {
@@ -374,27 +419,19 @@ static int new_catalog(f, specfile, h)
 	const char *tnamepre = CAT_TABLE_PREFIX;
 	const char *fieldpre = CAT_FIELD_TABLE_PREFIX;
 	size_t tds = 1;
-	const size_t tln = sizeof(char) * (strlen(h->name) + strlen(tnamepre) + 3);
+	const size_t tln = sizeof(char) * (strlen(name) + strlen(tnamepre) + 3);
 	const size_t fln = sizeof(char) * (strlen(h->name) + strlen(fieldpre) + 3);
-	char *ptname;
 	
 	tablename = malloc(tln);
 	fieldtable = malloc(fln);
 	
 	strlcpy(tablename, tnamepre, tln);
-	strlcat(tablename, h->name, tln);
+	strlcat(tablename, name, tln);
 	strlcpy(fieldtable, fieldpre, fln);
 	strlcat(fieldtable, h->name, fln);
 
-	if(!fdbfs_db_create_table(f, fieldtable, "id INTEGER PRIMARY KEY, fieldname TEXT, alias TEXT, datatype INTEGER, enumname TEXT, otherfield TEXT")) {
-		CERR(die, "new_catalog(f, \"%s\", h): error creating field table %s. ", specfile, fieldtable);
-		free(tablename);
-		free(fieldtable);
-		return 0;
-	}
-
-	if(!fdbfs_db_add_to_cat_list_table(f, h->name, h->fmtname, tablename, fieldtable, specfile)) {
-		CERR(die, "new_catalog(f, \"%s\", h): error adding to cat list table. ", specfile);
+	if(!fdbfs_db_add_to_cat_list_table(f, name, h->fmtname, tablename, fieldtable, specfile)) {
+		CERR(die, "new_catalog(f, \"%s\", \"%s\", h): error adding to cat list table. ", name, specfile);
 		free(tablename);
 		free(fieldtable);
 		return 0;
@@ -421,24 +458,9 @@ static int new_catalog(f, specfile, h)
 				fdbfs_db_gettype(c->enumptr->otherelem->othertype) : " BLOB");
 			strlcat(tdesc, ilbuffer, tds);
 		}
-		if(c->flags & CATE_USES_FC) {
+		if(c->flags & CATE_USES_FC && c->alias == NULL) {
 			c->alias = strdup(c->name);
 			*c->alias = toupper(*c->alias);
-		}
-
-		if(c->type == oenum)
-			ptname = c->enumptr->name;
-		else if(c->type == oenumsub)
-			ptname = c->subcatel->name;
-		else
-			ptname = NULL;
-
-		if(!fdbfs_db_add_to_field_desc(f, fieldtable, c->name, c->alias, c->type, ptname)) {
-			CERR(die, "new_catalog(f, \"%s\", h): error adding to cat field desc. ", specfile);
-			free(tablename);
-			free(fieldtable);
-			free(tdesc);
-			return 0;
 		}
 	}
 	if(!fdbfs_db_create_table(f, tablename, tdesc)) {
@@ -483,7 +505,13 @@ static int make_tables_from_spec(f, sfile, h)
 	
 	/* catalogues */
 	for(cch = h->cathead; cch != NULL; cch = cch->next) {
-		if(!new_catalog(f, sfile, cch)) {
+		if(!new_cft(f, cch)) {
+			fdbfs_free_cat_head_list(h->cathead);
+			fdbfs_free_enum_head_list(h->enumhead);
+			CERR(die, "make_tables_from_spec(f, \"%s\", h): error adding catalogue. ", sfile);
+			return 0;
+		}
+		if(!new_catalog(f, cch->name, sfile, cch)) {
 			fdbfs_free_cat_head_list(h->cathead);
 			fdbfs_free_enum_head_list(h->enumhead);
 			CERR(die, "make_tables_from_spec(f, \"%s\", h): error adding catalogue. ", sfile);
