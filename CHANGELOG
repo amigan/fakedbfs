@@ -1,8 +1,9 @@
-$Amigan: fakedbfs/CHANGELOG,v 1.23 2006/02/25 09:59:12 dcp1990 Exp $
+$Amigan: fakedbfs/CHANGELOG,v 1.24 2006/03/06 05:11:43 dcp1990 Exp $
 
 Changelog
 
 2.0.0-RELEASE ("Doctor Wu")
+*Added -n option to fquery to be like find(1) with -print0
 *Added conf functionality to fedit
 *Wrote manpage for fedit
 *Added bigint, usbigint types, made datime always use 64bits, even on platforms with 4 byte time_t
