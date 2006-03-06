@@ -1,6 +1,6 @@
 .\" El manpage-o for findex
 .\" (C)2005, Dan Ponte
-.\" $Amigan: fakedbfs/fquery/fquery.1,v 1.3 2005/09/24 21:36:53 dcp1990 Exp $
+.\" $Amigan: fakedbfs/fquery/fquery.1,v 1.4 2006/03/06 05:10:18 dcp1990 Exp $
 .Dd September 19, 2005
 .Dt FQUERY 1
 .Os
@@ -9,7 +9,7 @@
 .Nd query the fakedbfs database
 .Sh SYNOPSIS
 .Nm
-.Op Fl hvf
+.Op Fl hvfn
 .Op Fl d Ar dbfile
 .Ar query_string
 .Sh DESCRIPTION
@@ -45,6 +45,17 @@ recognizes the following command line options:
 Print a full listing, including every field, as opposed to just the filenames.
 .It Fl h
 Print a short usage message.
+.It Fl n
+Separate output by ASCII NUL characters rather than newlines, for use with the
+.Fl 0
+argument to
+.Xr xargs 1 .
+It is similar to
+.Xr find 1 's
+.Fl print0
+option. No effect when
+.Fl f
+is specified.
 .It Fl v
 Print the library version, the
 .Nm

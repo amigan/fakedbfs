@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fquery/fquery.c,v 1.13 2006/02/25 06:42:15 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fquery/fquery.c,v 1.14 2006/03/06 05:10:18 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -43,18 +43,19 @@
 #include <sys/stat.h>
 #endif
 
-#define ARGSPEC "vhfd:"
+#define ARGSPEC "vhfnd:"
 #define FQUERYVER "0.1"
 #define MAXPLEN 1023
 
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/fakedbfsapps.h>
 
-RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.13 2006/02/25 06:42:15 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.14 2006/03/06 05:10:18 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
 static short int full = 0;
+static short int nflag = 0;
 static fdbfs_t *f;
 static query_t *q;
 
@@ -70,7 +71,7 @@ void version(void)
 void usage(pn)
 	char *pn;
 {
-	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] [-f] query\n",
+	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] [-f] [-n] query\n",
 			pn, pn);
 }
 
@@ -86,6 +87,22 @@ int print_name(h)
 		}
 	}
 
+	return 0;
+}
+
+int print_name_null(h)
+	fields_t *h;
+{
+	fields_t *c;
+
+	for(c = h; c != NULL; c = c->next) {
+		if(strcmp(c->fieldname, "file") == 0) {
+			fputs((char*)c->val, stdout);
+			fputc('\0', stdout);
+			return 1;
+		}
+	}
+	
 	return 0;
 }
 
@@ -165,6 +182,9 @@ int main(argc, argv)
 				dbf = strdup(optarg);
 				dbfu = 1;
 				break;
+			case 'n':
+				nflag = 1;
+				break;
 			case '?':
 			default:
 				usage(pname);
@@ -233,6 +253,8 @@ int main(argc, argv)
 		fdbfs_query_pop3(q, (void*)&ch); /* we don't care if US_DYNA is returned; we know it will be */
 		if(full)
 			print_fields(ch);
+		else if(nflag)
+			print_name_null(ch);
 		else
 			print_name(ch);
 		fdbfs_free_field_list(ch);
