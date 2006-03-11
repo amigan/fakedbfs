@@ -58,6 +58,7 @@ typedef struct _fregmatch fregmatch_t;
 typedef struct _ficlstate ficlstate_t;
 typedef struct _ficlplug ficlplug_t;
 typedef struct _db db_t;
+typedef struct _actcat actcat_t;
 typedef union _ansdata ansdata_t;
 typedef union Data data_t;
 

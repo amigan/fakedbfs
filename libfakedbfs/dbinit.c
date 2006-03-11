@@ -31,7 +31,7 @@
  * @file dbinit.c
  * @brief Database initialisation stuff.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.47 2006/03/06 05:12:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.48 2006/03/11 20:32:41 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -51,7 +51,7 @@
 #define DSpecParseTOKENTYPE Toke
 #define DSpecParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.47 2006/03/06 05:12:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.48 2006/03/11 20:32:41 dcp1990 Exp $")
 
 void *DSpecParseAlloc(void *(*mallocProc)(size_t));
 void DSpecParseFree(void *p, void (*freeProc)(void*));
@@ -257,7 +257,9 @@ static int init_db_tables(f)
 	int rc;
 	rc = fdbfs_db_create_table(f, "enum_list", "id INTEGER PRIMARY KEY, name TEXT, defined_in_table TEXT, defined_in_specfile TEXT, lastupdated INTEGER");
 	if(!rc) return rc;
-	rc = fdbfs_db_create_table(f, "cat_list", "id INTEGER PRIMARY KEY, name TEXT, alias TEXT, defined_in_table TEXT, field_desc_table TEXT, defined_in_specfile TEXT, lastupdated INTEGER");
+	rc = fdbfs_db_create_table(f, "cat_list", "id INTEGER PRIMARY KEY, name TEXT UNIQUE, alias TEXT, defined_in_table TEXT, field_desc_table TEXT, lastupdated INTEGER");
+	if(!rc) return rc;
+	rc = fdbfs_db_create_table(f, "cfd_list", "id INTEGER PRIMARY KEY, name TEXT UNIQUE, alias TEXT, defined_in_table TEXT, defined_in_specfile TEXT, refcount INTEGER, lastupdated INTEGER");
 	if(!rc) return rc;
 	return 1;
 }
@@ -360,8 +362,9 @@ static int new_enum(f, specfile, h)
 	return 1;
 }
 
-static int new_cft(f, h)
+static int new_cft(f, specfile, h)
 	fdbfs_t *f;
+	char *specfile;
 	struct CatalogueHead *h;
 {
 	struct CatElem *c;
@@ -377,6 +380,13 @@ static int new_cft(f, h)
 
 	if(!fdbfs_db_create_table(f, fieldtable, "id INTEGER PRIMARY KEY, fieldname TEXT, alias TEXT, datatype INTEGER, enumname TEXT, otherfield TEXT")) {
 		CERR(die, "new_cft(f, h): error creating field table %s. ", fieldtable);
+		free(fieldtable);
+		return 0;
+	}
+
+	if(!fdbfs_db_add_to_cfd_list_table(f, h->name, h->fmtname, fieldtable, specfile)) {
+		CERR(die, "new_cft('%s'): error adding to CFD list table. ", h->name);
+		fdbfs_db_drop_table(f, fieldtable); /* probably fruitless */
 		free(fieldtable);
 		return 0;
 	}
@@ -405,10 +415,10 @@ static int new_cft(f, h)
 	return 1;
 }
 
-static int new_catalog(f, name, specfile, h)
+static int new_catalog(f, name, alias, h)
 	fdbfs_t *f;
 	char *name;
-	char *specfile;
+	char *alias;
 	struct CatalogueHead *h;
 {
 	struct CatElem *c;
@@ -430,8 +440,15 @@ static int new_catalog(f, name, specfile, h)
 	strlcpy(fieldtable, fieldpre, fln);
 	strlcat(fieldtable, h->name, fln);
 
-	if(!fdbfs_db_add_to_cat_list_table(f, name, h->fmtname, tablename, fieldtable, specfile)) {
-		CERR(die, "new_catalog(f, \"%s\", \"%s\", h): error adding to cat list table. ", name, specfile);
+	if(!fdbfs_db_add_to_cat_list_table(f, name, alias, tablename, fieldtable)) {
+		CERR(die, "new_catalog(f, \"%s\", \"%s\", h): error adding to cat list table. ", name, alias);
+		free(tablename);
+		free(fieldtable);
+		return 0;
+	}
+
+	if(!fdbfs_db_cfd_update_refcount(f, h->name, 1)) {
+		CERR(die, "new_catalog(f, \"%s\", \"%s\", h): error updating CFD refcount. ", name, alias);
 		free(tablename);
 		free(fieldtable);
 		return 0;
@@ -464,7 +481,7 @@ static int new_catalog(f, name, specfile, h)
 		}
 	}
 	if(!fdbfs_db_create_table(f, tablename, tdesc)) {
-		CERR(die, "new_catalog(f, \"%s\", h): error creating field table %s. ", specfile, fieldtable);
+		CERR(die, "new_catalog(f, \"%s\", \"%s\", h): error creating field table %s. ", name, alias, fieldtable);
 		free(tablename);
 		free(tdesc);
 		free(fieldtable);
@@ -505,18 +522,20 @@ static int make_tables_from_spec(f, sfile, h)
 	
 	/* catalogues */
 	for(cch = h->cathead; cch != NULL; cch = cch->next) {
-		if(!new_cft(f, cch)) {
+		if(!new_cft(f, sfile, cch)) {
 			fdbfs_free_cat_head_list(h->cathead);
 			fdbfs_free_enum_head_list(h->enumhead);
 			CERR(die, "make_tables_from_spec(f, \"%s\", h): error adding catalogue. ", sfile);
 			return 0;
 		}
+#if 0
 		if(!new_catalog(f, cch->name, sfile, cch)) {
 			fdbfs_free_cat_head_list(h->cathead);
 			fdbfs_free_enum_head_list(h->enumhead);
 			CERR(die, "make_tables_from_spec(f, \"%s\", h): error adding catalogue. ", sfile);
 			return 0;
 		}
+#endif
 	}
 
 	fdbfs_free_cat_head_list(h->cathead);
@@ -525,6 +544,28 @@ static int make_tables_from_spec(f, sfile, h)
 	
 	return 1;
 }
+
+int fdbfs_create_catalogue(f, name, alias, cname)
+	fdbfs_t *f;
+	char *name;
+	char *alias;
+	char *cname;
+{
+	struct CatalogueHead *cat;
+
+	cat = fdbfs_find_cathead_by_name(f->heads.db_cath, cname);
+	if(cat == NULL) {
+		ERR(die, "create_catalogue: no such catalogue named '%s'", cname);
+		return 0;
+	}
+	if(!new_catalog(f, name, alias, cat)) {
+		return 0;
+	}
+
+	return 1;
+}
+
+
 
 int fdbfs_db_start(f)
 	fdbfs_t *f;
@@ -788,11 +829,54 @@ struct CatElem* fdbfs_catelems_from_dbtab(f, table, enumhead)
 	return h;
 }
 
+
+actcat_t* fdbfs_catalogues_from_db(f, cathead)
+	fdbfs_t *f;
+	struct CatalogueHead *cathead;
+{
+	const char *csql = "SELECT name,alias,field_desc_table FROM cat_list;";
+	int rc;
+	sqlite3_stmt *cst;
+	const char *cn;
+	actcat_t *h = NULL, *n = NULL;
+
+	if((rc = sqlite3_prepare(f->db, csql, strlen(csql), &cst, NULL))  != SQLITE_OK) {
+		ERR(die, "error in cataloguess_from_db: SQLite said %s", sqlite3_errmsg(f->db));
+		return NULL;
+	}
+
+	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
+		n = allocz(sizeof(*n));
+		n->name = strdup(sqlite3_column_text(cst, 0));
+		n->alias = strdup(sqlite3_column_text(cst, 1));
+		cn = sqlite3_column_text(cst, 2);
+		if(strlen(cn) < 5 /* cft_ */) {
+			ERR(die, "invalid field_desc_table '%s'", cn);
+cherr:
+			n->next = h;
+			fdbfs_actcats_free(n);
+			sqlite3_finalize(cst);
+			return NULL;
+		}
+		n->def = fdbfs_find_cathead_by_name(cathead, (char*)(cn + 4));
+		if(n->def == NULL) {
+			ERR(die, "no such CFD '%s'", cn + 4);
+			goto cherr; /* BASIC!!! */
+		}
+		n->next = h;
+		h = n;
+	}
+
+	sqlite3_finalize(cst);
+
+	return h;
+}
+			
 struct CatalogueHead* fdbfs_cats_from_db(f, enumhead)
 	fdbfs_t *f;
 	struct EnumHead* enumhead;
 {
-	const char *catlistsql = "SELECT * FROM cat_list;";
+	const char *catlistsql = "SELECT * FROM cfd_list;";
 	char *catname, *catalias;
 	char *tabledef;
 	struct CatalogueHead *c = NULL;
@@ -811,7 +895,7 @@ struct CatalogueHead* fdbfs_cats_from_db(f, enumhead)
 	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
 		catname = strdup(sqlite3_column_text(cst, 1));
 		catalias = strdup(sqlite3_column_text(cst, 2));
-		tabledef = strdup(sqlite3_column_text(cst, 4));
+		tabledef = strdup(sqlite3_column_text(cst, 3));
 		n = allocz(sizeof(*n));
 		n->name = catname;
 		n->fmtname = catalias; /* god only knows why I use such liberal naming of
@@ -853,19 +937,33 @@ int fdbfs_db_rm_catalogue(f, catname)
 {
 	char *ttbl;
 	size_t ttl;
-	if(!fdbfs_db_delete(f, "cat_list", "name", "==", catname)) {
-		SCERR(die, "rm_catalogue: delete error");
+	char *tcfd;
+
+	if(!fdbfs_db_cat_getcfdname(f, catname, &tcfd)) {
+		SCERR(die, "rm_catalogue: SQLite error getting cfdname. ");
 		return 0;
 	}
-	ttl = strlen(catname) + sizeof("cft_") + 1;
+	if(!fdbfs_db_delete(f, "cat_list", "name", "==", catname)) {
+		SCERR(die, "rm_catalogue: delete error");
+		free(tcfd);
+		return 0;
+	}
+	ttl = strlen(catname) + sizeof("c_") + 1;
 	ttbl = malloc(ttl);
 	strlcpy(ttbl, "c_", ttl);
 	strlcat(ttbl, catname, ttl);
 	if(!fdbfs_db_drop_table(f, ttbl)) {
 		SCERR(die, "rm_catalogue: table drop error");
 		free(ttbl);
+		free(tcfd);
 		return 0;
 	}
+	if(!fdbfs_db_cfd_update_refcount(f, tcfd, -1)) {
+		SCERR(die, "rm_catalogue: error updating refcount. ");
+		free(ttbl);
+		free(tcfd);
+	}
+#if 0
 	strlcpy(ttbl, "cft_", ttl);
 	strlcat(ttbl, catname, ttl);
 	if(!fdbfs_db_drop_table(f, ttbl)) {
@@ -873,6 +971,8 @@ int fdbfs_db_rm_catalogue(f, catname)
 		free(ttbl);
 		return 0;
 	}
+#endif
+	free(tcfd);
 	free(ttbl);
 
 	return 1;
@@ -894,7 +994,7 @@ int fdbfs_dbspec_parse(f, filename)
 	h.db_enumh = fdbfs_enums_from_db(f);
 	if(h.db_enumh == NULL && f->error.emsg != NULL)
 		return SCERR(die, "parse_definition: enum importation failed. ");
-	h.db_cath = fdbfs_cats_from_db(f, h.db_enumh);
+	h.db_cath = fdbfs_cats_from_db(f, h.db_enumh); /* XXX: this is inefficient; just have read_specs_from_db be called once and use that */
 	if(h.db_cath == NULL && f->error.emsg != NULL)
 		return SCERR(die, "parse_definition: catalogue importation failed. ");
 	if(strcmp(filename, "-") == 0)
@@ -934,4 +1034,31 @@ int fdbfs_dbspec_parse(f, filename)
 void fdbfs_dswrap(void)
 {
 	yywrap();
+}
+
+int fdbfs_cat_type_exists(f, ct)
+	fdbfs_t *f;
+	char *ct;
+{
+	if(fdbfs_find_cathead_by_name(f->heads.db_cath, ct))
+		return 1;
+	else
+		return 0;
+	/* NOTREACHED */
+}
+
+actcat_t* fdbfs_find_catalogue(f, name)
+	fdbfs_t *f;
+	char *name;
+{
+	actcat_t *c;
+	if(f->catsh == NULL) return NULL;
+	if(name == NULL)
+		return NULL;
+	for(c = f->catsh; c != NULL; c = c->next) {
+		if(c->name != NULL)
+			if(strcasecmp(name, c->name) == 0)
+				return c;
+	}
+	return NULL;
 }

@@ -31,7 +31,7 @@
  * @file libfakedbfs.c
  * @brief Main libfakedbfs functions.
  */
-/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.22 2006/02/24 08:01:02 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.23 2006/03/11 20:32:41 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -49,7 +49,7 @@
 
 
 #ifndef lint
-RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.22 2006/02/24 08:01:02 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.23 2006/03/11 20:32:41 dcp1990 Exp $")
 /** @brief fakedbfs version. */
 const char *fakedbfsver _unused = FAKEDBFSVER;
 /** @brief fakedbfs version name */
@@ -118,6 +118,8 @@ int fdbfs_destroy(f)
 	}
 	free(f->dbname);
 	fdbfs_free_plugin_list(f->plugins);
+	if(f->catsh != NULL)
+		fdbfs_actcats_free(f->catsh);
 	if(f->heads.db_enumh != NULL)
 		fdbfs_free_enum_head_list(f->heads.db_enumh);
 	if(f->heads.db_cath != NULL)
@@ -145,6 +147,9 @@ int fdbfs_read_specs_from_db(f)
 		return 0;
 	f->heads.db_cath = fdbfs_cats_from_db(f, f->heads.db_enumh);
 	if(f->heads.db_cath == NULL && f->error.emsg != NULL)
+		return 0;
+	f->catsh = fdbfs_catalogues_from_db(f, f->heads.db_cath);
+	if(f->catsh == NULL && f->error.emsg != NULL)
 		return 0;
 	return 1;
 }

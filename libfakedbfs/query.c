@@ -34,7 +34,7 @@
  *
  * @sa query.h
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.42 2006/02/25 06:42:15 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.43 2006/03/11 20:32:42 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -62,7 +62,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.42 2006/02/25 06:42:15 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.43 2006/03/11 20:32:42 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -622,6 +622,7 @@ int fdbfs_query_init_exec(q)
 	short int foundselcn = 0;
 	short int have_cond = 0;
 	char *qusql;
+	actcat_t *actc;
 #define SPBUFSIZE 64
 	char spbuf[SPBUFSIZE];
 	short int col_sel_init = 0;
@@ -651,9 +652,10 @@ int fdbfs_query_init_exec(q)
 				if(!(c->ops.used & USED_O3) || c->ops.o3 == NULL)
 					return Q_INVALID_O3;
 				q->catalogue = strdup((char*)c->ops.o3);
-				q->ourcat = fdbfs_find_cathead_by_name(q->cath, q->catalogue);
-				if(q->ourcat == NULL)
+				actc = fdbfs_find_catalogue(q->f, q->catalogue);
+				if(actc == NULL)
 					return Q_NO_SUCH_CAT;
+				q->ourcat = actc->def;
 				query_len += strlen(q->catalogue);
 				break;
 			case OPL_AND:

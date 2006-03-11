@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/dbspecdata.h,v 1.9 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/dbspecdata.h,v 1.10 2006/03/11 20:32:41 dcp1990 Exp $ */
 #ifndef HAVE_DBSPECDATA_H
 #define HAVE_DBSPECDATA_H 1
 #include <fakedbfs/types.h>
@@ -364,6 +364,22 @@ void fdbfs_free_head_members(Heads *hd);
  * @return 0 on error.
  */
 int fdbfs_dbspec_parse(fdbfs_t *f, char *filename);
+
+/**
+ * @brief Free list of actcat_t.
+ *
+ * @param h Head of list to free.
+ */
+void fdbfs_actcats_free(actcat_t *h);
+
+/**
+ * @brief Make actcat_t list from database.
+ *
+ * @param f Instance of fakedbfs.
+ * @param cathead Catalogue head to search for definitions.
+ * @return Pointer to list of actcat_t elements, or NULL on error.
+ */
+actcat_t* fdbfs_catalogues_from_db(fdbfs_t *f, struct CatalogueHead *cathead);
 
 #define CAT_TABLE_PREFIX "c_"
 #define CAT_FIELD_TABLE_PREFIX "cft_"

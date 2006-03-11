@@ -31,7 +31,7 @@
  * @file fakedbfs.h
  * @brief Main header file.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.74 2006/02/25 09:52:13 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.75 2006/03/11 20:32:41 dcp1990 Exp $ */
 #include <fakedbfs/types.h>
 
 #include <fakedbfs/fdbfsconfig.h>
@@ -142,6 +142,13 @@ struct _answer {
 	size_t len;
 };
 
+struct _actcat {
+	char *name;
+	char *alias;
+	struct CatalogueHead *def;
+	actcat_t *next;
+};
+
 struct _fdbfs {
 	char *dbname;
 	sqlite3 *db;
@@ -152,6 +159,7 @@ struct _fdbfs {
 	void (*debugfunc)(char*, enum ErrorAction);
 	answer_t *(*askfieldfunc) AFFPROTO; /* returns status: 0 means no change, 1 means change, -1 means error */
 	Heads heads;
+	actcat_t *catsh;
 	ficlSystem *fsys;
 	ficlstate_t fst;
 	confnode_t *rconf;
@@ -304,9 +312,39 @@ char* fdbfs_strdupq(char *s);
  */
 char* fdbfs_fstrdup(const char *str);
 
+/**
+ * @brief Create catalogue.
+ *
+ * @param f Fakedbfs instance.
+ * @param name Name of new catalogue.
+ * @param alias Alias of new catalogue.
+ * @param cname Name of CFD for new catalogue.
+ * @return 0 on error.
+ */
+int fdbfs_create_catalogue(fdbfs_t *f, char *name, char *alias, char *cname);
+
+/**
+ * @brief Check if CFD exists.
+ *
+ * @param f Instance of fakedbfs.
+ * @param ct Name to look for.
+ */
+int fdbfs_cat_type_exists(fdbfs_t *f, char *ct);
+
+/**
+ * @brief Finds catalogue.
+ *
+ * @param f Instance of fakedbfs to search in.
+ * @param name Name of catalogue to search for.
+ * @return NULL on not found or error.
+ */
+actcat_t* fdbfs_find_catalogue(fdbfs_t *f, char *name);
+
+
 /* crawl stuff -- will move to own file when we can*/
 crawl_t* fdbfs_crawler_new(fdbfs_t *f, int mlevels, int mlbd);
 void fdbfs_crawler_destroy(crawl_t *cr);
 int fdbfs_crawl_dir(crawl_t *cr, char *dir); /* simply adds dir to the base frame */
+
 
 

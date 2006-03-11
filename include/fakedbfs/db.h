@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/db.h,v 1.3 2006/01/30 22:11:18 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/db.h,v 1.4 2006/03/11 20:32:41 dcp1990 Exp $ */
 /**
  * @file db.h
  * @brief Database driver stuff
@@ -143,7 +143,7 @@ int fdbfs_db_add_to_enum_list_table(fdbfs_t *f, char *name, char *tname, char *s
  * @return 0 on error, non-zero otherwise.
  */
 int fdbfs_db_add_to_cat_list_table(fdbfs_t *f, char *name, char *alias, char *tablename,
-		char *fieldtable, char *specf);
+		char *fieldtable);
 
 /**
  * @brief Add to the field description table for a catalogue.
@@ -266,4 +266,37 @@ int fdbfs_db_mib_update(fdbfs_t *f, char *mib, enum DataType type, union Data da
  * @return 0 on error.
  */
 int fdbfs_db_start(fdbfs_t *f);
+
+/**
+ * @brief Add entry to catalogue field definition list table.
+ *
+ * @param f Instance of fakedbfs to operate on.
+ * @param name Name of new CFD.
+ * @param alias Alias of new CFD.
+ * @param tablename Table where this CFD resides.
+ * @param specfile Specfile in which this CFD originated.
+ * @return 0 on error.
+ */
+int fdbfs_db_add_to_cfd_list_table(fdbfs_t *f, char *name, char *alias, char *tablename, char *specfile);
+
+/**
+ * @brief Update refcount of CFD table entry.
+ *
+ * @param f Instance of fakedbfs to operate on.
+ * @param name Name of CFD.
+ * @param add Value to add to refcount.
+ * @return 0 on error.
+ */
+int fdbfs_db_cfd_update_refcount(fdbfs_t *f, char *name, signed int add);
+
+/**
+ * @brief Get CFD name of table.
+ *
+ * @param f Instance of fakedbfs.
+ * @param catname Name of catalogue.
+ * @param[out] tcfd Pointer to char* that will be set to cfdname (must be freed)
+ * @return 0 on error, 1 otherwise.
+ */
+int fdbfs_db_cat_getcfdname(fdbfs_t *f, char *catname, char **tcfd);
+
 #endif

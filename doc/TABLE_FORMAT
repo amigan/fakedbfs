@@ -29,13 +29,13 @@ last_updated - the most recent update of this enum definition, in time(3) format
 	This is analogous to the ENUM table list, but it is a list of catalogue
 tables (where all data is stored). This is the creation command:
 
-CREATE TABLE cat_list (id INTEGER PRIMARY KEY, name TEXT, alias TEXT, defined_in_table TEXT,
-field_desc_table TEXT, defined_in_specfile TEXT, lastupdated INTEGER);
+CREATE TABLE cat_list (id INTEGER PRIMARY KEY, name TEXT UNIQUE, alias TEXT, defined_in_table TEXT,
+field_desc_table TEXT, lastupdated INTEGER);
 
 Fields:
 id - primary key
 
-name - name of this catalogue, as it appeares in the specfile.
+name - name of this catalogue
 
 alias - the formatted alias of this catalogue, if any.
 
@@ -45,11 +45,29 @@ c_<name>.
 field_desc_table - the table containing field descriptions, such as ENUM types.
 The name is in the format of cft_<name>.
 
-defined_in_specfile - the basename of the specfile in which this enumeration was
-most recently defined/updated.
+lastupdated - the most recent update of this catalogue. In time(3) format.
+--
+1.2 Catalogue definition table list
+	This is a list of catalogue definitions. Creation command:
 
-last_updated - the most recent update of this catalogue's *definition*, in
-time(3) format.
+CREATE TABLE cfd_list (id INTEGER PRIMARY KEY, name TEXT UNIQUE, alias TEXT, defined_in_table TEXT,
+	defined_in_specfile TEXT, refcount INTEGER, lastupdated INTEGER);
+
+Fields:
+
+id - primary key
+
+name - name of this catalogue field definition
+
+alias - the formatted alias of this catalogue field definition, if any.
+
+defined_in_table - table in which the catalogue field definition resides. In the format of cft_<name>.
+
+defined_in_specfile - basename of the specfile where this was defined.
+
+refcount - number of references to this CFD. The CFD is not to be deleted unless this is zero.
+
+lastupdated - most recent update of this CFD, in time(3) format.
 --
 
 FORMAT OF USER-DEFINED TABLES:
@@ -78,7 +96,7 @@ mime - the MIME type of the file.
 	These tables contain information about fields of a catalogue table, such
 as ENUM names. They are created with the following command:
 
-CREATE TABLE cft_<catname> (id INTEGER PRIMARY KEY, fieldname TEXT, alias TEXT, datatype
+CREATE TABLE cft_<catname> (id INTEGER PRIMARY KEY, fieldname TEXT UNIQUE, alias TEXT, datatype
 INTEGER, enumname TEXT, otherfield TEXT);
 
 Fields:

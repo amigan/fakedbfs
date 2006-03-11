@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.32 2006/02/25 06:42:15 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.33 2006/03/11 20:32:42 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -42,7 +42,7 @@
 #include <fakedbfs/db.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.32 2006/02/25 06:42:15 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.33 2006/03/11 20:32:42 dcp1990 Exp $")
 
 
 /**
@@ -278,24 +278,97 @@ int fdbfs_db_add_to_enum_list_table(f, name, tname, specf)
 	return 1;
 }
 
-int fdbfs_db_add_to_cat_list_table(f, name, alias, tablename, fieldtable, specf)
+int fdbfs_db_cat_getcfdname(f, catname, tcfd)
+	fdbfs_t *f;
+	char *catname;
+	char **tcfd;
+{
+	char *sql;
+	int rc;
+	sqlite3_stmt *stmt;
+	const char *tail;
+
+	sql = sqlite3_mprintf("SELECT field_desc_table FROM cat_list WHERE name == '%q'", catname);
+	rc = sqlite3_prepare(f->db, sql, strlen(sql), &stmt, &tail);
+	sqlite3_free(sql);
+	if(rc != SQLITE_OK) {
+		ERR(die, "cat_getcfdname: %s", sqlite3_errmsg(f->db));
+		return 0;
+	}
+	rc = sqlite3_step(stmt);
+	if(rc != SQLITE_DONE) {
+		ERR(die, "cat_getcfdname: step returned !DONE: %s", sqlite3_errmsg(f->db));
+		sqlite3_finalize(stmt);
+		return 0;
+	}
+	*tcfd = strdup(sqlite3_column_text(stmt, 0));
+	sqlite3_finalize(stmt);
+
+	return 1;
+}
+
+int fdbfs_db_cfd_update_refcount(f, name, add)
+	fdbfs_t *f;
+	char *name;
+	signed int add;
+{
+	char *sql;
+	char *emsg;
+	int rc;
+	
+	sql = sqlite3_mprintf("UPDATE cfd_list SET refcount = (SELECT refcount FROM cfd_list WHERE name == '%q') + (%d) WHERE name == '%q'",
+			name, add, name);
+	rc = sqlite3_exec(f->db, sql, NULL, NULL, &emsg);
+	sqlite3_free(sql);
+	if(rc != SQLITE_OK) {
+		ERR(die, "db_cfd_update_refcount(f, %s, %d): SQLite error: %s", name, add, emsg);
+		sqlite3_free(emsg);
+		return 0;
+	}
+	return 1;
+}
+
+int fdbfs_db_add_to_cfd_list_table(f, name, alias, tablename, specfile)
+	fdbfs_t *f;
+	char *name;
+	char *alias;
+	char *tablename;
+	char *specfile;
+{
+	char *sql, *emsg;
+	int rc;
+	sql = sqlite3_mprintf("INSERT OR REPLACE INTO cfd_list (name, alias, defined_in"
+			"_table, defined_in_specfile, refcount, lastupdated) "
+			"VALUES('%q', '%q', '%q', '%q', %d, %d);",
+			name, alias, tablename, specfile, 0x0, time(NULL));
+	rc = sqlite3_exec(f->db, sql, NULL, NULL, &emsg);
+	sqlite3_free(sql);
+	if(rc != SQLITE_OK) {
+		ERR(die, "add_to_cfd_list_table(f, \"%s\", \"%s\", \"%s\", \"%s\"): SQLite error after exec: %s", name, alias, tablename, specfile, emsg);
+		sqlite3_free(emsg);
+		return 0;
+	}
+	return 1;
+}
+
+
+int fdbfs_db_add_to_cat_list_table(f, name, alias, tablename, fieldtable)
 	fdbfs_t *f;
 	char *name;
 	char *alias;
 	char *tablename;
 	char *fieldtable;
-	char *specf;
 {
 	char *sql, *emsg;
 	int rc;
 	sql = sqlite3_mprintf("INSERT OR REPLACE INTO cat_list (name, alias, defined_in"
-			"_table, field_desc_table, defined_in_specfile, lastupdated) "
-			"VALUES('%q', '%q', '%q', '%q', '%q', %d);",
-			name, alias, tablename, fieldtable, specf, time(NULL));
+			"_table, field_desc_table, lastupdated) "
+			"VALUES('%q', '%q', '%q', '%q', %d);",
+			name, alias, tablename, fieldtable, time(NULL));
 	rc = sqlite3_exec(f->db, sql, NULL, NULL, &emsg);
 	sqlite3_free(sql);
 	if(rc != SQLITE_OK) {
-		ERR(die, "add_to_cat_list_table(f, \"%s\", \"%s\", \"%s\", \"%s\", \"%s\"): SQLite error after exec: %s", name, alias, tablename, fieldtable, specf, emsg);
+		ERR(die, "add_to_cat_list_table(f, \"%s\", \"%s\", \"%s\", \"%s\"): SQLite error after exec: %s", name, alias, tablename, fieldtable, emsg);
 		sqlite3_free(emsg);
 		return 0;
 	}

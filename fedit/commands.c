@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fedit/commands.c,v 1.10 2006/02/25 19:09:54 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fedit/commands.c,v 1.11 2006/03/11 20:32:41 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -45,7 +45,7 @@
 #include <fakedbfs/types.h>
 #include <fakedbfs/conf.h>
 #include <fakedbfs/fakedbfsapps.h>
-RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.10 2006/02/25 19:09:54 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.11 2006/03/11 20:32:41 dcp1990 Exp $")
 
 #define COMMFLAG_MIN	0x1 /* at least this many args */
 #define COMMFLAG_MAX	0x2 /* at most this many args */
@@ -67,6 +67,7 @@ enum command_n {
 	EDIT_ENUM, /* edit enumeration */
 	LIST_CONF, /* show conf */
 	SET_CONF, /* set conf MIB */
+	MAKE_CAT, /* make catalogue */
 	LIST_CATS /* list catalogues */
 };
 	
@@ -91,6 +92,7 @@ struct command cmds[] = {
 	{"lscats", LIST_CATS, 0, COMMFLAG_EQU /* list names of cats */},
 	{"lsconf", LIST_CONF, 0, COMMFLAG_MIN /* MIBs to show */},
 	{"setconf", SET_CONF, 1, COMMFLAG_MIN /* form of mib=value */},
+	{"mkcat", MAKE_CAT, 2, COMMFLAG_MIN /* cat type and then names */},
 	{NULL, 0, 0, 0} /* terminator */
 };
 
@@ -320,6 +322,29 @@ static enum DataType parse_datatype(val, dta, mib)
 	return od;
 }
 
+static void do_makecat(argc, argv)
+	int argc;
+	char **argv;
+{
+	int i;
+	char *cattype;
+	
+	cattype = strdup(argv[1]);
+
+	if(!fdbfs_cat_type_exists(f, cattype)) {
+		fprintf(stderr, "error creating catalogue: no such catalogue type '%s'\n", cattype);
+		free(cattype);
+		return;
+	}
+
+	for(i = 2; i < argc; i++) {
+		if(!fdbfs_create_catalogue(f, argv[i], argv[i] /* TODO: fix this */, cattype)) {
+			fprintf(stderr, "error creating catalogue %s: %s", argv[i], f->error.emsg);
+			fdbfs_estr_free(&f->error);
+		}
+	}
+}
+
 static void do_setconf(argc, argv)
 	int argc;
 	char **argv;
@@ -381,6 +406,9 @@ int exec_command(cm, argc, argv)
 			break;
 		case SET_CONF:
 			do_setconf(argc, argv);
+			break;
+		case MAKE_CAT:
+			do_makecat(argc, argv);
 			break;
 		case EDIT_REC: /* <catalogue> <query> <defspec> */
 		default:

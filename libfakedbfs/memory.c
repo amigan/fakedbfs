@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.27 2006/01/31 17:26:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.28 2006/03/11 20:32:42 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 #include <fakedbfs/plugins.h>
 #include <fakedbfs/fields.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.27 2006/01/31 17:26:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.28 2006/03/11 20:32:42 dcp1990 Exp $")
 
 
 #ifdef NO_CALLOC
@@ -301,6 +301,27 @@ void fdbfs_free_answer_t(e)
 	else if(e->ad.vd != NULL)
 		free(e->ad.vd);
 	free(e);
+}
+
+static actcat_t* fdbfs_actcat_free(c)
+	actcat_t *c;
+{
+	actcat_t *nx;
+	
+	nx = c->next;
+	free(c->name);
+	free(c->alias);
+	return nx;
+}
+
+void fdbfs_actcats_free(h)
+	actcat_t *h;
+{
+	actcat_t *c = h;
+
+	while(c != NULL) {
+		c = fdbfs_actcat_free(c);
+	}
 }
 
 char *fdbfs_fstrdup(str)
