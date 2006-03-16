@@ -31,7 +31,7 @@
  * @file dbinit.c
  * @brief Database initialisation stuff.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.48 2006/03/11 20:32:41 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.49 2006/03/16 03:41:47 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -51,7 +51,7 @@
 #define DSpecParseTOKENTYPE Toke
 #define DSpecParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.48 2006/03/11 20:32:41 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.49 2006/03/16 03:41:47 dcp1990 Exp $")
 
 void *DSpecParseAlloc(void *(*mallocProc)(size_t));
 void DSpecParseFree(void *p, void (*freeProc)(void*));
@@ -447,7 +447,7 @@ static int new_catalog(f, name, alias, h)
 		return 0;
 	}
 
-	if(!fdbfs_db_cfd_update_refcount(f, h->name, 1)) {
+	if(!fdbfs_db_cfd_update_refcount(f, h->name, 1, 1)) {
 		CERR(die, "new_catalog(f, \"%s\", \"%s\", h): error updating CFD refcount. ", name, alias);
 		free(tablename);
 		free(fieldtable);
@@ -958,7 +958,7 @@ int fdbfs_db_rm_catalogue(f, catname)
 		free(tcfd);
 		return 0;
 	}
-	if(!fdbfs_db_cfd_update_refcount(f, tcfd, -1)) {
+	if(!fdbfs_db_cfd_update_refcount(f, tcfd, 0, 1)) {
 		SCERR(die, "rm_catalogue: error updating refcount. ");
 		free(ttbl);
 		free(tcfd);

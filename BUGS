@@ -1,5 +1,6 @@
-$Amigan: fakedbfs/BUGS,v 1.8 2006/02/25 09:52:13 dcp1990 Exp $
+$Amigan: fakedbfs/BUGS,v 1.9 2006/03/16 03:41:47 dcp1990 Exp $
 
 BUGS as of 2.0 ("Doctor Wu"):
 *Memory leaks. Big time.
 *ficl crashes dmalloc
+*catalogue deletion operation doesn't decrement refcount like it should

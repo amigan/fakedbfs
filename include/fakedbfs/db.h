@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/db.h,v 1.4 2006/03/11 20:32:41 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/db.h,v 1.5 2006/03/16 03:41:47 dcp1990 Exp $ */
 /**
  * @file db.h
  * @brief Database driver stuff
@@ -284,10 +284,11 @@ int fdbfs_db_add_to_cfd_list_table(fdbfs_t *f, char *name, char *alias, char *ta
  *
  * @param f Instance of fakedbfs to operate on.
  * @param name Name of CFD.
- * @param add Value to add to refcount.
+ * @param add True if adding, false if subtracting.
+ * @param val Value to add to refcount.
  * @return 0 on error.
  */
-int fdbfs_db_cfd_update_refcount(fdbfs_t *f, char *name, signed int add);
+int fdbfs_db_cfd_update_refcount(fdbfs_t *f, char *name, int add, unsigned int val);
 
 /**
  * @brief Get CFD name of table.

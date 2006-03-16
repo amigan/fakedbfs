@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.34 2006/03/11 20:40:58 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.35 2006/03/16 03:41:47 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -42,7 +42,7 @@
 #include <fakedbfs/db.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.34 2006/03/11 20:40:58 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.35 2006/03/16 03:41:47 dcp1990 Exp $")
 
 
 /**
@@ -311,17 +311,18 @@ int fdbfs_db_cat_getcfdname(f, catname, tcfd)
 	return 1;
 }
 
-int fdbfs_db_cfd_update_refcount(f, name, add)
+int fdbfs_db_cfd_update_refcount(f, name, add, val)
 	fdbfs_t *f;
 	char *name;
-	signed int add;
+	int add; /* 1 to add, 0 to sub */
+	unsigned int val;
 {
 	char *sql;
 	char *emsg;
 	int rc;
 	
-	sql = sqlite3_mprintf("UPDATE cfd_list SET refcount = (SELECT refcount FROM cfd_list WHERE name == '%q') + (%d) WHERE name == '%q'",
-			name, add, name);
+	sql = sqlite3_mprintf("UPDATE cfd_list SET refcount = (SELECT refcount FROM cfd_list WHERE name == '%q') %c (%d) WHERE name == '%q'",
+			name, add ? '+' : '-', val, name);
 	rc = sqlite3_exec(f->db, sql, NULL, NULL, &emsg);
 	sqlite3_free(sql);
 	if(rc != SQLITE_OK) {
