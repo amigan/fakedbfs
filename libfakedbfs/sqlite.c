@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.35 2006/03/16 03:41:47 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.36 2006/03/19 01:16:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -42,7 +42,7 @@
 #include <fakedbfs/db.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.35 2006/03/16 03:41:47 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.36 2006/03/19 01:16:55 dcp1990 Exp $")
 
 
 /**
@@ -302,8 +302,14 @@ int fdbfs_db_cat_getcfdname(f, catname, tcfd)
 		return 0;
 	}
 	if(rc == SQLITE_ROW) {
-		*tcfd = strdup(sqlite3_column_text(stmt, 0));
+		const char *tcf;
+		tcf = sqlite3_column_text(stmt, 0);
+		if(strlen(tcf) < 5) {
+			goto badres;
+		}
+		*tcfd = strdup(tcf + 4);
 	} else {
+badres:
 		*tcfd = NULL;
 	}
 	sqlite3_finalize(stmt);

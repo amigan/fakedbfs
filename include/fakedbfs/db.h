@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/db.h,v 1.5 2006/03/16 03:41:47 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/db.h,v 1.6 2006/03/19 01:16:55 dcp1990 Exp $ */
 /**
  * @file db.h
  * @brief Database driver stuff
@@ -291,7 +291,7 @@ int fdbfs_db_add_to_cfd_list_table(fdbfs_t *f, char *name, char *alias, char *ta
 int fdbfs_db_cfd_update_refcount(fdbfs_t *f, char *name, int add, unsigned int val);
 
 /**
- * @brief Get CFD name of table.
+ * @brief Get CFD name of table. (without cfd_ prefix)
  *
  * @param f Instance of fakedbfs.
  * @param catname Name of catalogue.
