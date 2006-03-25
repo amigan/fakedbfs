@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fedit/fedit.c,v 1.8 2006/02/27 19:45:31 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fedit/fedit.c,v 1.9 2006/03/25 05:11:48 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -53,13 +53,14 @@
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/fakedbfsapps.h>
 
-RCSID("$Amigan: fakedbfs/fedit/fedit.c,v 1.8 2006/02/27 19:45:31 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fedit/fedit.c,v 1.9 2006/03/25 05:11:48 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;
 fdbfs_t *f;
 
 int do_commands(int, char**);
+void print_cmds(void);
 
 void version(void)
 {
@@ -112,6 +113,8 @@ void usage(pn)
 {
 	fprintf(stderr, "%s: usage: %s [-d dbfile] [-h] [-v] command [arguments ...]\n",
 			pn, pn);
+	fprintf(stderr, "Commands:\n");
+	print_cmds();
 }
 
 int main(argc, argv)

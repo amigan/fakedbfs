@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fedit/commands.c,v 1.11 2006/03/11 20:32:41 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fedit/commands.c,v 1.12 2006/03/25 05:11:48 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -45,7 +45,7 @@
 #include <fakedbfs/types.h>
 #include <fakedbfs/conf.h>
 #include <fakedbfs/fakedbfsapps.h>
-RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.11 2006/03/11 20:32:41 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fedit/commands.c,v 1.12 2006/03/25 05:11:48 dcp1990 Exp $")
 
 #define COMMFLAG_MIN	0x1 /* at least this many args */
 #define COMMFLAG_MAX	0x2 /* at most this many args */
@@ -68,7 +68,10 @@ enum command_n {
 	LIST_CONF, /* show conf */
 	SET_CONF, /* set conf MIB */
 	MAKE_CAT, /* make catalogue */
-	LIST_CATS /* list catalogues */
+	LIST_CATS, /* list catalogues */
+#if 0
+	IMPORT_SPECF /* read specfile */
+#endif
 };
 	
 struct command {
@@ -93,8 +96,22 @@ struct command cmds[] = {
 	{"lsconf", LIST_CONF, 0, COMMFLAG_MIN /* MIBs to show */},
 	{"setconf", SET_CONF, 1, COMMFLAG_MIN /* form of mib=value */},
 	{"mkcat", MAKE_CAT, 2, COMMFLAG_MIN /* cat type and then names */},
+#if 0
+	{"rspec", IMPORT_SPECF, 1, COMMFLAG_EQU /* filename */},
+#endif
 	{NULL, 0, 0, 0} /* terminator */
 };
+
+void print_cmds(void)
+{
+	struct command *cp;
+
+	for(cp = cmds; cp->commandname != NULL && cp != NULL; cp++) {
+		fprintf(stderr, "%s (accepts %s %d argument%s)\n", cp->commandname,
+				(cp->commflag == COMMFLAG_MIN ? "minimum of" : (cp->commflag == COMMFLAG_MAX ? "at most" : "exactly")),
+				cp->nargs, cp->nargs != 1 ? "s" : "");
+	}
+}
 
 int find_cmd(argc, argv)
 	int argc;
@@ -345,6 +362,23 @@ static void do_makecat(argc, argv)
 	}
 }
 
+#if 0
+static void do_imp_specf(argc, argv)
+	int argc;
+	char **argv;
+{
+	printf("Reading specfile %s...\n", argv[1]);
+
+	if(!fdbfs_dbspec_parse(f, argv[1])) {
+		fprintf(stderr, "error parsing: %s\n", f->error.emsg);
+		fdbfs_estr_free(&f->error);
+		return;
+	}
+
+	printf("Database updated.\n");
+}
+#endif
+
 static void do_setconf(argc, argv)
 	int argc;
 	char **argv;
@@ -370,6 +404,7 @@ static void do_setconf(argc, argv)
 		}
 		if(!fdbfs_conf_set(f, cur, dt, dta)) {
 			fprintf(stderr, "error setting %s: %s\n", cur, (f->error.emsg != NULL ? f->error.emsg : "Unknown error"));
+			fdbfs_estr_free(&f->error);
 			free(cur);
 			continue;
 		}
@@ -389,6 +424,7 @@ int exec_command(cm, argc, argv)
 			for(i = 1; i < argc; i++) {
 				if(!fdbfs_db_rm_catalogue(f, argv[i])) {
 					fprintf(stderr, "error removing catalogue '%s': %s\n", argv[i], f->error.emsg);
+					fdbfs_estr_free(&f->error);
 					return 0;
 				}
 			}
@@ -410,6 +446,11 @@ int exec_command(cm, argc, argv)
 		case MAKE_CAT:
 			do_makecat(argc, argv);
 			break;
+#if 0
+		case IMPORT_SPECF:
+			do_imp_specf(argc, argv);
+			break;
+#endif
 		case EDIT_REC: /* <catalogue> <query> <defspec> */
 		default:
 			fprintf(stderr, "command not implemented!\n");
