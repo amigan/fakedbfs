@@ -31,7 +31,7 @@
  * @file fakedbfs.h
  * @brief Main header file.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.75 2006/03/11 20:32:41 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.76 2006/03/26 01:22:24 dcp1990 Exp $ */
 #include <fakedbfs/types.h>
 
 #include <fakedbfs/fdbfsconfig.h>
@@ -149,6 +149,11 @@ struct _actcat {
 	actcat_t *next;
 };
 
+struct reg_functype {
+	fdbfs_t *f;
+	short negated;
+};
+
 struct _fdbfs {
 	char *dbname;
 	sqlite3 *db;
@@ -163,6 +168,8 @@ struct _fdbfs {
 	ficlSystem *fsys;
 	ficlstate_t fst;
 	confnode_t *rconf;
+	struct reg_functype reg_norm; /* hack! oh well. */
+	struct reg_functype reg_negated;
 };
 
 /* crawler stuff */

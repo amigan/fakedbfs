@@ -31,7 +31,7 @@
  * @file qtokenise.c
  * @brief Query tokeniser.
  */
-/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.13 2006/01/31 17:26:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.14 2006/03/26 01:22:24 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -52,7 +52,7 @@
 #include "queryparser.h"
 #include <fakedbfs/fakedbfs.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.13 2006/01/31 17:26:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/qtokenise.c,v 1.14 2006/03/26 01:22:24 dcp1990 Exp $")
 
 
 /* from SQLite... */
@@ -170,6 +170,9 @@ static size_t toktl(cp, tval)
 		case '!':
 			if(nc == '=') {
 				*tval = NEQU;
+				l++;
+			} else if(nc == '~') {
+				*tval = REGNEQU;
 				l++;
 			} else {
 				*tval = B_NOT;

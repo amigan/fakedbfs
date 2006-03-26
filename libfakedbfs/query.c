@@ -34,7 +34,7 @@
  *
  * @sa query.h
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.43 2006/03/11 20:32:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.44 2006/03/26 01:22:24 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -62,7 +62,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.43 2006/03/11 20:32:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.44 2006/03/26 01:22:24 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -267,13 +267,21 @@ void fdbfs_db_regex_func(ctx, i, sqval)
 	int i;
 	sqlite3_value **sqval;
 {
-	fdbfs_t *f = (fdbfs_t*)sqlite3_user_data(ctx);
+	struct reg_functype *rft = (struct reg_functype *)sqlite3_user_data(ctx);
+	fdbfs_t *f = rft->f;
 	inst_t *h = f->curq->insthead;
 	inst_t *c;
 	qreg_t *oqr;
+	short searching;
 	const char *regexp;
 	const char *string;
+	const char *trdswap;
 	int rc, orc = 0;;
+
+	if(rft->negated)
+		searching = OP_NOTREGEXP;
+	else
+		searching = OP_REGEXP;
 
 	regexp = sqlite3_value_text(sqval[0]);
 	if(regexp == NULL) {
@@ -287,13 +295,32 @@ void fdbfs_db_regex_func(ctx, i, sqval)
 		return;
 	}
 
+	if(rft->negated) {
+		trdswap = regexp;
+		regexp = string;
+		string = trdswap;
+	}
+
+#ifdef QUERY_DEBUG
+	printf("reg %s string %s neg %d\n", regexp, string, rft->negated);
+#endif
+
 	for(c = h; c != NULL; c = c->next) {
-		if(c->opcode == OP_REGEXP) {
+#ifdef QUERY_DEBUG
+		printf("oc 0x%x src 0x%x\n", c->opcode, searching);
+#endif
+		if(c->opcode == searching) {
 			oqr = (qreg_t*)c->ops.o3;
+#ifdef QUERY_DEBUG
+			printf("re '%s', src '%s'\n", regexp, oqr->tregex);
+#endif
 			if(strcmp(regexp, oqr->tregex) == 0) {
 				rc = fregexec(oqr->re, (char*)string, NULL, 0);
-				if(rc == 0)
+				if(rft->negated ? (rc != 0) : (rc == 0))
 					orc = 1;
+#ifdef QUERY_DEBUG
+				printf("orc %d\n", orc);
+#endif
 				break;
 			}
 		}
@@ -318,7 +345,7 @@ void fdbfs_qreg_destroy(q)
 static void free_inst(e)
 	inst_t *e;
 {
-	if(e->opcode == OP_REGEXP)
+	if(e->opcode == OP_REGEXP || e->opcode == OP_NOTREGEXP)
 		fdbfs_qreg_destroy(e->ops.o3);
 	else if(e->ops.used & US_DYNA) {
 		free(e->ops.o3);
@@ -631,6 +658,9 @@ int fdbfs_query_init_exec(q)
 	q->f->curq = q;
 
 	for(c = q->insthead; c != NULL; c = c->next) {
+#ifdef QUERY_DEBUG
+		printf("opc 0x%x o1 %d o2 %d o3 %p used 0x%x\n", c->opcode, c->ops.o1, c->ops.o2, c->ops.o3, c->ops.used);
+#endif
 		if(ended)
 			return Q_INST_AFTER_END;
 
@@ -733,11 +763,12 @@ int fdbfs_query_init_exec(q)
 				foundselcn = 1;
 				break;
 			case OP_REGEXP:
+			case OP_NOTREGEXP:
 				if(!(c->ops.used & USED_O3))
 					return Q_MISSING_OPERAND;
 				if(c->ops.o3 == NULL)
 					return Q_INVALID_O3;
-				query_len += strlen(((qreg_t*)c->ops.o3)->tregex) + 4; /* spaces and quotes */
+				query_len += strlen(((qreg_t*)c->ops.o3)->tregex) + 4 /* spaces and quotes */ + 9 /* [NOT]REGEXP */;
 				break;
 			case OP_ENDQ:
 				ended = 1;
@@ -877,7 +908,12 @@ int fdbfs_query_init_exec(q)
 				}
 				saw_operat = 0;
 				saw_operan = 1;
-				strlcat(qusql, c->ops.o3, query_len);
+				if(c->next && c->next->opcode == OP_NOTREGEXP) {
+					strlcat(qusql, "notregexp(", query_len);
+					strlcat(qusql, c->ops.o3, query_len);
+				} else {
+					strlcat(qusql, c->ops.o3, query_len);
+				}
 				break;
 			case OP_REGEXP:
 				if(!saw_operan) {
@@ -889,6 +925,20 @@ int fdbfs_query_init_exec(q)
 				strlcat(qusql,  ((qreg_t*)c->ops.o3)->tregex, query_len); /* this could be done more efficiently, such as passing
 											     a special ID instead of an RE string, but oh well */
 				strlcat(qusql, "'", query_len);
+				break;
+			case OP_NOTREGEXP:
+#ifdef QUERY_DEBUG
+				printf("not regexp!\n");
+#endif
+				if(!saw_operan) {
+					ec = Q_OPERATION_WITHOUT_OPERANDS;
+					break;
+				}
+				saw_operat = saw_operan = 0; /* like =~ whatever */
+				strlcat(qusql, ", '", query_len);
+				strlcat(qusql,  ((qreg_t*)c->ops.o3)->tregex, query_len); /* this could be done more efficiently, such as passing
+											     a special ID instead of an RE string, but oh well */
+				strlcat(qusql, "')", query_len);
 				break;
 			case OP_INT:
 			case OP_FLOAT:
@@ -902,6 +952,11 @@ int fdbfs_query_init_exec(q)
 				saw_operat = 0;
 				saw_operan = 1;
 				strlcat(qusql, "?", query_len);
+				break;
+			default:
+#ifdef QUERY_DEBUG
+				printf("VM default case! (opcode 0x%x)\n", c->opcode);
+#endif
 				break;
 		}
 	}

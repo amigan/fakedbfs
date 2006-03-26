@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.9 2006/01/29 21:07:12 dcp1990 Exp $
+$Amigan: fakedbfs/doc/QUERY_OPCODES,v 1.10 2006/03/26 01:22:24 dcp1990 Exp $
 
 Query opcodes
 	By Dan Ponte
@@ -44,6 +44,7 @@ OPCODE	|Name		|Description										|Accepts:		|
 0x17	|OPL_LTHAN	|Less than. No operands.								|	|	|	|
 0x18	|OPL_GTHEQU	|Greater than or equals. No operands.							|	|	|	|
 0x19	|OPL_LTHEQU	|Less than or equals. No operands.							|	|	|	|
+0x1A	|OP_NOTREGEXP	|Negated OP_REGEXP									|	|	|X	|
 ========================================================================================================================================|
 
 NOTE AS PROMISED:

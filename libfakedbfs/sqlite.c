@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.36 2006/03/19 01:16:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.37 2006/03/26 01:22:24 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -42,7 +42,7 @@
 #include <fakedbfs/db.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.36 2006/03/19 01:16:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.37 2006/03/26 01:22:24 dcp1990 Exp $")
 
 
 /**
@@ -76,9 +76,18 @@ int fdbfs_db_open(f)
 		return ERR(die, "open_db: error opening database: %s", sqlite3_errmsg(f->db));
 	}
 
+	f->reg_norm.f = f;
+	f->reg_negated.f = f;
+	f->reg_norm.negated = 0;
+	f->reg_negated.negated = 1;
+
 	sqlite3_busy_handler(f->db, fdbfs_db_busy_handler, f);
 
-	rc = sqlite3_create_function(f->db, "regexp", 2, SQLITE_ANY /* not exactly true... */, (void*)f, fdbfs_db_regex_func, NULL, NULL);
+	rc = sqlite3_create_function(f->db, "regexp", 2, SQLITE_ANY /* not exactly true... */, (void*)&f->reg_norm, fdbfs_db_regex_func, NULL, NULL);
+	if(rc != SQLITE_OK) {
+		return ERR(die, "open_db: error creating regexp function: %s", sqlite3_errmsg(f->db));
+	}
+	rc = sqlite3_create_function(f->db, "notregexp", 2, SQLITE_ANY /* not exactly true... */, (void*)&f->reg_negated, fdbfs_db_regex_func, NULL, NULL);
 	if(rc != SQLITE_OK) {
 		return ERR(die, "open_db: error creating regexp function: %s", sqlite3_errmsg(f->db));
 	}
