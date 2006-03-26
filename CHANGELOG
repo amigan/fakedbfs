@@ -1,8 +1,9 @@
-$Amigan: fakedbfs/CHANGELOG,v 1.25 2006/03/11 20:32:41 dcp1990 Exp $
+$Amigan: fakedbfs/CHANGELOG,v 1.26 2006/03/26 01:22:48 dcp1990 Exp $
 
 Changelog
 
 2.0.0-RELEASE ("Doctor Wu")
+*Negated regex operator (!~) added to querys, albeit hackishly
 *Separated notion of catalogues and definitions; major DB format changes that are incompatible.
 *Added -n option to fquery to be like find(1) with -print0
 *Added conf functionality to fedit
