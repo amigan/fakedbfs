@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/fields.c,v 1.2 2006/02/24 17:45:05 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/fields.c,v 1.3 2006/04/01 23:51:47 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #include <fakedbfs/debug.h>
 #include <fakedbfs/fields.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/fields.c,v 1.2 2006/02/24 17:45:05 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/fields.c,v 1.3 2006/04/01 23:51:47 dcp1990 Exp $")
 
 static int field_append(name, fmtname, th, tc, type, value, len)
 	char *name;
@@ -82,8 +82,8 @@ static int field_append(name, fmtname, th, tc, type, value, len)
 
 
 int fdbfs_field_add_int(name, fmtname, th, tc, value)
-	char *name;
-	char *fmtname;
+	const char *name;
+	const char *fmtname;
 	fields_t **th;
 	fields_t **tc;
 	int value;
@@ -95,8 +95,8 @@ int fdbfs_field_add_int(name, fmtname, th, tc, value)
 }
 
 int fdbfs_field_add_string(name, fmtname, th, tc, value)
-	char *name;
-	char *fmtname;
+	const char *name;
+	const char *fmtname;
 	fields_t **th;
 	fields_t **tc;
 	char *value;
@@ -105,8 +105,8 @@ int fdbfs_field_add_string(name, fmtname, th, tc, value)
 }
 
 int fdbfs_field_add_image(name, fmtname, th, tc, value, sz)
-	char *name;
-	char *fmtname;
+	const char *name;
+	const char *fmtname;
 	fields_t **th;
 	fields_t **tc;
 	void *value;
@@ -115,4 +115,37 @@ int fdbfs_field_add_image(name, fmtname, th, tc, value, sz)
 	return field_append(name, fmtname, th, tc, image, value, sz);
 }
 
+fields_t* fdbfs_find_field_by_next(h, next)
+	fields_t *h;
+	fields_t *next;
+{
+	fields_t *c;
 
+	for(c = h; c != NULL; c = c->next) {
+		if(c->next == next)
+			return c;
+	}
+
+	return NULL;
+}
+
+int fdbfs_fields_set_mime(mimetype, th, tc)
+	const char *mimetype;
+	fields_t **th;
+	fields_t **tc;
+{
+	fields_t *found;
+
+	if(*th != NULL) {
+		found = fdbfs_find_field_by_name(*th, "mime");
+		if(found) {
+			fields_t *fnn;
+
+			fnn = fdbfs_find_field_by_next(*th, found);
+			fnn->next = found->next;
+			fdbfs_free_field(found);
+		}
+	}
+
+	return fdbfs_field_add_string("mime", "MIME type", th, tc, strdup(mimetype));
+}

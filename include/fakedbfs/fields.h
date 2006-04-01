@@ -31,7 +31,7 @@
  * @file fields.h
  * @brief fields and answer stuff.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fields.h,v 1.3 2006/02/24 18:32:33 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fields.h,v 1.4 2006/04/01 23:51:47 dcp1990 Exp $ */
 #ifndef HAVE_FDBFS_FIELDS_H
 #define HAVE_FDBFS_FIELDS_H
 
@@ -104,7 +104,7 @@ void fdbfs_free_answer_t(answer_t *e);
  * @param value The value to set the element to.
  * @return 0 on error (*th and *tc will remain unchanged)
  */
-int fdbfs_field_add_int(char *name, char *fmtname, fields_t **th, fields_t **tc, int value);
+int fdbfs_field_add_int(const char *name, const char *fmtname, fields_t **th, fields_t **tc, int value);
 
 /**
  * @brief Add string element to fields_t list.
@@ -116,7 +116,7 @@ int fdbfs_field_add_int(char *name, char *fmtname, fields_t **th, fields_t **tc,
  * @param value The value to set the element to. (not copied)
  * @return 0 on error (*th and *tc will remain unchanged)
  */
-int fdbfs_field_add_string(char *name, char *fmtname, fields_t **th, fields_t **tc, char *value);
+int fdbfs_field_add_string(const char *name, const char *fmtname, fields_t **th, fields_t **tc, char *value);
 
 /**
  * @brief Add image element to fields_t list.
@@ -129,5 +129,25 @@ int fdbfs_field_add_string(char *name, char *fmtname, fields_t **th, fields_t **
  * @param sz The length of the data.
  * @return 0 on error (*th and *tc will remain unchanged)
  */
-int fdbfs_field_add_image(char *name, char *fmtname, fields_t **th, fields_t **tc, void *value, size_t sz);
+int fdbfs_field_add_image(const char *name, const char *fmtname, fields_t **th, fields_t **tc, void *value, size_t sz);
+
+/**
+ * @brief Searches for a field by its next member.
+ *
+ * @param h Head of list to search.
+ * @param next Value to search for.
+ * @return Element found or NULL on not found.
+ */
+fields_t* fdbfs_find_field_by_next(fields_t *h, fields_t *next);
+
+/**
+ * @brief Sets the MIME type of a fields list.
+ *
+ * Sets the MIME type. Will remove any previously-existing mime fields.
+ * @param mimetype The mimetype to set to.
+ * @param[in,out] Pointer to pointer to head of list.
+ * @param[in,out] Pointer to pointer to last element of list.
+ * @return 0 on error.
+ */
+int fdbfs_fields_set_mime(const char *mimetype, fields_t **th, fields_t **tc);
 #endif

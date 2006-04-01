@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.14 2006/02/24 17:33:46 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.15 2006/04/01 23:51:47 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -52,7 +52,7 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.14 2006/02/24 17:33:46 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.15 2006/04/01 23:51:47 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
@@ -326,7 +326,7 @@ fields_t* extract_from_mp3(filename, errmsg, usetag)
 		ID3Tag_Delete(t);
 	}
 
-	fdbfs_field_add_string("mime", "MIME type", &h, &c, strdup("audio/mpeg"));
+	fdbfs_fields_set_mime("audio/mpeg", &h, &c);
 
 	return h;
 }
@@ -494,7 +494,7 @@ fields_t* extract_from_ogg(filename, errmsg, usetags)
 	match_filename(filename, errmsg, &c, &h);
 #endif
 
-	fdbfs_field_add_string("mime", "MIME type", &h, &c, strdup("application/ogg"));
+	fdbfs_fields_set_mime("application/ogg", &h, &c);
 
 	return h;
 }
@@ -562,7 +562,7 @@ static fields_t* extract_from_flac(filename, errmsg, usetags)
 		match_filename(filename, errmsg, &c, &h);
 	}
 	
-	fdbfs_field_add_string("mime", "MIME type", &h, &c, strdup("audio/x-flac"));
+	fdbfs_fields_set_mime("audio/x-flac", &h, &c);
 
 	return h;
 }
@@ -596,7 +596,7 @@ fields_t* extract_from_file(f, filename, errmsg)
 
 	if(strcasecmp(ext, WAVEXT) == 0) {
 		match_filename(filename, errmsg, &c, &h);
-		fdbfs_field_add_string("mime", "MIME type", &h, &c, strdup("audio/x-wav"));
+		fdbfs_fields_set_mime("audio/x-wav", &h, &c);
 		return h;
 	}
 

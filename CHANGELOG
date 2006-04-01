@@ -1,8 +1,9 @@
-$Amigan: fakedbfs/CHANGELOG,v 1.27 2006/03/26 01:29:25 dcp1990 Exp $
+$Amigan: fakedbfs/CHANGELOG,v 1.28 2006/04/01 23:51:47 dcp1990 Exp $
 
 Changelog
 
 2.0.0-RELEASE ("Doctor Wu")
+*fdbfs_fields_set_mime() added (genericised interface for setting mime type)
 *Negated regex operator (!~) added to queries, albeit hackishly
 *Separated notion of catalogues and definitions; major DB format changes that are incompatible.
 *Added -n option to fquery to be like find(1) with -print0
