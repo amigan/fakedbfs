@@ -31,7 +31,7 @@
  * @file dbinit.c
  * @brief Database initialisation stuff.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.49 2006/03/16 03:41:47 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.50 2006/04/02 00:02:23 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -51,7 +51,7 @@
 #define DSpecParseTOKENTYPE Toke
 #define DSpecParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.49 2006/03/16 03:41:47 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.50 2006/04/02 00:02:23 dcp1990 Exp $")
 
 void *DSpecParseAlloc(void *(*mallocProc)(size_t));
 void DSpecParseFree(void *p, void (*freeProc)(void*));
@@ -393,7 +393,9 @@ static int new_cft(f, specfile, h)
 
 	/* actual stuff */
 	for(c = h->headelem; c != NULL; c = c->next) {
-		if(c->flags & CATE_USES_FC && c->alias == NULL) {
+		if(c->flags & CATE_USES_FC) {
+			if(c->alias)
+				free(c->alias);
 			c->alias = strdup(c->name);
 			*c->alias = toupper(*c->alias);
 		}
