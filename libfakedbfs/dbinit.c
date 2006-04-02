@@ -31,7 +31,7 @@
  * @file dbinit.c
  * @brief Database initialisation stuff.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.50 2006/04/02 00:02:23 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.51 2006/04/02 00:12:18 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -51,7 +51,7 @@
 #define DSpecParseTOKENTYPE Toke
 #define DSpecParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.50 2006/04/02 00:02:23 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.51 2006/04/02 00:12:18 dcp1990 Exp $")
 
 void *DSpecParseAlloc(void *(*mallocProc)(size_t));
 void DSpecParseFree(void *p, void (*freeProc)(void*));
@@ -372,6 +372,7 @@ static int new_cft(f, specfile, h)
 	const char *fieldpre = CAT_FIELD_TABLE_PREFIX;
 	const size_t fln = sizeof(char) * (strlen(h->name) + strlen(fieldpre) + 3);
 	char *ptname;
+	char *tali;
 	
 	fieldtable = malloc(fln);
 	
@@ -393,11 +394,15 @@ static int new_cft(f, specfile, h)
 
 	/* actual stuff */
 	for(c = h->headelem; c != NULL; c = c->next) {
-		if(c->flags & CATE_USES_FC) {
-			if(c->alias)
-				free(c->alias);
+		tali = NULL;
+		if(c->flags & CATE_USES_FC && c->alias == NULL) {
 			c->alias = strdup(c->name);
 			*c->alias = toupper(*c->alias);
+		}
+
+		if(c->flags & CATE_USES_FC && c->alias == c->name) {
+			tali = strdup(c->name);
+			*tali = toupper(*tali);
 		}
 
 		if(c->type == oenum)
@@ -407,11 +412,16 @@ static int new_cft(f, specfile, h)
 		else
 			ptname = NULL;
 
-		if(!fdbfs_db_add_to_field_desc(f, fieldtable, c->name, c->alias, c->type, ptname)) {
+		if(!fdbfs_db_add_to_field_desc(f, fieldtable, c->name, tali ? tali : c->alias, c->type, ptname)) {
 			SCERR(die, "new_cft(f, h): error adding to cat field desc. ");
+			if(tali)
+				free(tali);
 			free(fieldtable);
 			return 0;
 		}
+
+		if(tali)
+			free(tali);
 	}
 	free(fieldtable);
 	return 1;
