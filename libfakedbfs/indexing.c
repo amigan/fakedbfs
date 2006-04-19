@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.55 2006/04/19 19:06:54 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.56 2006/04/19 19:58:22 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,12 +55,12 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/indexing.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.55 2006/04/19 19:06:54 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.56 2006/04/19 19:58:22 dcp1990 Exp $")
 
 static int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
-	char *file;
-	char *catalogue;
+	const char *file;
+	const char *catalogue;
 	fields_t *fields;
 {
 	fields_t *c;
@@ -150,7 +150,7 @@ static int add_file(f, file, catalogue, fields)
 
 static fields_t* fill_in_fields(f, filename)
 	fdbfs_t *f;
-	char *filename;
+	const char *filename;
 {
 	struct Plugin *h = f->plugins, *c = NULL, *tpl = NULL;
 	fields_t *fh = NULL;
@@ -257,9 +257,9 @@ static void list_enum(h)
 answer_t* fdbfs_askfunc_std(buf, def, fieldname, name, filen, dt, ehead, subhead)
 	answer_t *buf;
 	answer_t *def;
-	char *fieldname;
-	char *name;
-	char *filen;
+	const char *fieldname;
+	const char *name;
+	const char *filen;
 	enum DataType dt;
 	struct EnumHead *ehead;
 	struct EnumSubElem *subhead;
@@ -361,20 +361,6 @@ checkagain:
 	return buf;
 }
 
-fields_t* fdbfs_find_field_by_name(h, name)
-	fields_t *h;
-	char *name;
-{
-	fields_t *c = NULL;
-	
-	for(c = h; c != NULL; c = c->next) {
-		if(c->fieldname != NULL)
-			if(strcmp(c->fieldname, name) == 0)
-				return c;
-	}
-	
-	return NULL;
-}
 
 /* Basically, what this [should] do:
  * Go through and get each field for the catalogue from the database and put
@@ -399,8 +385,8 @@ static fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremel
 					  ....I think. But it sure as hell
 					 isn't the worst. */
 	fdbfs_t *f;
-	char *filen;
-	char *cat;
+	const char *filen;
+	const char *cat;
 	fields_t *defs;
 {
 	answer_t *cans;
@@ -618,38 +604,10 @@ static fields_t* ask_for_fields(f, filen, cat, defs) /* this routine is extremel
 }
 
 
-fields_t* fdbfs_find_field_by_ehead(h, e)
-	fields_t *h;
-	struct EnumHead *e;
-{
-	fields_t *c;
-
-	for(c = h; c != NULL; c = c->next) {
-		if(c->ehead == e)
-			return c;
-	}
-
-	return NULL;
-}
-
-fields_t* fdbfs_find_field_by_ename(h, e)
-	fields_t *h;
-	char *e;
-{
-	fields_t *c;
-
-	for(c = h; c != NULL; c = c->next) {
-		if(h->ehead != NULL)
-			if(strcmp(e, h->ehead->name) == 0)
-				return c;
-	}
-
-	return NULL;
-}
 
 static int complete_fields_from_db(f, cat, h)
 	fdbfs_t *f;
-	char *cat;
+	const char *cat;
 	fields_t **h;
 {
 	fields_t *c = NULL, *last = NULL, *new = NULL;
@@ -743,8 +701,8 @@ static void erase_fields(h, fields, oh)
 
 static int file_has_changed(f, cat, filename, statstruct)
 	fdbfs_t *f;
-	char *cat;
-	char *filename;
+	const char *cat;
+	const char *filename;
 	void *statstruct; /* we cast later; this is for portability */
 {
 #if defined(UNIX)
@@ -789,8 +747,8 @@ static int file_has_changed(f, cat, filename, statstruct)
 
 int fdbfs_index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 	fdbfs_t *f;
-	char *filename;
-	char *cat;
+	const char *filename;
+	const char *cat;
 	int batch;
 	int useplugs;
 	int forceupdate;
@@ -872,7 +830,7 @@ int fdbfs_index_file(f, filename, cat, batch, useplugs, forceupdate, fields)
 /* all FTS stuff was heavily inspired by FreeBSD's /usr/src/bin/ls/ls.c */
 int fdbfs_cindexer_dir(f, cat, batch, useplugs, list, options, re, defs) /* this has no prototype in fakedbfs.h; it's less ugly this way. */
 		fdbfs_t *f;
-		char *cat;
+		const char *cat;
 		int batch;
 		int useplugs;
 		FTSENT *list;
@@ -975,11 +933,11 @@ int fdbfs_cindexer_dir(f, cat, batch, useplugs, list, options, re, defs) /* this
 int fdbfs_index_dir(f, dirs, cat, useplugs, batch, nocase, re, recurse, defs)
 	fdbfs_t *f;
 	char **dirs;
-	char *cat;
+	const char *cat;
 	int useplugs;
 	int batch;
 	int nocase;
-	char *re;
+	const char *re;
 	int recurse;
 	fields_t *defs;
 {

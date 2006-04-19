@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.6 2006/01/31 17:43:09 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.7 2006/04/19 19:58:22 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -52,7 +52,7 @@
 #define FICLWORD(word)		cword = ficlDictionarySetPrimitive(dict, #word, fdbfs_ficl_word_ ## word, 0x0)
 #define WORDDEF(word)		void fdbfs_ficl_word_ ## word(ficlVm *vm)
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.6 2006/01/31 17:43:09 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/ficl.c,v 1.7 2006/04/19 19:58:22 dcp1990 Exp $")
 
 
 
@@ -68,7 +68,7 @@ const struct PluginInfo fdbfs_ficl_inf = {
 
 void fdbfs_ficl_output(cb, text) /* HACK! */
 	ficlCallback *cb;
-	char *text;
+	const char *text;
 {
 	ficlstate_t *fs = cb->context;
 
@@ -83,7 +83,7 @@ void fdbfs_ficl_output(cb, text) /* HACK! */
 
 void fdbfs_ficl_error(cb, text) /* HACK! */
 	ficlCallback *cb;
-	char *text;
+	const char *text;
 {
 	if(text != NULL)
 		fputs(text, stderr);
@@ -260,10 +260,10 @@ static int parse_ficl_file(f, fp)
 
 struct Plugin* fdbfs_ficl_load_ficlplugin(f, plugfile)
 	fdbfs_t *f;
-	char *plugfile;
+	const char *plugfile;
 {
 	int rc;
-	char *plending;
+	const char *plending;
 	struct Plugin *n;
 
 	plending = plugfile + (strlen(plugfile) - 3);

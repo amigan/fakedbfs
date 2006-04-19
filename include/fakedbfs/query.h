@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.18 2006/03/26 01:22:24 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.19 2006/04/19 19:58:22 dcp1990 Exp $ */
 #ifndef HAVE_QUERY_H
 #define HAVE_QUERY_H 1
 #ifndef HAVE_DBSPECDATA_H
@@ -295,7 +295,7 @@ int fdbfs_query_push3(query_t *q, void *o3); /* we could use macros for push*(),
  * @param[out] errmsg Set to error message on error; must free().
  * @return New qreg object, NULL on error.
  */
-qreg_t* fdbfs_qreg_compile(char *regex, int case_insens, char **errmsg);
+qreg_t* fdbfs_qreg_compile(const char *regex, int case_insens, char **errmsg);
 
 /**
  * @brief Destroy qreg object.
@@ -313,7 +313,7 @@ void fdbfs_qreg_destroy(qreg_t *q);
  * @param fn Filename to read.
  * @return Pointer to data, or NULL on error.
  */
-void* fdbfs_query_read_file(fdbfs_t *f, char *fn);
+void* fdbfs_query_read_file(fdbfs_t *f, const char *fn);
 
 /**
  * @brief Parse a query.
@@ -324,7 +324,7 @@ void* fdbfs_query_read_file(fdbfs_t *f, char *fn);
  * @param qstr String to parse.
  * @return 0 on error.
  */
-int fdbfs_query_parse(query_t *q, char *qstr);
+int fdbfs_query_parse(query_t *q, const char *qstr);
 
 /**
  * @brief Tokeinse query

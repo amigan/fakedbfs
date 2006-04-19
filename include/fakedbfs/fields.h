@@ -31,7 +31,7 @@
  * @file fields.h
  * @brief fields and answer stuff.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fields.h,v 1.6 2006/04/19 19:10:03 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fields.h,v 1.7 2006/04/19 19:58:22 dcp1990 Exp $ */
 #ifndef HAVE_FDBFS_FIELDS_H
 #define HAVE_FDBFS_FIELDS_H
 
@@ -58,7 +58,7 @@ void fdbfs_free_field_list(fields_t *h);
  * @param name Name to search for.
  * @return fields_t that matches, or NULL if not found.
  */
-fields_t* fdbfs_find_field_by_name(fields_t *h, char *name);
+fields_t* fdbfs_find_field_by_name(fields_t *h, const char *name);
 
 /**
  * @brief Search for fields_t in a list by enumhead.
@@ -76,7 +76,7 @@ fields_t* fdbfs_find_field_by_ehead(fields_t *h, struct EnumHead *e);
  * @param e EnumHead name to search for.
  * @return fields_t that matches, or NULL if not found.
  */
-fields_t* fdbfs_find_field_by_ename(fields_t *h, char *e);
+fields_t* fdbfs_find_field_by_ename(fields_t *h, const char *e);
 
 /**
  * @brief Parse defspec and create fields_t list from it.
@@ -85,7 +85,7 @@ fields_t* fdbfs_find_field_by_ename(fields_t *h, char *e);
  * @param tsp Defspec to parse.
  * @return fields_t list from defspec, or NULL on error.
  */
-fields_t* fdbfs_fields_from_dsp(fdbfs_t *f, char *tsp);
+fields_t* fdbfs_fields_from_dsp(fdbfs_t *f, const char *tsp);
 
 /**
  * @brief Free answer_t object.
@@ -166,4 +166,6 @@ int fdbfs_fields_set_mime(const char *mimetype, fields_t **th, fields_t **tc);
  * @param len Size of data.
  */
 int fdbfs_field_append(const char *name, const char *fmtname, fields_t **th, fields_t **tc, enum DataType type, void *value, size_t len);
+
+
 #endif

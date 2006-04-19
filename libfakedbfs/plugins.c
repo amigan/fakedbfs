@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.12 2006/02/24 08:01:02 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.13 2006/04/19 19:58:22 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdio.h>
@@ -49,7 +49,7 @@
 #include <fakedbfs/plugins.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.12 2006/02/24 08:01:02 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.13 2006/04/19 19:58:22 dcp1990 Exp $")
 
 #define LIBERR(sym) { \
 		fdbfs_debug_info(f, error, "probe_plugin: symbol referece %s failed in %s: %s", sym, fpth, dlerror()); \
@@ -61,8 +61,8 @@ RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.12 2006/02/24 08:01:02 dcp199
 
 static struct Plugin* probe_plugin(f, dirpath, filename, last)
 	fdbfs_t *f;
-	char *dirpath;
-	char *filename;
+	const char *dirpath;
+	const char *filename;
 	struct Plugin *last;
 {
 #if defined(UNIX)
@@ -114,10 +114,10 @@ static struct Plugin* probe_plugin(f, dirpath, filename, last)
 	n->shutdown = (int(*)(fdbfs_t*, char **))dlfunc(libhandle, "plugin_shutdown");
 	if(n->init == NULL)
 		LIBERR("plugin_shutdown()");
-	n->check_file = (int(*)(fdbfs_t*, char*, char**))dlfunc(libhandle, "check_file");
+	n->check_file = (int(*)(fdbfs_t*, const char*, char**))dlfunc(libhandle, "check_file");
 	if(n->check_file == NULL)
 		LIBERR("check_file()");
-	n->extract_from_file = (fields_t*(*)(fdbfs_t*, char*, char **))dlfunc(libhandle, "extract_from_file");
+	n->extract_from_file = (fields_t*(*)(fdbfs_t*, const char*, char **))dlfunc(libhandle, "extract_from_file");
 	if(n->extract_from_file == NULL)
 		LIBERR("extract_from_file()");
 
@@ -146,7 +146,7 @@ static struct Plugin* probe_plugin(f, dirpath, filename, last)
 static struct Plugin* search_plugs(f, plugins, path)
 	fdbfs_t *f;
 	struct Plugin *plugins;
-	char *path;
+	const char *path;
 {
 #if defined(UNIX)
 #define LIBENDING ".so"
@@ -262,7 +262,7 @@ int fdbfs_plugin_get_cptr(f, pinf, dat)
 
 void fdbfs_plugins_set_path(f, path)
 	fdbfs_t *f;
-	char *path;
+	const char *path;
 {
 	f->conf.pluginpath = strdup(path);
 }

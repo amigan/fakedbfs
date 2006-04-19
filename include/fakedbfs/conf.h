@@ -31,7 +31,7 @@
  * @file conf.h
  * @brief Configuration subsystem header.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/conf.h,v 1.2 2006/02/25 09:52:13 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/conf.h,v 1.3 2006/04/19 19:58:22 dcp1990 Exp $ */
 #ifndef HAVE_FDBFS_CONF_H
 #define HAVE_FDBFS_CONF_H
 #include <fakedbfs/types.h>
@@ -60,15 +60,15 @@ struct _confnode {
 	struct _confnode *next;
 };
 
-confnode_t* fdbfs_conf_node_create(char *tag, confnode_t *parent, int leaf);
+confnode_t* fdbfs_conf_node_create(const char *tag, confnode_t *parent, int leaf);
 int fdbfs_conf_init(fdbfs_t *f);
 int fdbfs_conf_init_db(fdbfs_t *f);
-int fdbfs_conf_add_to_tree(fdbfs_t *f, char *mib, enum DataType type, union Data *data, short dynamic);
+int fdbfs_conf_add_to_tree(fdbfs_t *f, const char *mib, enum DataType type, union Data *data, short dynamic);
 int fdbfs_conf_read_from_db(fdbfs_t *f);
-enum DataType fdbfs_conf_get(fdbfs_t *f, char *mib, union Data *data);
-int fdbfs_conf_set(fdbfs_t *f, char *mib, enum DataType type, union Data data);
+enum DataType fdbfs_conf_get(fdbfs_t *f, const char *mib, union Data *data);
+int fdbfs_conf_set(fdbfs_t *f, const char *mib, enum DataType type, union Data data);
 void fdbfs_conf_destroy_tree(confnode_t *t);
-confnode_t* fdbfs_conf_node_create(char *tag, confnode_t *parent, int leaf);
+confnode_t* fdbfs_conf_node_create(const char *tag, confnode_t *parent, int leaf);
 
 /**
  * @brief Search for confnode_t in tree.
@@ -77,5 +77,5 @@ confnode_t* fdbfs_conf_node_create(char *tag, confnode_t *parent, int leaf);
  * @param mib MIB to search for.
  * @return confnode_t pointer, or NULL if cannot find or other error.
  */
-confnode_t* fdbfs_conf_search_mib(confnode_t *p, char *mib);
+confnode_t* fdbfs_conf_search_mib(confnode_t *p, const char *mib);
 #endif

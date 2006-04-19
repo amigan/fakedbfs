@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/defspecs.c,v 1.7 2006/01/31 17:26:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/defspecs.c,v 1.8 2006/04/19 19:58:22 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -49,7 +49,7 @@
 #include <fakedbfs/debug.h>
 #include "dspparser.h"
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/defspecs.c,v 1.7 2006/01/31 17:26:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/defspecs.c,v 1.8 2006/04/19 19:58:22 dcp1990 Exp $")
 
 static const char isIdChar[] = {
 /* x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 xA xB xC xD xE xF */
@@ -73,7 +73,7 @@ void DSPParseFree(void *p, void (*freeProc)(void*));
 
 
 static int dspstrtok(cp, len)
-	char *cp;
+	const char *cp;
 	size_t len;
 {
 	if(strncasecmp(cp, "image", len) == 0) {
@@ -94,7 +94,7 @@ static int dspstrtok(cp, len)
 }
 
 static size_t dsp_token(cp, tval)
-	char *cp;
+	const char *cp;
 	int *tval;
 {
 	size_t l = 1;
@@ -271,11 +271,12 @@ static int dsptok(cp, tval, toke, ctok)
 
 fields_t* fdbfs_fields_from_dsp(f, tsp)
 	fdbfs_t *f;
-	char *tsp;
+	const char *tsp;
 {
 	Toke to;
 	dspdata_t d;
-	char *cp = tsp;
+	char *tcopy = strdup(tsp);
+	char *cp = tcopy;
 	char ctb[513];
 	void *pa;
 	int trc;
@@ -288,6 +289,7 @@ fields_t* fdbfs_fields_from_dsp(f, tsp)
 
 	if(d.cat == NULL) {
 		SERR(die, "Must read_specs_from_db() before grabbing fields_from_dsp()!");
+		free(tcopy);
 		return NULL;
 	}
 
@@ -301,6 +303,7 @@ fields_t* fdbfs_fields_from_dsp(f, tsp)
 		if(trc == -1) {
 			ERR(die, "Error tokenising %s!", tsp);
 			DSPParseFree(pa, free);
+			free(tcopy);
 			return 0;
 		}
 		d.yytext = ctb;
@@ -308,12 +311,15 @@ fields_t* fdbfs_fields_from_dsp(f, tsp)
 		if(d.f->error.emsg != NULL || d.error) {
 			CERR(die, "Query parse of '%s'. ", tsp);
 			DSPParseFree(pa, free);
+			free(tcopy);
 			return 0;
 		}
 		memset(ctb, 0, sizeof(ctb));
 	}
 	DSPParse(pa, 0, to, &d);
 	DSPParseFree(pa, free);
+	free(tcopy);
+
 	return d.fhead;
 }
 

@@ -34,7 +34,7 @@
  *
  * @sa query.h
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.44 2006/03/26 01:22:24 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.45 2006/04/19 19:58:22 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -62,7 +62,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.44 2006/03/26 01:22:24 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.45 2006/04/19 19:58:22 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -234,7 +234,7 @@ query_t* fdbfs_query_new(f, stacksize)
 }
 
 qreg_t* fdbfs_qreg_compile(regex, case_insens, errmsg)
-	char *regex;
+	const char *regex;
 	int case_insens;
 	char **errmsg;
 {
@@ -1051,7 +1051,7 @@ int fdbfs_query_qne(q) /* Query Next/Execute */
 
 void* fdbfs_query_read_file(f, fn)
 	fdbfs_t *f;
-	char *fn;
+	const char *fn;
 {
 	void *tbf = NULL;
 #ifdef HAVE_MMAP
@@ -1088,9 +1088,10 @@ void* fdbfs_query_read_file(f, fn)
 
 int fdbfs_query_parse(q, qstr)
 	query_t *q;
-	char *qstr;
+	const char *qstr;
 {
-	char *cp = qstr;
+	char *qcpy = strdup(qstr);
+	char *cp = qcpy;
 	char **cptr = &cp;
 	void *pa;
 	int token;
@@ -1108,6 +1109,7 @@ int fdbfs_query_parse(q, qstr)
 		if(trc == -2) {
 			fdbfs_ferr(q->f, die, "NULL regexp in %s!", qstr);
 			QParseFree(pa, free);
+			free(qcpy);
 			return 0;
 		}
 		q->yytext = ctb;
@@ -1115,6 +1117,7 @@ int fdbfs_query_parse(q, qstr)
 		if(q->f->error.emsg != NULL || q->error) {
 			fdbfs_cferr(q->f, die, "Query parse of '%s'. ", qstr);
 			QParseFree(pa, free);
+			free(qcpy);
 			return 0;
 		}
 		memset(ctb, 0, sizeof(ctb));
@@ -1122,6 +1125,8 @@ int fdbfs_query_parse(q, qstr)
 	QParse(pa, EOQUERY, to, q);
 	QParse(pa, 0, to, q);
 	QParseFree(pa, free);
+
+	free(qcpy);
 	return 1;
 }
 

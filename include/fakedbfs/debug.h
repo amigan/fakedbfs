@@ -27,15 +27,15 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/debug.h,v 1.2 2006/02/25 07:12:31 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/debug.h,v 1.3 2006/04/19 19:58:22 dcp1990 Exp $ */
 /**
  * @file debug.h
  * @brief Debug and error handling.
  */
 
 
-int fdbfs_ferr(fdbfs_t *f, enum ErrorAction severity, char *fmt, ...);
-int fdbfs_cferr(fdbfs_t *f, enum ErrorAction severity, char *fmt, ...);
+int fdbfs_ferr(fdbfs_t *f, enum ErrorAction severity, const char *fmt, ...);
+int fdbfs_cferr(fdbfs_t *f, enum ErrorAction severity, const char *fmt, ...);
 void fdbfs_debug_dump_fields(fields_t *h);
 struct EnumSubElem* fdbfs_debug_dump_enum_sub_elem(struct EnumSubElem *e, short int allsub); /* returns next */
 void fdbfs_debug_dump_enum_sub_elem_list(struct EnumSubElem *head, short int allsub);
@@ -48,7 +48,7 @@ void fdbfs_debug_dump_cat_elem_list(struct CatElem *head);
 struct CatalogueHead* fdbfs_debug_dump_cat_head(struct CatalogueHead *e);
 void fdbfs_debug_dump_cat_head_list(struct CatalogueHead *head);
 void fdbfs_debug_dump_head_members(Heads *hd);
-int fdbfs_debug_info(fdbfs_t *f, enum ErrorAction sev, char *fmt, ...);
+int fdbfs_debug_info(fdbfs_t *f, enum ErrorAction sev, const char *fmt, ...);
 void fdbfs_estr_free(error_t *e);
 
 /**

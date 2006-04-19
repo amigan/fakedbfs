@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.15 2006/04/01 23:51:47 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.16 2006/04/19 19:58:22 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -52,7 +52,7 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.15 2006/04/01 23:51:47 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.16 2006/04/19 19:58:22 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
@@ -127,10 +127,10 @@ int plugin_shutdown(f, errmsg)
 
 int check_file(f, filename, errmsg)
 	fdbfs_t *f;
-	char *filename;
+	const char *filename;
 	char **errmsg;
 {
-	char *ext;
+	const char *ext;
 
 	/* useless, I know */
 
@@ -158,7 +158,7 @@ int check_file(f, filename, errmsg)
 }
 
 int match_filename(filename, errmsg, tc, th)
-	char *filename;
+	const char *filename;
 	char **errmsg;
 	fields_t **tc;
 	fields_t **th;
@@ -274,7 +274,7 @@ int match_filename(filename, errmsg, tc, th)
 
 
 fields_t* extract_from_mp3(filename, errmsg, usetag)
-	char *filename;
+	const char *filename;
 	char **errmsg;
 	short usetag; /* XXX: unused-ish as yet */
 {
@@ -340,7 +340,7 @@ fields_t* extract_from_mp3(filename, errmsg, usetag)
 #define CMT_DISC	0x6
 #define CMT_UNKNOWN	0xFF
 static int comment_tagname(cstr, clen, rdat)
-	char *cstr;
+	const char *cstr;
 	size_t clen;
 	char **rdat;
 {
@@ -420,7 +420,7 @@ static int fields_from_vcomments(vf, errmsg, c, h)
 }
 
 fields_t* extract_from_ogg(filename, errmsg, usetags)
-	char *filename;
+	const char *filename;
 	char **errmsg;
 	short usetags;
 {
@@ -537,7 +537,7 @@ static int fields_from_flac_vcomm(h, c, errmsg, vc)
 }
 
 static fields_t* extract_from_flac(filename, errmsg, usetags)
-	char *filename;
+	const char *filename;
 	char **errmsg;
 	short usetags;
 {
@@ -570,10 +570,10 @@ static fields_t* extract_from_flac(filename, errmsg, usetags)
 
 fields_t* extract_from_file(f, filename, errmsg)
 	fdbfs_t *f;
-	char *filename;
+	const char *filename;
 	char **errmsg;
 {
-	char *ext;
+	const char *ext;
 	fields_t *h = NULL, *c = NULL;
 	struct MusicConfig *mc;
 

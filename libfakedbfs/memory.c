@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.28 2006/03/11 20:32:42 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/memory.c,v 1.29 2006/04/19 19:58:22 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 #include <fakedbfs/plugins.h>
 #include <fakedbfs/fields.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.28 2006/03/11 20:32:42 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/memory.c,v 1.29 2006/04/19 19:58:22 dcp1990 Exp $")
 
 
 #ifdef NO_CALLOC
@@ -273,12 +273,12 @@ void fdbfs_free_field_list(h)
 }
 
 char* fdbfs_strdupq(s)
-	char *s;
+	const char *s;
 {
 	/* I am indebted to FreeBSD's /usr/src/lib/libc/string/strdup.c */
         size_t len;
         char *copy;
-	char *str = s;
+	const char *str = s;
 	char *c;
 
 	if(*str == '"')

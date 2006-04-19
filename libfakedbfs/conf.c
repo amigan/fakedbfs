@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.19 2006/02/25 09:52:13 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.20 2006/04/19 19:58:22 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 #include <fakedbfs/db.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.19 2006/02/25 09:52:13 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.20 2006/04/19 19:58:22 dcp1990 Exp $")
 
 static void conf_node_link_parent(parent, n)
 	confnode_t *parent, *n;
@@ -65,7 +65,7 @@ static void conf_node_link_parent(parent, n)
 }
 
 confnode_t* fdbfs_conf_node_create(tag, parent, leaf)
-	char *tag;
+	const char *tag;
 	confnode_t *parent;
 	int leaf;
 {
@@ -107,7 +107,7 @@ static int conf_init_db(f)
 }
 
 static confnode_t* conf_create_branch(tag)
-	char *tag;
+	const char *tag;
 {
 	confnode_t *n;
 
@@ -135,15 +135,16 @@ static confnode_t* conf_search_tag(parent, name)
 
 confnode_t* fdbfs_conf_search_mib(p, mib)
 	confnode_t *p;
-	char *mib; /* not const! */
+	const char *mib;
 {
 	confnode_t *c = p;
 	char *ln;
 	char *oln;
 	short lastelem = 0;
+	char *omib;
 
-	mib = strdup(mib);
-	ln = mib;
+	omib = strdup(mib);
+	ln = omib;
 
 	while(!lastelem) {
 		oln = ln;
@@ -157,7 +158,7 @@ confnode_t* fdbfs_conf_search_mib(p, mib)
 		c = conf_search_tag(c, oln);
 		
 		if(c == NULL) {
-			free(mib);
+			free(omib);
 			return NULL;
 		}
 
@@ -167,14 +168,14 @@ confnode_t* fdbfs_conf_search_mib(p, mib)
 		}
 	}
 
-	free(mib);
+	free(omib);
 
 	return c;
 }
 
 static confnode_t* conf_search_create_branch(parent, name)
 	confnode_t *parent;
-	char *name;
+	const char *name;
 {
 	confnode_t *c;
 
@@ -192,15 +193,16 @@ static confnode_t* conf_search_create_branch(parent, name)
 
 static int conf_connect_to_tree(t, mib, n)
 	confnode_t *t; /* parent */
-	char *mib;
+	const char *mib;
 	confnode_t *n;
 {
 	confnode_t *c = t;
 	char *ln;
 	char *oln;
+	char *omib;
 
-	mib = strdup(mib);
-	ln = mib;
+	omib = strdup(mib);
+	ln = omib;
 
 	while(1) {
 		oln = ln;
@@ -221,14 +223,14 @@ static int conf_connect_to_tree(t, mib, n)
 
 	conf_node_link_parent(c, n);
 
-	free(mib);
+	free(omib);
 
 	return 1;
 }
 
 static int conf_add_to_tree(f, mib, type, data, dynamic)
 	fdbfs_t *f;
-	char *mib;
+	const char *mib;
 	enum DataType type;
 	union Data *data;
 	short dynamic;
@@ -361,7 +363,7 @@ int fdbfs_conf_read_from_db(f)
 
 enum DataType fdbfs_conf_get(f, mib, data)
 	fdbfs_t *f;
-	char *mib;
+	const char *mib;
 	union Data *data; /* output */
 {
 	char *mibcpy = strdup(mib);
@@ -383,7 +385,7 @@ enum DataType fdbfs_conf_get(f, mib, data)
 
 int fdbfs_conf_set(f, mib, type, data) /* this routine is dedicated to Genesis' song "In The Beginning", to which it was written */
 	fdbfs_t *f;
-	char *mib;
+	const char *mib;
 	enum DataType type;
 	union Data data; /* if applicable, this must persist for us to free according to our whims. */
 {

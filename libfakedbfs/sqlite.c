@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.37 2006/03/26 01:22:24 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.38 2006/04/19 19:58:22 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -42,7 +42,7 @@
 #include <fakedbfs/db.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.37 2006/03/26 01:22:24 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/sqlite.c,v 1.38 2006/04/19 19:58:22 dcp1990 Exp $")
 
 
 /**
@@ -106,7 +106,7 @@ int fdbfs_db_close(f)
 
 int fdbfs_db_table_exists(f, tname)
 	fdbfs_t *f;
-	char *tname;
+	const char *tname;
 {
 	const char *tail;
 	const unsigned char *result;
@@ -135,7 +135,7 @@ int fdbfs_db_table_exists(f, tname)
 
 int fdbfs_db_cat_exists(f, cat)
 	fdbfs_t *f;
-	char *cat;
+	const char *cat;
 {
 	const char *tail;
 	sqlite3_stmt *cst;
@@ -166,8 +166,8 @@ int fdbfs_db_cat_exists(f, cat)
 
 int fdbfs_db_create_table(f, tname, tspec)
 	fdbfs_t *f;
-	char *tname;
-	char *tspec;
+	const char *tname;
+	const char *tspec;
 {
 	char *sql;
 	char *emsg;
@@ -236,8 +236,8 @@ static const char* getcoltype(t)
 
 int fdbfs_db_add_column(f, tname, cname, datatype)
 	fdbfs_t *f;
-	char *tname;
-	char *cname;
+	const char *tname;
+	const char *cname;
 	coltype_t datatype;
 {
 	char *sql;
@@ -256,8 +256,8 @@ int fdbfs_db_add_column(f, tname, cname, datatype)
 
 int fdbfs_db_del_column(f, tname, cname)
 	fdbfs_t *f;
-	char *tname;
-	char *cname;
+	const char *tname;
+	const char *cname;
 {
 	/*
 	 * Do nothing; for other database drivers, this function might actually accomplish something
@@ -267,9 +267,9 @@ int fdbfs_db_del_column(f, tname, cname)
 
 int fdbfs_db_add_to_enum_list_table(f, name, tname, specf)
 	fdbfs_t *f;
-	char *name;
-	char *tname;
-	char *specf;
+	const char *name;
+	const char *tname;
+	const char *specf;
 {
 	char *sql;
 	char *emsg;
@@ -289,7 +289,7 @@ int fdbfs_db_add_to_enum_list_table(f, name, tname, specf)
 
 int fdbfs_db_cat_getcfdname(f, catname, tcfd)
 	fdbfs_t *f;
-	char *catname;
+	const char *catname;
 	char **tcfd;
 {
 	char *sql;
@@ -328,7 +328,7 @@ badres:
 
 int fdbfs_db_cfd_update_refcount(f, name, add, val)
 	fdbfs_t *f;
-	char *name;
+	const char *name;
 	int add; /* 1 to add, 0 to sub */
 	unsigned int val;
 {
@@ -350,10 +350,10 @@ int fdbfs_db_cfd_update_refcount(f, name, add, val)
 
 int fdbfs_db_add_to_cfd_list_table(f, name, alias, tablename, specfile)
 	fdbfs_t *f;
-	char *name;
-	char *alias;
-	char *tablename;
-	char *specfile;
+	const char *name;
+	const char *alias;
+	const char *tablename;
+	const char *specfile;
 {
 	char *sql, *emsg;
 	int rc;
@@ -374,10 +374,10 @@ int fdbfs_db_add_to_cfd_list_table(f, name, alias, tablename, specfile)
 
 int fdbfs_db_add_to_cat_list_table(f, name, alias, tablename, fieldtable)
 	fdbfs_t *f;
-	char *name;
-	char *alias;
-	char *tablename;
-	char *fieldtable;
+	const char *name;
+	const char *alias;
+	const char *tablename;
+	const char *fieldtable;
 {
 	char *sql, *emsg;
 	int rc;
@@ -397,11 +397,11 @@ int fdbfs_db_add_to_cat_list_table(f, name, alias, tablename, fieldtable)
 
 int fdbfs_db_add_to_field_desc(f, tablename, name, alias, type, typen)
 	fdbfs_t *f;
-	char *tablename;
-	char *name;
-	char *alias;
+	const char *tablename;
+	const char *name;
+	const char *alias;
 	enum DataType type;
-	char *typen;
+	const char *typen;
 {
 	char *sql, *emsg, *othna;
 	int rc;
@@ -432,10 +432,10 @@ int fdbfs_db_add_to_field_desc(f, tablename, name, alias, type, typen)
 
 int fdbfs_db_delete(f, from, wherecol, wherecmp, whereval)
 	fdbfs_t *f;
-	char *from;
-	char *wherecol;
-	char *wherecmp;
-	char *whereval;
+	const char *from;
+	const char *wherecol;
+	const char *wherecmp;
+	const char *whereval;
 {
 	char *sql, *emsg;
 	int rc;
@@ -453,7 +453,7 @@ int fdbfs_db_delete(f, from, wherecol, wherecmp, whereval)
 
 int fdbfs_db_drop_table(f, tablename)
 	fdbfs_t *f;
-	char *tablename;
+	const char *tablename;
 {
 	char *sql, *emsg;
 	int rc;
@@ -470,12 +470,12 @@ int fdbfs_db_drop_table(f, tablename)
 
 int fdbfs_db_add_enum_elem(f, tname, name, fmtname, value, dtype, subelements)
 	fdbfs_t *f;
-	char *tname;
-	char *name;
-	char *fmtname;
+	const char *tname;
+	const char *name;
+	const char *fmtname;
 	unsigned int value;
 	enum DataType dtype; /* XXX: check if enum values (the C type) are constant */
-	char *subelements;
+	const char *subelements;
 {
 	char *sql;
 	int rc;
@@ -587,8 +587,8 @@ int fdbfs_db_bind_field(f, count, type, value, len, stmt)
 
 int fdbfs_db_get_lastupdate(f, cat, filename)
 	fdbfs_t *f;
-	char *cat;
-	char *filename;
+	const char *cat;
+	const char *filename;
 {
 	sqlite3_stmt *cst;
 	int rc;
@@ -628,7 +628,7 @@ int fdbfs_db_get_lastupdate(f, cat, filename)
 
 int fdbfs_db_mib_add(f, mib, type, data)
 	fdbfs_t *f;
-	char *mib;
+	const char *mib;
 	enum DataType type;
 	union Data data;
 {
@@ -703,7 +703,7 @@ int fdbfs_db_mib_add(f, mib, type, data)
 
 int fdbfs_db_mib_update(f, mib, type, data)
 	fdbfs_t *f;
-	char *mib;
+	const char *mib;
 	enum DataType type;
 	union Data data;
 {

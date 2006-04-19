@@ -31,7 +31,7 @@
  * @file libfakedbfs.c
  * @brief Main libfakedbfs functions.
  */
-/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.23 2006/03/11 20:32:41 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.24 2006/04/19 19:58:22 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -49,7 +49,7 @@
 
 
 #ifndef lint
-RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.23 2006/03/11 20:32:41 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/libfakedbfs.c,v 1.24 2006/04/19 19:58:22 dcp1990 Exp $")
 /** @brief fakedbfs version. */
 const char *fakedbfsver _unused = FAKEDBFSVER;
 /** @brief fakedbfs version name */
@@ -66,7 +66,7 @@ const int  fakedbfsmic _unused = FAKEDBFSMICRO;
 
 
 fdbfs_t *fdbfs_new(dbfile, error, debugf, useplugins)
-	char *dbfile;
+	const char *dbfile;
 	char **error; /* if we return NULL, this must be freed */
 	void (*debugf)(char*, enum ErrorAction);
 	int useplugins; /* this also controls the configuration subsystem; if false, then we don't read config stuff (useful for servers and stuff where config stuff isn't

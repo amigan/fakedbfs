@@ -31,11 +31,11 @@
  * @file indexing.h
  * @brief indexing functions.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/indexing.h,v 1.1 2006/01/29 21:04:36 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/indexing.h,v 1.2 2006/04/19 19:58:22 dcp1990 Exp $ */
 #ifndef HAVE_FDBFS_INDEXING_H
 #define HAVE_FDBFS_INDEXING_H
 
-int fdbfs_index_file(fdbfs_t *f, char *filename, char *cat, int batch, int useplugs, int forceupdate, fields_t *fields);
-int fdbfs_index_dir(fdbfs_t *f, char **dirs, char *cat, int useplugs, int batch, int nocase, char *re, int recurse, fields_t *defs);
+int fdbfs_index_file(fdbfs_t *f, const char *filename, const char *cat, int batch, int useplugs, int forceupdate, fields_t *fields);
+int fdbfs_index_dir(fdbfs_t *f, char **dirs, const char *cat, int useplugs, int batch, int nocase, const char *re, int recurse, fields_t *defs);
 
 #endif

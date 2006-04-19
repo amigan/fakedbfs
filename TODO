@@ -1,10 +1,9 @@
-$Amigan: fakedbfs/TODO,v 1.37 2006/04/19 19:06:54 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.38 2006/04/19 19:58:22 dcp1990 Exp $
 
 TODO as of 2.0-RELEASE (double stars means "must do before release of 2.0-RELEASE", usually for reasons
 of not having to deal with large-scale API and DB format changes [this is a major version, after all]):
 *Mucho memory leaks. Some kind soul should run valgrind and fix them. I don't have the time; I will when
 	I port to amiga. (dmalloc helps greatly)
-**Fix prototypes of functions to use const qualifier if they copy string args
 *portable findex indexer (in addition to FTS)
 *Write more plugins
 *Write more specfiles

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/plugins.h,v 1.4 2006/02/24 08:01:02 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/plugins.h,v 1.5 2006/04/19 19:58:22 dcp1990 Exp $ */
 /**
  * @file plugins.h
  * @brief Plugin stuff.
@@ -43,8 +43,8 @@ struct Plugin {
 	
 	int (*init)(fdbfs_t *f, char **errmsg, void **cptr);
 	int (*shutdown)(fdbfs_t *f, char **errmsg);
-	int (*check_file)(fdbfs_t *f, char *filename, char **errmsg);
-	fields_t* (*extract_from_file)(fdbfs_t *f, char *filename, char **errmsg);
+	int (*check_file)(fdbfs_t *f, const char *filename, char **errmsg);
+	fields_t* (*extract_from_file)(fdbfs_t *f, const char *filename, char **errmsg);
 
 	union {
 		void *libhandle; /* if shared */
@@ -75,7 +75,7 @@ int fdbfs_plugins_init(fdbfs_t *f);
  * @param f The instance of fakedbfs on which to operate.
  * @param path The new path.
  */
-void fdbfs_plugins_set_path(fdbfs_t *f, char *path);
+void fdbfs_plugins_set_path(fdbfs_t *f, const char *path);
 
 /**
  * @brief Destroy plugin list

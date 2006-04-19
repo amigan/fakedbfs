@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/dbspecdata.h,v 1.10 2006/03/11 20:32:41 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/dbspecdata.h,v 1.11 2006/04/19 19:58:22 dcp1990 Exp $ */
 #ifndef HAVE_DBSPECDATA_H
 #define HAVE_DBSPECDATA_H 1
 #include <fakedbfs/types.h>
@@ -148,7 +148,7 @@ struct CatalogueHead {
  * @param name Name to search for.
  * @return The element we found, or NULL on no match/error.
  */
-struct EnumElem* fdbfs_find_elem_by_name(struct EnumElem *h, char *name);
+struct EnumElem* fdbfs_find_elem_by_name(struct EnumElem *h, const char *name);
 
 /**
  * @brief Find catalogue element by enumhead.
@@ -194,7 +194,7 @@ char* fdbfs_get_enum_sub_string_by_value(struct EnumSubElem *h, unsigned int val
  * @param name Name to search for.
  * @return The element if found, NULL otherwise.
  */
-struct CatalogueHead* fdbfs_find_cathead_by_name(struct CatalogueHead *h, char *name);
+struct CatalogueHead* fdbfs_find_cathead_by_name(struct CatalogueHead *h, const char *name);
 
 /**
  * @brief Search for catalogue element by name.
@@ -203,7 +203,7 @@ struct CatalogueHead* fdbfs_find_cathead_by_name(struct CatalogueHead *h, char *
  * @param name Name to search for.
  * @return The element if found, NULL otherwise.
  */
-struct CatElem* fdbfs_find_catelem_by_name(struct CatElem *h, char *name);
+struct CatElem* fdbfs_find_catelem_by_name(struct CatElem *h, const char *name);
 
 /**
  * @brief Search for enum head by name.
@@ -212,7 +212,7 @@ struct CatElem* fdbfs_find_catelem_by_name(struct CatElem *h, char *name);
  * @param name Name to search for.
  * @return The element if found, NULL otherwise.
  */
-struct EnumHead* fdbfs_find_enumhead_by_name(struct EnumHead *h, char *name);
+struct EnumHead* fdbfs_find_enumhead_by_name(struct EnumHead *h, const char *name);
 
 /**
  * @brief Copy subelement list.
@@ -240,7 +240,7 @@ struct EnumSubElem* fdbfs_copy_sub_list(
  * @param e Parent of all elements.
  * @returns List of EnumElems, or NULL on error.
  */
-struct EnumElem* fdbfs_enumelems_from_dbtab(fdbfs_t *f, char *table, struct EnumHead *e);
+struct EnumElem* fdbfs_enumelems_from_dbtab(fdbfs_t *f, const char *table, struct EnumHead *e);
 
 /**
  * @brief Construct EnumHead list from database.
@@ -258,7 +258,7 @@ struct EnumHead* fdbfs_enums_from_db(fdbfs_t *f);
  * @param enumhead Head of enums to search when enum element is encountered.
  * @return CatElem list, or NULL on error.
  */
-struct CatElem* fdbfs_catelems_from_dbtab(fdbfs_t *f, char *table, struct EnumHead *enumhead);
+struct CatElem* fdbfs_catelems_from_dbtab(fdbfs_t *f, const char *table, struct EnumHead *enumhead);
 
 /**
  * @brief Construct CatalogueHead list from database.
@@ -363,7 +363,7 @@ void fdbfs_free_head_members(Heads *hd);
  * @param filename Specfile filename to read.
  * @return 0 on error.
  */
-int fdbfs_dbspec_parse(fdbfs_t *f, char *filename);
+int fdbfs_dbspec_parse(fdbfs_t *f, const char *filename);
 
 /**
  * @brief Free list of actcat_t.

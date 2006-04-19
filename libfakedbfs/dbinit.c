@@ -31,7 +31,7 @@
  * @file dbinit.c
  * @brief Database initialisation stuff.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.51 2006/04/02 00:12:18 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.52 2006/04/19 19:58:22 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -51,7 +51,7 @@
 #define DSpecParseTOKENTYPE Toke
 #define DSpecParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.51 2006/04/02 00:12:18 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.52 2006/04/19 19:58:22 dcp1990 Exp $")
 
 void *DSpecParseAlloc(void *(*mallocProc)(size_t));
 void DSpecParseFree(void *p, void (*freeProc)(void*));
@@ -65,7 +65,7 @@ void DSpecParseTrace(FILE *TraceFILE, char *zTracePrompt);
 void yywrap(void);
 
 char* fdbfs_normalise(s)
-	char *s;
+	const char *s;
 {
 	char *n = strdup(s);
 	size_t siz = strlen(n);
@@ -83,7 +83,7 @@ char* fdbfs_normalise(s)
 
 struct EnumElem* fdbfs_find_elem_by_name(h, name)
 	struct EnumElem *h;
-	char *name;
+	const char *name;
 {
 	struct EnumElem *c;
 	if(h == NULL) return NULL;
@@ -156,7 +156,7 @@ char* fdbfs_get_enum_sub_string_by_value(h, val)
 
 struct CatalogueHead* fdbfs_find_cathead_by_name(h, name)
 	struct CatalogueHead *h;
-	char *name;
+	const char *name;
 {
 	struct CatalogueHead *c;
 	if(h == NULL) return NULL;
@@ -173,7 +173,7 @@ struct CatalogueHead* fdbfs_find_cathead_by_name(h, name)
 
 struct CatElem* fdbfs_find_catelem_by_name(h, name)
 	struct CatElem *h;
-	char *name;
+	const char *name;
 {
 	struct CatElem *c;
 	if(h == NULL) return NULL;
@@ -189,7 +189,7 @@ struct CatElem* fdbfs_find_catelem_by_name(h, name)
 
 struct EnumHead* fdbfs_find_enumhead_by_name(h, name)
 	struct EnumHead *h;
-	char *name;
+	const char *name;
 {
 	struct EnumHead *c;
 	if(h == NULL) return NULL;
@@ -325,7 +325,7 @@ static char* construct_subelem_field(h)
 		
 static int new_enum(f, specfile, h)
 	fdbfs_t *f;
-	char *specfile;
+	const char *specfile;
 	struct EnumHead *h;
 {
 	struct EnumElem *ce;
@@ -364,7 +364,7 @@ static int new_enum(f, specfile, h)
 
 static int new_cft(f, specfile, h)
 	fdbfs_t *f;
-	char *specfile;
+	const char *specfile;
 	struct CatalogueHead *h;
 {
 	struct CatElem *c;
@@ -429,8 +429,8 @@ static int new_cft(f, specfile, h)
 
 static int new_catalog(f, name, alias, h)
 	fdbfs_t *f;
-	char *name;
-	char *alias;
+	const char *name;
+	const char *alias;
 	struct CatalogueHead *h;
 {
 	struct CatElem *c;
@@ -516,7 +516,7 @@ static int new_catalog(f, name, alias, h)
  */
 static int make_tables_from_spec(f, sfile, h)
 	fdbfs_t *f;
-	char *sfile;
+	const char *sfile;
 	Heads *h;
 {
 	struct CatalogueHead *cch;
@@ -559,9 +559,9 @@ static int make_tables_from_spec(f, sfile, h)
 
 int fdbfs_create_catalogue(f, name, alias, cname)
 	fdbfs_t *f;
-	char *name;
-	char *alias;
-	char *cname;
+	const char *name;
+	const char *alias;
+	const char *cname;
 {
 	struct CatalogueHead *cat;
 
@@ -642,7 +642,7 @@ static struct EnumSubElem* subelements_from_field(f, fajah, subs)
 
 struct EnumElem* fdbfs_enumelems_from_dbtab(f, table, e)
 	fdbfs_t *f;
-	char *table;
+	const char *table;
 	struct EnumHead *e;
 {
 	char *sql;
@@ -770,7 +770,7 @@ struct EnumHead* fdbfs_enums_from_db(f)
 
 struct CatElem* fdbfs_catelems_from_dbtab(f, table, enumhead)
 	fdbfs_t *f;
-	char *table;
+	const char *table;
 	struct EnumHead *enumhead;
 {
 	char *sql;
@@ -945,7 +945,7 @@ struct CatalogueHead* fdbfs_cats_from_db(f, enumhead)
 
 int fdbfs_db_rm_catalogue(f, catname)
 	fdbfs_t *f;
-	char *catname;
+	const char *catname;
 {
 	char *ttbl;
 	size_t ttl;
@@ -992,7 +992,7 @@ int fdbfs_db_rm_catalogue(f, catname)
 
 int fdbfs_dbspec_parse(f, filename)
 	fdbfs_t *f;
-	char *filename;
+	const char *filename;
 {
 	Toke tz;
 	int rc;
@@ -1050,7 +1050,7 @@ void fdbfs_dswrap(void)
 
 int fdbfs_cat_type_exists(f, ct)
 	fdbfs_t *f;
-	char *ct;
+	const char *ct;
 {
 	if(fdbfs_find_cathead_by_name(f->heads.db_cath, ct))
 		return 1;
@@ -1061,7 +1061,7 @@ int fdbfs_cat_type_exists(f, ct)
 
 actcat_t* fdbfs_find_catalogue(f, name)
 	fdbfs_t *f;
-	char *name;
+	const char *name;
 {
 	actcat_t *c;
 	if(f->catsh == NULL) return NULL;

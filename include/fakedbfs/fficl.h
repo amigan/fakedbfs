@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fficl.h,v 1.3 2006/01/30 20:59:53 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fficl.h,v 1.4 2006/04/19 19:58:22 dcp1990 Exp $ */
 /**
  * @file fficl.h
  * @brief fakedbfs ficl bindings.
@@ -83,7 +83,7 @@ int fdbfs_ficl_addwords(fdbfs_t *f, ficlDictionary *dict);
  * @retval 0 Doesn't match.
  * @retval 1 Matches...this plugin is compatibile with this file.
  */
-int fdbfs_ficl_p_check_file(ficlplug_t *fpl, char *filename, char **errmsg);
+int fdbfs_ficl_p_check_file(ficlplug_t *fpl, const char *filename, char **errmsg);
 
 /**
  * @brief Initialise ficl plugin.
@@ -115,7 +115,7 @@ int fdbfs_ficl_p_shutdown(ficlplug_t *fpl, char **errmsg);
  * @return List of fields_t for the specified file, or NULL on error (examine
  * and free *errmsg).
  */
-fields_t* fdbfs_ficl_p_extract_from_file(ficlplug_t *fpl, char *filename,
+fields_t* fdbfs_ficl_p_extract_from_file(ficlplug_t *fpl, const char *filename,
 		char **errmsg);
 
 
@@ -127,6 +127,6 @@ fields_t* fdbfs_ficl_p_extract_from_file(ficlplug_t *fpl, char *filename,
  * @param plugfile Filename to parse.
  * @return Plugin object describing the plugin, or NULL on error.
  */
-struct Plugin* fdbfs_ficl_load_ficlplugin(fdbfs_t *f, char *plugfile);
+struct Plugin* fdbfs_ficl_load_ficlplugin(fdbfs_t *f, const char *plugfile);
 
 #endif

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.9 2006/01/31 17:26:26 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.10 2006/04/19 19:58:22 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/fdbfsregex.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.9 2006/01/31 17:26:26 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/fregex.c,v 1.10 2006/04/19 19:58:22 dcp1990 Exp $")
 
 int frinitialise(fr)
 	freg_t *fr;
@@ -106,7 +106,7 @@ void destroy_freg(fr)
 
 int fregcomp(fr, regpat, flags) /* posix regcomp semantics: rc == 0 means "ok" */
 	freg_t *fr;
-	char *regpat;
+	const char *regpat;
 	int flags;
 {
 #ifdef USE_PCRE
@@ -151,7 +151,7 @@ int fregcomp(fr, regpat, flags) /* posix regcomp semantics: rc == 0 means "ok" *
 
 int fregexec(fr, str, matches, matchsize)
 	freg_t *fr;
-	char *str;
+	const char *str;
 	fregmatch_t *matches;
 	size_t matchsize; /* number of elements */
 {

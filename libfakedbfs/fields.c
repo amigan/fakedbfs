@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/fields.c,v 1.4 2006/04/19 19:06:54 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/fields.c,v 1.5 2006/04/19 19:58:22 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@
 #include <fakedbfs/debug.h>
 #include <fakedbfs/fields.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/fields.c,v 1.4 2006/04/19 19:06:54 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/fields.c,v 1.5 2006/04/19 19:58:22 dcp1990 Exp $")
 
 int fdbfs_field_append(name, fmtname, th, tc, type, value, len)
 	const char *name;
@@ -149,3 +149,48 @@ int fdbfs_fields_set_mime(mimetype, th, tc)
 
 	return fdbfs_field_add_string("mime", "MIME type", th, tc, strdup(mimetype));
 }
+
+fields_t* fdbfs_find_field_by_name(h, name)
+	fields_t *h;
+	const char *name;
+{
+	fields_t *c = NULL;
+	
+	for(c = h; c != NULL; c = c->next) {
+		if(c->fieldname != NULL)
+			if(strcmp(c->fieldname, name) == 0)
+				return c;
+	}
+	
+	return NULL;
+}
+
+fields_t* fdbfs_find_field_by_ehead(h, e)
+	fields_t *h;
+	struct EnumHead *e;
+{
+	fields_t *c;
+
+	for(c = h; c != NULL; c = c->next) {
+		if(c->ehead == e)
+			return c;
+	}
+
+	return NULL;
+}
+
+fields_t* fdbfs_find_field_by_ename(h, e)
+	fields_t *h;
+	const char *e;
+{
+	fields_t *c;
+
+	for(c = h; c != NULL; c = c->next) {
+		if(h->ehead != NULL)
+			if(strcmp(e, h->ehead->name) == 0)
+				return c;
+	}
+
+	return NULL;
+}
+

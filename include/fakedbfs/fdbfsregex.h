@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fdbfsregex.h,v 1.4 2006/01/29 21:03:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fdbfsregex.h,v 1.5 2006/04/19 19:58:22 dcp1990 Exp $ */
 #ifndef HAVE_FDBRE_H
 #define HAVE_FDBRE_H 1
 #include <fakedbfs/types.h>
@@ -75,6 +75,6 @@ int frinitialise(freg_t *fr);
 freg_t* new_freg(char *emsg, size_t emsgsize);
 void frerrfree(freg_t *fr);
 void destroy_freg(freg_t *fr);
-int fregcomp(freg_t *fr, char *regpat, int flags); /* posix regcomp semantics: rc == 0 means "ok" */
-int fregexec(freg_t *fr, char *str, fregmatch_t *matches, size_t matchsize);
+int fregcomp(freg_t *fr, const char *regpat, int flags); /* posix regcomp semantics: rc == 0 means "ok" */
+int fregexec(freg_t *fr, const char *str, fregmatch_t *matches, size_t matchsize);
 #endif

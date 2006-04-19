@@ -31,7 +31,7 @@
  * @file fakedbfs.h
  * @brief Main header file.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.76 2006/03/26 01:22:24 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.77 2006/04/19 19:58:22 dcp1990 Exp $ */
 #include <fakedbfs/types.h>
 
 #include <fakedbfs/fdbfsconfig.h>
@@ -124,8 +124,8 @@ struct PluginInfo {
 
 
 #define DEBUGFUNC_STDERR ((void(*)(char*, enum ErrorAction))0)
-#define AFFPROTO (answer_t * /* buffer */, answer_t * /* default */, char * /*fieldname*/, char * /* unformatted name */, \
-			char * /* filename */, enum DataType, struct EnumHead * /* if oenum */, struct EnumSubElem * /* if sub */)
+#define AFFPROTO (answer_t * /* buffer */, answer_t * /* default */, const char * /*fieldname*/, const char * /* unformatted name */, \
+			const char * /* filename */, enum DataType, struct EnumHead * /* if oenum */, struct EnumSubElem * /* if sub */)
 #define ASKFUNC_STD ((answer_t*(*)AFFPROTO)0)
 
 union _ansdata {
@@ -254,7 +254,7 @@ void fdbfs_set_aff(fdbfs_t *f, answer_t *(*aff)AFFPROTO);
  * @param[in] useplugins Whether to enable the plugin, configuration, and ficl subsystems.
  * @return A new fdbfs object.
  */
-fdbfs_t *fdbfs_new(char *dbfile, char **error, void (*debugf)(char*, enum ErrorAction), int useplugins);
+fdbfs_t *fdbfs_new(const char *dbfile, char **error, void (*debugf)(char*, enum ErrorAction), int useplugins);
 
 /**
  * @brief Destroy a fdbfs instance
@@ -282,7 +282,7 @@ int fdbfs_read_specs_from_db(fdbfs_t *f);
  * @param s String to normalise.
  * @return Copy (from strdup()) of the string, normalised. Free when done.
  */
-char* fdbfs_normalise(char *s);
+char* fdbfs_normalise(const char *s);
 
 /**
  * @brief Compute number of base10 digits for given unsigned integer.
@@ -309,7 +309,7 @@ answer_t* fdbfs_askfunc_std AFFPROTO;
  * @param s String to copy from.
  * @return Malloc'd string, NULL on error.
  */
-char* fdbfs_strdupq(char *s);
+char* fdbfs_strdupq(const char *s);
 
 /**
  * @brief Same thing as libc strdup().
@@ -328,7 +328,7 @@ char* fdbfs_fstrdup(const char *str);
  * @param cname Name of CFD for new catalogue.
  * @return 0 on error.
  */
-int fdbfs_create_catalogue(fdbfs_t *f, char *name, char *alias, char *cname);
+int fdbfs_create_catalogue(fdbfs_t *f, const char *name, const char *alias, const char *cname);
 
 /**
  * @brief Check if CFD exists.
@@ -336,7 +336,7 @@ int fdbfs_create_catalogue(fdbfs_t *f, char *name, char *alias, char *cname);
  * @param f Instance of fakedbfs.
  * @param ct Name to look for.
  */
-int fdbfs_cat_type_exists(fdbfs_t *f, char *ct);
+int fdbfs_cat_type_exists(fdbfs_t *f, const char *ct);
 
 /**
  * @brief Finds catalogue.
@@ -345,13 +345,13 @@ int fdbfs_cat_type_exists(fdbfs_t *f, char *ct);
  * @param name Name of catalogue to search for.
  * @return NULL on not found or error.
  */
-actcat_t* fdbfs_find_catalogue(fdbfs_t *f, char *name);
+actcat_t* fdbfs_find_catalogue(fdbfs_t *f, const char *name);
 
 
 /* crawl stuff -- will move to own file when we can*/
 crawl_t* fdbfs_crawler_new(fdbfs_t *f, int mlevels, int mlbd);
 void fdbfs_crawler_destroy(crawl_t *cr);
-int fdbfs_crawl_dir(crawl_t *cr, char *dir); /* simply adds dir to the base frame */
+int fdbfs_crawl_dir(crawl_t *cr, const char *dir); /* simply adds dir to the base frame */
 
 
 

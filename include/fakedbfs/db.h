@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/db.h,v 1.6 2006/03/19 01:16:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/db.h,v 1.7 2006/04/19 19:58:22 dcp1990 Exp $ */
 /**
  * @file db.h
  * @brief Database driver stuff
@@ -62,7 +62,7 @@ int fdbfs_db_close(fdbfs_t *f);
  * @param tname The tablename to check for.
  * @return Non-zero on existence, zero on error or no existence.
  */
-int fdbfs_db_table_exists(fdbfs_t *f, char *tname);
+int fdbfs_db_table_exists(fdbfs_t *f, const char *tname);
 
 /**
  * @brief Check if a catalogue exists in the database.
@@ -72,7 +72,7 @@ int fdbfs_db_table_exists(fdbfs_t *f, char *tname);
  * @param cat The catalogue name to check for.
  * @return Non-zero on existence, zero on error or no existence.
  */
-int fdbfs_db_cat_exists(fdbfs_t *f, char *cat);
+int fdbfs_db_cat_exists(fdbfs_t *f, const char *cat);
 
 /**
  * @brief Create a table.
@@ -83,7 +83,7 @@ int fdbfs_db_cat_exists(fdbfs_t *f, char *cat);
  * @param tspec The database-specific specification of the new table.
  * @return 0 on error, 1 on success.
  */
-int fdbfs_db_create_table(fdbfs_t *f, char *tname, char *tspec);
+int fdbfs_db_create_table(fdbfs_t *f, const char *tname, const char *tspec);
 
 /**
  * @brief Get the database-specific typename for an DataType enum.
@@ -105,7 +105,7 @@ const char* fdbfs_db_gettype(enum DataType t);
  * @param datatype The datatype of the column.
  * @return 0 on error, non-zero on success.
  */
-int fdbfs_db_add_column(fdbfs_t *f, char *tname, char *cname, coltype_t datatype);
+int fdbfs_db_add_column(fdbfs_t *f, const char *tname, const char *cname, coltype_t datatype);
 
 /**
  * @brief Delete a column from a table.
@@ -116,7 +116,7 @@ int fdbfs_db_add_column(fdbfs_t *f, char *tname, char *cname, coltype_t datatype
  * @param cname The column to remove.
  * @return 0 on error, 1 otherwise.
  */
-int fdbfs_db_del_column(fdbfs_t *f, char *tname, char *cname);
+int fdbfs_db_del_column(fdbfs_t *f, const char *tname, const char *cname);
 
 /**
  * @brief Add an entry to the enum_list table.
@@ -128,7 +128,7 @@ int fdbfs_db_del_column(fdbfs_t *f, char *tname, char *cname);
  * @param specf The name of the filename the enum was originally defined in.
  * @return 0 on error, non-zero otherwise.
  */
-int fdbfs_db_add_to_enum_list_table(fdbfs_t *f, char *name, char *tname, char *specf);
+int fdbfs_db_add_to_enum_list_table(fdbfs_t *f, const char *name, const char *tname, const char *specf);
 
 /**
  * @brief Add an entry to the cat_list table.
@@ -142,8 +142,8 @@ int fdbfs_db_add_to_enum_list_table(fdbfs_t *f, char *name, char *tname, char *s
  * @param specf The name of the filename the catalogue was originally defined in.
  * @return 0 on error, non-zero otherwise.
  */
-int fdbfs_db_add_to_cat_list_table(fdbfs_t *f, char *name, char *alias, char *tablename,
-		char *fieldtable);
+int fdbfs_db_add_to_cat_list_table(fdbfs_t *f, const char *name, const char *alias, const char *tablename,
+		const char *fieldtable);
 
 /**
  * @brief Add to the field description table for a catalogue.
@@ -157,8 +157,8 @@ int fdbfs_db_add_to_cat_list_table(fdbfs_t *f, char *name, char *alias, char *ta
  * @param typen The name of the enum, if applicable (NULL otherwise).
  * @return 0 on error, non-zero otherwise.
  */
-int fdbfs_db_add_to_field_desc(fdbfs_t *f, char *tablename, char *name, char *alias, enum DataType
-		type, char *typen);
+int fdbfs_db_add_to_field_desc(fdbfs_t *f, const char *tablename, const char *name, const char *alias, enum DataType
+		type, const char *typen);
 
 /**
  * @brief Delete row from table in database.
@@ -171,7 +171,7 @@ int fdbfs_db_add_to_field_desc(fdbfs_t *f, char *tablename, char *name, char *al
  * @param whereval The value to check for.
  * @return 0 on error, non-zero otherwise.
  */
-int fdbfs_db_delete(fdbfs_t *f, char *from, char *wherecol, char *wherecmp, char *whereval);
+int fdbfs_db_delete(fdbfs_t *f, const char *from, const char *wherecol, const char *wherecmp, const char *whereval);
 
 /**
  * @brief Drops a table from the database.
@@ -181,7 +181,7 @@ int fdbfs_db_delete(fdbfs_t *f, char *from, char *wherecol, char *wherecmp, char
  * @param tablename The name of the table to drop.
  * @return 0 on error, non-zero on success.
  */
-int fdbfs_db_drop_table(fdbfs_t *f, char *tablename);
+int fdbfs_db_drop_table(fdbfs_t *f, const char *tablename);
 
 /**
  * @brief Add an element to an enumeration description table.
@@ -196,8 +196,8 @@ int fdbfs_db_drop_table(fdbfs_t *f, char *tablename);
  * @param subelements The subelements for this element.
  * @return 0 on error.
  */
-int fdbfs_db_add_enum_elem(fdbfs_t *f, char *tname, char *name, char *fmtname, unsigned int value,
-		enum DataType dtype, char *subelements);
+int fdbfs_db_add_enum_elem(fdbfs_t *f, const char *tname, const char *name, const char *fmtname, unsigned int value,
+		enum DataType dtype, const char *subelements);
 
 /**
  * @brief Bind a field to a statement.
@@ -224,7 +224,7 @@ int fdbfs_db_bind_field(fdbfs_t *f, int *count, enum DataType type, void *value,
  * @retval -1 Error.
  * @return The time of last updating on the specified file.
  */
-int fdbfs_db_get_lastupdate(fdbfs_t *f, char *cat, char *filename);
+int fdbfs_db_get_lastupdate(fdbfs_t *f, const char *cat, const char *filename);
 
 /**
  * @brief Remove catalogue from database.
@@ -233,7 +233,7 @@ int fdbfs_db_get_lastupdate(fdbfs_t *f, char *cat, char *filename);
  * @param catname Catalogue name to remove.
  * @return 0 on error.
  */
-int fdbfs_db_rm_catalogue(fdbfs_t *f, char *catname);
+int fdbfs_db_rm_catalogue(fdbfs_t *f, const const char *catname);
 
 /**
  * @brief Adds a MIB to the configuration table.
@@ -245,7 +245,7 @@ int fdbfs_db_rm_catalogue(fdbfs_t *f, char *catname);
  * @param data The value of this MIB.
  * @return 0 on error, non-zero otherwise.
  */
-int fdbfs_db_mib_add(fdbfs_t *f, char *mib, enum DataType type, union Data data);
+int fdbfs_db_mib_add(fdbfs_t *f, const char *mib, enum DataType type, union Data data);
 
 /**
  * @brief Updates a MIB in the configuration table.
@@ -257,7 +257,7 @@ int fdbfs_db_mib_add(fdbfs_t *f, char *mib, enum DataType type, union Data data)
  * @param data The value of this MIB.
  * @return 0 on error, non-zero otherwise.
  */
-int fdbfs_db_mib_update(fdbfs_t *f, char *mib, enum DataType type, union Data data);
+int fdbfs_db_mib_update(fdbfs_t *f, const char *mib, enum DataType type, union Data data);
 
 /**
  * @brief Initialise the database if necessary.
@@ -277,7 +277,7 @@ int fdbfs_db_start(fdbfs_t *f);
  * @param specfile Specfile in which this CFD originated.
  * @return 0 on error.
  */
-int fdbfs_db_add_to_cfd_list_table(fdbfs_t *f, char *name, char *alias, char *tablename, char *specfile);
+int fdbfs_db_add_to_cfd_list_table(fdbfs_t *f, const char *name, const char *alias, const char *tablename, const char *specfile);
 
 /**
  * @brief Update refcount of CFD table entry.
@@ -288,7 +288,7 @@ int fdbfs_db_add_to_cfd_list_table(fdbfs_t *f, char *name, char *alias, char *ta
  * @param val Value to add to refcount.
  * @return 0 on error.
  */
-int fdbfs_db_cfd_update_refcount(fdbfs_t *f, char *name, int add, unsigned int val);
+int fdbfs_db_cfd_update_refcount(fdbfs_t *f, const char *name, int add, unsigned int val);
 
 /**
  * @brief Get CFD name of table. (without cfd_ prefix)
@@ -298,6 +298,6 @@ int fdbfs_db_cfd_update_refcount(fdbfs_t *f, char *name, int add, unsigned int v
  * @param[out] tcfd Pointer to char* that will be set to cfdname (must be freed)
  * @return 0 on error, 1 otherwise.
  */
-int fdbfs_db_cat_getcfdname(fdbfs_t *f, char *catname, char **tcfd);
+int fdbfs_db_cat_getcfdname(fdbfs_t *f, const char *catname, char **tcfd);
 
 #endif
