@@ -31,7 +31,7 @@
  * @file fields.h
  * @brief fields and answer stuff.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fields.h,v 1.5 2006/04/19 19:06:54 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fields.h,v 1.6 2006/04/19 19:10:03 dcp1990 Exp $ */
 #ifndef HAVE_FDBFS_FIELDS_H
 #define HAVE_FDBFS_FIELDS_H
 
@@ -165,6 +165,5 @@ int fdbfs_fields_set_mime(const char *mimetype, fields_t **th, fields_t **tc);
  * @param value Pointer to data to set to.
  * @param len Size of data.
  */
-int fdbfs_field_append(const char *name, const char *fmtname, fields_t **th, fields_t **tc,
-		enum DataType type, void *value; size_t len);
+int fdbfs_field_append(const char *name, const char *fmtname, fields_t **th, fields_t **tc, enum DataType type, void *value, size_t len);
 #endif
