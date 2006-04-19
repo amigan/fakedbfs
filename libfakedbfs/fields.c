@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/fields.c,v 1.3 2006/04/01 23:51:47 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/fields.c,v 1.4 2006/04/19 19:06:54 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -44,11 +44,11 @@
 #include <fakedbfs/debug.h>
 #include <fakedbfs/fields.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/fields.c,v 1.3 2006/04/01 23:51:47 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/fields.c,v 1.4 2006/04/19 19:06:54 dcp1990 Exp $")
 
-static int field_append(name, fmtname, th, tc, type, value, len)
-	char *name;
-	char *fmtname;
+int fdbfs_field_append(name, fmtname, th, tc, type, value, len)
+	const char *name;
+	const char *fmtname;
 	fields_t **th;
 	fields_t **tc;
 	enum DataType type;
@@ -91,7 +91,7 @@ int fdbfs_field_add_int(name, fmtname, th, tc, value)
 	int *v;
 	v = malloc(sizeof(value));
 	*v = value;
-	return field_append(name, fmtname, th, tc, number, v, sizeof(int));
+	return fdbfs_field_append(name, fmtname, th, tc, number, v, sizeof(int));
 }
 
 int fdbfs_field_add_string(name, fmtname, th, tc, value)
@@ -101,7 +101,7 @@ int fdbfs_field_add_string(name, fmtname, th, tc, value)
 	fields_t **tc;
 	char *value;
 {
-	return field_append(name, fmtname, th, tc, string, value, strlen(value));
+	return fdbfs_field_append(name, fmtname, th, tc, string, value, strlen(value));
 }
 
 int fdbfs_field_add_image(name, fmtname, th, tc, value, sz)
@@ -112,7 +112,7 @@ int fdbfs_field_add_image(name, fmtname, th, tc, value, sz)
 	void *value;
 	size_t sz;
 {
-	return field_append(name, fmtname, th, tc, image, value, sz);
+	return fdbfs_field_append(name, fmtname, th, tc, image, value, sz);
 }
 
 fields_t* fdbfs_find_field_by_next(h, next)

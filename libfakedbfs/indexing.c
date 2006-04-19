@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.54 2006/02/25 06:42:15 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.55 2006/04/19 19:06:54 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/indexing.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.54 2006/02/25 06:42:15 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.55 2006/04/19 19:06:54 dcp1990 Exp $")
 
 static int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -683,7 +683,7 @@ static int complete_fields_from_db(f, cat, h)
 
 	for(cc = ch; cc != NULL; cc = cc->next) {
 		c = fdbfs_find_field_by_name(*h, cc->name);
-		if(c == NULL) {
+		if(c == NULL) { /* XXX: convert all this code to use fdbfs_field_append() */
 			new = allocz(sizeof(*new));
 			new->fieldname = strdup(cc->name);
 			new->fmtname = strdup(cc->alias);

@@ -31,7 +31,7 @@
  * @file fields.h
  * @brief fields and answer stuff.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fields.h,v 1.4 2006/04/01 23:51:47 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fields.h,v 1.5 2006/04/19 19:06:54 dcp1990 Exp $ */
 #ifndef HAVE_FDBFS_FIELDS_H
 #define HAVE_FDBFS_FIELDS_H
 
@@ -150,4 +150,21 @@ fields_t* fdbfs_find_field_by_next(fields_t *h, fields_t *next);
  * @return 0 on error.
  */
 int fdbfs_fields_set_mime(const char *mimetype, fields_t **th, fields_t **tc);
+
+/**
+ * @brief Appends field to a field list
+ *
+ * It is recommended to use the fdbfs_field_int()/string()/whatever functions.
+ * This is mostly for internal use.
+ *
+ * @param name Name of field.
+ * @param fmtname Alias of field. 
+ * @param[in,out] th Pointer to pointer to head of field list. Will be initialised if (*th == NULL).
+ * @param[in,out] tc Pointer to pointer to last element in list. Will be reset.
+ * @param type Datatype of field.
+ * @param value Pointer to data to set to.
+ * @param len Size of data.
+ */
+int fdbfs_field_append(const char *name, const char *fmtname, fields_t **th, fields_t **tc,
+		enum DataType type, void *value; size_t len);
 #endif

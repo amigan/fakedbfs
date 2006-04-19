@@ -1,4 +1,4 @@
-$Amigan: fakedbfs/TODO,v 1.36 2006/04/01 23:51:47 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.37 2006/04/19 19:06:54 dcp1990 Exp $
 
 TODO as of 2.0-RELEASE (double stars means "must do before release of 2.0-RELEASE", usually for reasons
 of not having to deal with large-scale API and DB format changes [this is a major version, after all]):
@@ -6,8 +6,6 @@ of not having to deal with large-scale API and DB format changes [this is a majo
 	I port to amiga. (dmalloc helps greatly)
 **Fix prototypes of functions to use const qualifier if they copy string args
 *portable findex indexer (in addition to FTS)
-**Bring music.c's add_int_field and add_str_field (and add other) functions into the libfakedbfs proper, make a neat
-  API for them, and change all code that adds simple fields to use them )half done, still have to convert existing code)
 *Write more plugins
 *Write more specfiles
 *Document every API function
