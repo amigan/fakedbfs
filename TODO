@@ -1,9 +1,11 @@
-$Amigan: fakedbfs/TODO,v 1.38 2006/04/19 19:58:22 dcp1990 Exp $
+$Amigan: fakedbfs/TODO,v 1.39 2006/04/19 20:02:01 dcp1990 Exp $
 
 TODO as of 2.0-RELEASE (double stars means "must do before release of 2.0-RELEASE", usually for reasons
 of not having to deal with large-scale API and DB format changes [this is a major version, after all]):
 *Mucho memory leaks. Some kind soul should run valgrind and fix them. I don't have the time; I will when
 	I port to amiga. (dmalloc helps greatly)
+*Make the plugin API store methods in a struct rather than exporting each one individually (this will
+ entail API changes that break shit, but oh well)
 *portable findex indexer (in addition to FTS)
 *Write more plugins
 *Write more specfiles
