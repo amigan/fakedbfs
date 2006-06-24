@@ -1,6 +1,6 @@
-$Amigan: fakedbfs/README,v 1.17 2006/04/19 20:05:08 dcp1990 Exp $
+$Amigan: fakedbfs/README,v 1.18 2006/06/24 17:43:11 dcp1990 Exp $
 
-This is the fakedbfs distribution, version 2.0.0-RELEASE (Doctor Wu). See the contents of
+This is the fakedbfs distribution, version 2.1.0-RELEASE (Jack of Speed). See the contents of
 doc/ for more information.
 Feel free to email me at <dcp1990@neptune.atopia.net> if you have any questions.
 
@@ -13,6 +13,9 @@ REQUIRES:
 
 This was primarily developed on FreeBSD. While I have made it a point to try to make stuff portable,
 it may have problems building on systems such as Linux or Solaris. Please, mail me if you have such problems!
+
+Also note that most/all of this should be 64-bit clean, at least for systems using the LP64 data model. I've tested this on FreeBSD/amd64,
+which is my primary development system (and uses LP64). If your machine uses ILP64, you're probably on your own. LLP64 should work fine, though.
 
 TO BUILD:
 
