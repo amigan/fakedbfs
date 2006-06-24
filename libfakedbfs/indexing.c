@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.56 2006/04/19 19:58:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.57 2006/06/24 17:19:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/indexing.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.56 2006/04/19 19:58:22 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/indexing.c,v 1.57 2006/06/24 17:19:55 dcp1990 Exp $")
 
 static int add_file(f, file, catalogue, fields)
 	fdbfs_t *f;
@@ -174,7 +174,7 @@ static fields_t* fill_in_fields(f, filename)
 	if(extension != NULL)
 		for(c = h; c != NULL; c = c->next) {
 			if(strstr(c->info->extensions, extension) != NULL) {
-				rc = c->check_file(f, filename, &errmsg);
+				rc = c->info->check_file(f, filename, &errmsg);
 				if(rc == 1) {
 					tpl = c;
 					found = 1;
@@ -189,7 +189,7 @@ static fields_t* fill_in_fields(f, filename)
 
 	if(!found)
 		for(c = h; c != NULL; c = c->next) {
-			rc = c->check_file(f, filename, &errmsg);
+			rc = c->info->check_file(f, filename, &errmsg);
 			if(rc == 1) {
 				tpl = c;
 				found = 1;
@@ -208,7 +208,7 @@ static fields_t* fill_in_fields(f, filename)
 		return NULL;
 	}
 
-	fh = tpl->extract_from_file(f, filename, &errmsg);
+	fh = tpl->info->extract_from_file(f, filename, &errmsg);
 	if(errmsg != NULL) {
 		CERR(die, "extract_from_file for plugin %s said: %s", c->info->pluginname, errmsg);
 		free(errmsg);

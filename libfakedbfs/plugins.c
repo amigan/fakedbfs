@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.13 2006/04/19 19:58:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.14 2006/06/24 17:19:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdio.h>
@@ -49,7 +49,7 @@
 #include <fakedbfs/plugins.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.13 2006/04/19 19:58:22 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/plugins.c,v 1.14 2006/06/24 17:19:55 dcp1990 Exp $")
 
 #define LIBERR(sym) { \
 		fdbfs_debug_info(f, error, "probe_plugin: symbol referece %s failed in %s: %s", sym, fpth, dlerror()); \
@@ -108,20 +108,7 @@ static struct Plugin* probe_plugin(f, dirpath, filename, last)
 		return last;
 	}
 
-	n->init = (int(*)(fdbfs_t*, char**, void**))dlfunc(libhandle, "plugin_init");
-	if(n->init == NULL)
-		LIBERR("plugin_init()");
-	n->shutdown = (int(*)(fdbfs_t*, char **))dlfunc(libhandle, "plugin_shutdown");
-	if(n->init == NULL)
-		LIBERR("plugin_shutdown()");
-	n->check_file = (int(*)(fdbfs_t*, const char*, char**))dlfunc(libhandle, "check_file");
-	if(n->check_file == NULL)
-		LIBERR("check_file()");
-	n->extract_from_file = (fields_t*(*)(fdbfs_t*, const char*, char **))dlfunc(libhandle, "extract_from_file");
-	if(n->extract_from_file == NULL)
-		LIBERR("extract_from_file()");
-
-	if(!n->init(f, &emsg, &cptr)) {
+	if(!n->info->init(f, &emsg, &cptr)) {
 		fdbfs_debug_info(f, warning, "error: init for %s said: %s", fpth, emsg);
 		free(n);
 		free(fpth);

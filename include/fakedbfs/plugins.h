@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/plugins.h,v 1.5 2006/04/19 19:58:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/plugins.h,v 1.6 2006/06/24 17:19:55 dcp1990 Exp $ */
 /**
  * @file plugins.h
  * @brief Plugin stuff.
@@ -41,11 +41,6 @@
 struct Plugin {
 	const struct PluginInfo *info;
 	
-	int (*init)(fdbfs_t *f, char **errmsg, void **cptr);
-	int (*shutdown)(fdbfs_t *f, char **errmsg);
-	int (*check_file)(fdbfs_t *f, const char *filename, char **errmsg);
-	fields_t* (*extract_from_file)(fdbfs_t *f, const char *filename, char **errmsg);
-
 	union {
 		void *libhandle; /* if shared */
 		ficlplug_t fplug;

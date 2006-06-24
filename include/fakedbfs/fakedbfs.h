@@ -31,7 +31,7 @@
  * @file fakedbfs.h
  * @brief Main header file.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.77 2006/04/19 19:58:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.78 2006/06/24 17:19:55 dcp1990 Exp $ */
 #include <fakedbfs/types.h>
 
 #include <fakedbfs/fdbfsconfig.h>
@@ -59,7 +59,7 @@
 #define SCERR(act, fmt) fdbfs_cferr(f, act, fmt)
 #define _unused       __attribute__((__unused__))
 
-#define MAJOR_API_VERSION 2
+#define MAJOR_API_VERSION 3
 #define MINOR_API_VERSION 0
 
 #define FAKEDBFSVER "2.0.0" /* major changes with major incompat changes, minor with minor incompat, micro with additions, bugfixes, and security fixes */
@@ -116,6 +116,11 @@ struct PluginInfo {
 	const int minapi; /* minor API version; this changes for backwards-compatible
 			changes. This should be set to MINOR_API_VERSION.
 		    */
+	int (*init)(fdbfs_t *f, char **errmsg, void **cptr);
+	int (*shutdown)(fdbfs_t *f, char **errmsg);
+	int (*check_file)(fdbfs_t *f, const char *filename, char **errmsg);
+	fields_t* (*extract_from_file)(fdbfs_t *f, const char *filename, char **errmsg);
+
 }; 	/*
 	note that this structure will stay fairly consistent, at least for the
 	first elements listed here. Another words: plugin_inf.majapi should

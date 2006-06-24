@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.16 2006/04/19 19:58:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.17 2006/06/24 17:19:55 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -52,10 +52,20 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.16 2006/04/19 19:58:22 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.17 2006/06/24 17:19:55 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
+
+
+struct MusicConfig {
+	short pfns;
+};
+
+int plugin_init(fdbfs_t *f, char **errmsg, void **cpt);
+int plugin_shutdown(fdbfs_t *f, char **errmsg);
+int check_file(fdbfs_t *f, const char *filename, char **errmsg);
+fields_t* extract_from_file(fdbfs_t *f, const char *filename, char **errmsg);
 
 const struct PluginInfo plugin_inf = {
 	"mp3/ogg/wav/flac", /* extensions supported */
@@ -64,11 +74,11 @@ const struct PluginInfo plugin_inf = {
 	"Dan Ponte <dcp1990@neptune.atopia.net>", /* author */
 	"http://www.theamigan.net/fakedbfs/", /* www */
 	MAJOR_API_VERSION, /* major api version */
-	MINOR_API_VERSION /* minor api version */
-};
-
-struct MusicConfig {
-	short pfns;
+	MINOR_API_VERSION, /* minor api version */
+	plugin_init,
+	plugin_shutdown,
+	check_file,
+	extract_from_file
 };
 
 
@@ -608,3 +618,5 @@ fields_t* extract_from_file(f, filename, errmsg)
 
 	return NULL;
 }
+
+
