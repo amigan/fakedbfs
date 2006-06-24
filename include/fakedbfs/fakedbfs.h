@@ -31,7 +31,7 @@
  * @file fakedbfs.h
  * @brief Main header file.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.78 2006/06/24 17:19:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.79 2006/06/24 17:35:04 dcp1990 Exp $ */
 #include <fakedbfs/types.h>
 
 #include <fakedbfs/fdbfsconfig.h>
@@ -62,10 +62,10 @@
 #define MAJOR_API_VERSION 3
 #define MINOR_API_VERSION 0
 
-#define FAKEDBFSVER "2.0.0" /* major changes with major incompat changes, minor with minor incompat, micro with additions, bugfixes, and security fixes */
-#define VERNAME "Doctor Wu" /* this changes for each release */
+#define FAKEDBFSVER "2.1.0" /* major changes with major incompat changes, minor with minor incompat, micro with additions, bugfixes, and security fixes */
+#define VERNAME "Jack of Speed" /* this changes for each release */
 #define FAKEDBFSMAJOR	2
-#define FAKEDBFSMINOR	0
+#define FAKEDBFSMINOR	1
 #define FAKEDBFSMICRO	0
 
 
