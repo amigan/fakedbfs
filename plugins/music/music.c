@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.17 2006/06/24 17:19:55 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.18 2006/06/24 17:30:40 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -52,7 +52,7 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.17 2006/06/24 17:19:55 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.18 2006/06/24 17:30:40 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
@@ -68,7 +68,7 @@ int check_file(fdbfs_t *f, const char *filename, char **errmsg);
 fields_t* extract_from_file(fdbfs_t *f, const char *filename, char **errmsg);
 
 const struct PluginInfo plugin_inf = {
-	"mp3/ogg/wav/flac", /* extensions supported */
+	"mp3/ogg/wav/flac/wma", /* extensions supported */
 	"Music", /* name */
 	MUSICPLUGINVER, /* version */
 	"Dan Ponte <dcp1990@neptune.atopia.net>", /* author */
@@ -163,6 +163,12 @@ int check_file(f, filename, errmsg)
 
 	if(strcasecmp(ext, FLACEXT) == 0)
 		return 1;
+
+	ext = (filename + strlen(filename)) - strlen(WMAEXT);
+
+	if(strcasecmp(ext, WMAEXT) == 0)
+		return 1;
+
 
 	return 0;
 }
@@ -607,6 +613,14 @@ fields_t* extract_from_file(f, filename, errmsg)
 	if(strcasecmp(ext, WAVEXT) == 0) {
 		match_filename(filename, errmsg, &c, &h);
 		fdbfs_fields_set_mime("audio/x-wav", &h, &c);
+		return h;
+	}
+
+	ext = (filename + strlen(filename)) - strlen(WMAEXT);
+
+	if(strcasecmp(ext, WMAEXT) == 0) {
+		match_filename(filename, errmsg, &c, &h);
+		fdbfs_fields_set_mime("audio/x-ms-wma", &h, &c);
 		return h;
 	}
 
