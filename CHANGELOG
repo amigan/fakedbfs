@@ -1,6 +1,10 @@
-$Amigan: fakedbfs/CHANGELOG,v 1.30 2006/04/19 20:03:15 dcp1990 Exp $
+$Amigan: fakedbfs/CHANGELOG,v 1.31 2006/06/24 17:32:27 dcp1990 Exp $
 
 Changelog
+
+2.1.0-RELEASE ("Jack of Speed")
+*Major plugin API change (methods are now in the PluginInfo struct instead of being imported individually)...bump MAJOR_API_VERSION to 3
+*WMA filename support in the music plugin
 
 2.0.0-RELEASE ("Doctor Wu")
 *Functions that don't touch their string arguments will have such arguments using the const qualifier
