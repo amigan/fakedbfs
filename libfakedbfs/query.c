@@ -34,7 +34,7 @@
  *
  * @sa query.h
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.45 2006/04/19 19:58:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.46 2006/11/07 00:50:14 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -62,7 +62,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.45 2006/04/19 19:58:22 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.46 2006/11/07 00:50:14 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -512,7 +512,12 @@ int fdbfs_query_step(q) /* a pointer to the head of a fields_t list is pushed to
 			n->fieldname = strdup(colname);
 		}
 		if(!q->allcols) {
-			fdbfs_query_pop3(q, (void**)&pname); /* we're supposed to do something with this */
+			union {
+				char **tc;
+				void **tv;
+			} tu; /* fucking strict aliasing */
+			tu.tc = &pname;
+			fdbfs_query_pop3(q, tu.tv); /* we're supposed to do something with this */
 		}
 		if(special != 3) {
 			if(strcmp(n->fieldname, "file") == 0) {
