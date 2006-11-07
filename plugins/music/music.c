@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/plugins/music/music.c,v 1.18 2006/06/24 17:30:40 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/plugins/music/music.c,v 1.19 2006/11/07 00:52:33 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -52,7 +52,7 @@
 #include <fakedbfs/fields.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.18 2006/06/24 17:30:40 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/plugins/music/music.c,v 1.19 2006/11/07 00:52:33 dcp1990 Exp $")
 #define MUSICPLUGINVER "0.1"
 
 #include "constdefs.h"
@@ -127,8 +127,14 @@ int plugin_shutdown(f, errmsg)
 	char **errmsg;
 {
 	struct MusicConfig *mc;
+	union {
+		struct MusicConfig **m;
+		void **v;
+	} tu; /* aliasing crapola */
 
-	if(fdbfs_plugin_get_cptr(f, &plugin_inf, (void**)&mc)) {
+	tu.m = &mc;
+
+	if(fdbfs_plugin_get_cptr(f, &plugin_inf, tu.v)) {
 		free(mc);
 	}
 
@@ -592,8 +598,14 @@ fields_t* extract_from_file(f, filename, errmsg)
 	const char *ext;
 	fields_t *h = NULL, *c = NULL;
 	struct MusicConfig *mc;
+	union {
+		struct MusicConfig **m;
+		void **v;
+	} tu; /* aliasing crapola */
 
-	if(!fdbfs_plugin_get_cptr(f, &plugin_inf, (void**)&mc)) {
+	tu.m = &mc;
+
+	if(!fdbfs_plugin_get_cptr(f, &plugin_inf, tu.v)) {
 		*errmsg = strdup("Getting cptr");
 		return NULL;
 	}
