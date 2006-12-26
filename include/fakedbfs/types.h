@@ -38,7 +38,7 @@
 #include <sqlite3.h> /* for sqlite3 type */
 #endif
 
-#define FLOATTYPE double
+typedef double FLOATTYPE;
 
 typedef enum _coltype coltype_t;
 typedef enum DataType datatype_t;
