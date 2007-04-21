@@ -34,7 +34,7 @@
  *
  * @sa query.h
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.46 2006/11/07 00:50:14 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.47 2007/04/21 01:37:54 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -62,7 +62,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.46 2006/11/07 00:50:14 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.47 2007/04/21 01:37:54 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -291,6 +291,10 @@ void fdbfs_db_regex_func(ctx, i, sqval)
 
 	string = sqlite3_value_text(sqval[1]);
 	if(regexp == NULL) {
+		sqlite3_result_int(ctx, 0);
+		return;
+	}
+	if(string == NULL) {
 		sqlite3_result_int(ctx, 0);
 		return;
 	}
