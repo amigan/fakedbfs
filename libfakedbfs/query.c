@@ -34,7 +34,7 @@
  *
  * @sa query.h
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.47 2007/04/21 01:37:54 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.48 2007/04/21 01:52:35 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -62,7 +62,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.47 2007/04/21 01:37:54 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.48 2007/04/21 01:52:35 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -723,6 +723,11 @@ int fdbfs_query_init_exec(q)
 #endif
 				have_cond = 1;
 				break;
+			case OP_SQL:
+				if(!(c->ops.used & USED_O3) || c->ops.o3 == NULL)
+					return Q_MISSING_OPERAND;
+				query_len += strlen(c->ops.o3) + 3; /* parens */
+				break;
 			case OP_COLNAME:
 				if(!(c->ops.used & USED_O3) || c->ops.o3 == NULL)
 					return Q_MISSING_OPERAND;
@@ -899,6 +904,11 @@ int fdbfs_query_init_exec(q)
 				saw_operan = 0;
 				strlcat(qusql, c->opcode == OPL_GTHEQU ? ">=" : "<=",
 						query_len);
+				break;
+			case OP_SQL:
+				strlcat(qusql, "(", query_len);
+				strlcat(qusql, c->ops.o3, query_len);
+				strlcat(qusql, ")", query_len);
 				break;
 			case OP_UINT:
 				if(saw_operan) {

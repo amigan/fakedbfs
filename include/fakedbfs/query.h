@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.19 2006/04/19 19:58:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/query.h,v 1.20 2007/04/21 01:52:35 dcp1990 Exp $ */
 #ifndef HAVE_QUERY_H
 #define HAVE_QUERY_H 1
 #ifndef HAVE_DBSPECDATA_H
@@ -62,6 +62,7 @@
 #define OPL_GTHEQU	0x18
 #define OPL_LTHEQU	0x19
 #define OP_NOTREGEXP	0x1A
+#define OP_SQL		0x1B
 
 #define USED_O1		0x1
 #define USED_O2		0x2
