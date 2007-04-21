@@ -1,8 +1,10 @@
-$Amigan: fakedbfs/CHANGELOG,v 1.31 2006/06/24 17:32:27 dcp1990 Exp $
+$Amigan: fakedbfs/CHANGELOG,v 1.32 2007/04/21 01:55:07 dcp1990 Exp $
 
 Changelog
 
 2.1.0-RELEASE ("Jack of Speed")
+*Some regex bugfixes
+*New query opcode: OP_SQL (0x1B)
 *Major plugin API change (methods are now in the PluginInfo struct instead of being imported individually)...bump MAJOR_API_VERSION to 3
 *WMA filename support in the music plugin
 
