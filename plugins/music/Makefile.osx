@@ -1,0 +1,22 @@
+# music plugin, for use with dbspecs/music.dbspec
+include ../../config.mk
+include ../../globals.mk
+LDFLAGS=-L/usr/local/lib -L${PREFIX}/lib
+CPPFLAGS+=-I../../include -I../../ficl
+LIBS=-lid3 -lstdc++ -lz -logg -lvorbis -lvorbisfile -lFLAC $(LIBEXT)
+SRCS=music.c
+OBJS=music.o
+#OBJS!=echo ${SRCS} | sed -e 's/\.c/.o/g'
+CFLAGS+=$(CPPFLAGS)
+
+all: .depend music.dylib
+.depend: $(SRCS)
+	mkdep $(CPPFLAGS) $(SRCS)
+music.dylib: $(OBJS)
+	export MACOSX_DEVELOPMENT_TARGET=10.5
+#	unset LD_PREBIND
+	cc -dynamiclib -undefined dynamic_lookup -single_module -o music.dylib $(LDFLAGS) $(OBJS) $(LIBS)
+%.o: %.c
+	cc $(CFLAGS) -c $<
+clean:
+	rm -f $(OBJS) *.core *~ music.so .depend music.dylib

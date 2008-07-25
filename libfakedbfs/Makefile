@@ -1,4 +1,4 @@
-# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.29 2006/11/07 00:50:07 dcp1990 Exp $
+# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.30 2008/07/25 17:40:31 dcp1990 Exp $
 include ../config.mk
 include ../globals.mk
 CC=cc
@@ -25,6 +25,9 @@ dspparser.c: dspparser.y
 	../buildtools/lemon -s dspparser.y
 libfakedbfs.so: .depend $(OBJS)
 	$(CC) $(LDFLAGS) -shared -o libfakedbfs.so ${OBJS} $(LIBS)
+# below is for osx
+#libfakedbfs.so: .depend $(OBJS)
+#	libtool -dynamic -o libfakedbfs.so -arch_only i386 ${OBJS} $(LIBS)
 libfakedbfs.a: $(OBJS)
 	ar rc libfakedbfs.a $(OBJS)
 	ranlib libfakedbfs.a
@@ -33,7 +36,7 @@ libfakedbfs.a: $(OBJS)
 lint:
 	lint -s $(CPPFLAGS) $(SRCS)
 install: all
-	install libfakedbfs.so /usr/local/lib
+	install libfakedbfs.so ${PREFIX}/lib
 clean:
 	rm -f *.core *.o *~ .depend dbspec.c dbspec.h dbspec.out libfakedbfs.so lex.fdbfs_ds.c libfakedbfs.a queryparser.c queryparser.h queryparser.out \
 		dspparser.c dspparser.h dspparser.out

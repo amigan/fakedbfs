@@ -7,17 +7,26 @@ proc platform {pf} {
 	global platf
 	global mfh
 	global chfh
-	if {[string compare $pf unix] != 0 && [string compare $pf win32] != 0 && [string compare $pf amiga] != 0} {
-		puts "Error: Platform not one of unix|win32|amiga"
+	if {[string compare $pf unix] != 0 && [string compare $pf win32] != 0 && [string compare $pf amiga] != 0 && [string compare $pf macosx] != 0} {
+		puts "Error: Platform not one of unix|macosx|win32|amiga"
 		exit 1
 	}
 	set platf $pf
+	puts $mfh "PLATFORM=$pf"
 	puts $mfh [join [list "CPPOPTS+=-D" [string toupper $pf]] "" ]
-	if {$pf == "unix"} {
+	if {$pf == "unix" || $pf == "macosx"} {
 		puts $chfh "#define HAVE_MMAP 1"
+	}
+	if {$pf == "macosx"} {
+		puts $mfh "CPPOPTS+=-DUNIX"
 	}
 	if {$pf == "win32"} {
 		puts $mfh "LDEXT+=-mno-cygwin -L/mingw/lib"
+	}
+	if {$pf == "macosx"} {
+		puts $mfh "PLUGMAKEF=Makefile.osx"
+	} else {
+		puts $mfh "PLUGMAKEF=Makefile"
 	}
 }
 
@@ -57,6 +66,7 @@ proc dmalloc {} {
 
 proc prefix {path} {
 	global chfh
+	global mfh
 	global platf
 	global prefset
 	if {$platf == "NOTSET"} {
@@ -65,7 +75,7 @@ proc prefix {path} {
 	}
 	set prefset $path
 	puts $chfh "#define PREFIX \"$path\""
-	if {$platf == "unix"} {
+	if {$platf == "unix" || $platf == "macosx"} {
 		puts $chfh "#define LIBPATH PREFIX \"/lib/fakedbfs\""
 	} elseif {$platf == "amiga"} {
 		puts $chfh "#define LIBPATH PREFIX \"lib/plugins\""
@@ -74,6 +84,7 @@ proc prefix {path} {
 	} else {
 		set prefset NOTSET
 	}
+	puts $mfh "PREFIX=$path"
 }
 
 set mfh [open config.mk w]
