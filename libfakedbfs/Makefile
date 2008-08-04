@@ -1,4 +1,4 @@
-# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.30 2008/07/25 17:40:31 dcp1990 Exp $
+# $Amigan: fakedbfs/libfakedbfs/Makefile,v 1.31 2008/08/04 04:38:24 dcp1990 Exp $
 include ../config.mk
 include ../globals.mk
 CC=cc
@@ -24,7 +24,7 @@ dbspec.c: dbspec.h
 dspparser.c: dspparser.y
 	../buildtools/lemon -s dspparser.y
 libfakedbfs.so: .depend $(OBJS)
-	$(CC) $(LDFLAGS) -shared -o libfakedbfs.so ${OBJS} $(LIBS)
+	if [ ${PLATFORM} = macosx ] ; then libtool -dynamic -o libfakedbfs.so -arch_only i386 ${OBJS} $(LIBS) ; else  $(CC) $(LDFLAGS) -shared -o libfakedbfs.so ${OBJS} $(LIBS); fi
 # below is for osx
 #libfakedbfs.so: .depend $(OBJS)
 #	libtool -dynamic -o libfakedbfs.so -arch_only i386 ${OBJS} $(LIBS)
