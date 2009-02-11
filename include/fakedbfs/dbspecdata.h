@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/dbspecdata.h,v 1.11 2006/04/19 19:58:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/dbspecdata.h,v 1.12 2009/02/11 15:06:00 dcp1990 Exp $ */
 #ifndef HAVE_DBSPECDATA_H
 #define HAVE_DBSPECDATA_H 1
 #include <fakedbfs/types.h>
@@ -228,7 +228,7 @@ struct EnumSubElem* fdbfs_copy_sub_list(
 		struct EnumSubElem *from,
 		struct EnumSubElem *to,
 		struct EnumElem *fajah,
-		int *lastval
+		unsigned int *lastval
 		);
 
 /**

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/fquery/fquery.c,v 1.14 2006/03/06 05:10:18 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/fquery/fquery.c,v 1.15 2009/02/11 15:06:00 dcp1990 Exp $ */
 /* system includes */
 #include <stdio.h>
 #include <unistd.h>
@@ -36,6 +36,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include <signal.h>
+#include <time.h>
 
 
 #ifdef UNIX
@@ -50,7 +51,7 @@
 #include <fakedbfs/fakedbfs.h>
 #include <fakedbfs/fakedbfsapps.h>
 
-RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.14 2006/03/06 05:10:18 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/fquery/fquery.c,v 1.15 2009/02/11 15:06:00 dcp1990 Exp $")
 
 static int dbfu = 0;
 static char *dbf = NULL;

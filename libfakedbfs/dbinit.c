@@ -31,7 +31,7 @@
  * @file dbinit.c
  * @brief Database initialisation stuff.
  */
-/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.53 2008/07/25 17:40:31 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.54 2009/02/11 15:06:00 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -51,7 +51,7 @@
 #define DSpecParseTOKENTYPE Toke
 #define DSpecParseARG_PDECL ,Heads *heads
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.53 2008/07/25 17:40:31 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/dbinit.c,v 1.54 2009/02/11 15:06:00 dcp1990 Exp $")
 
 void *DSpecParseAlloc(void *(*mallocProc)(size_t));
 void DSpecParseFree(void *p, void (*freeProc)(void*));
@@ -207,7 +207,7 @@ struct EnumSubElem* fdbfs_copy_sub_list(from, to, fajah, lastval)
 	struct EnumSubElem *from;
 	struct EnumSubElem *to; /* must be allocated; subsequent items will be allocated */
 	struct EnumElem *fajah;
-	int *lastval;
+	unsigned int *lastval;
 {
 	struct EnumSubElem *c;
 	struct EnumSubElem *tc, *tlast;
@@ -667,8 +667,8 @@ struct EnumElem* fdbfs_enumelems_from_dbtab(f, table, e)
 	sqlite3_free(sql);
 	
 	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
-		cename = strdup(sqlite3_column_text(cst, 1));
-		cefmt = strdup(sqlite3_column_text(cst, 2));
+		cename = strdup((const char*)sqlite3_column_text(cst, 1));
+		cefmt = strdup((const char*)sqlite3_column_text(cst, 2));
 		cval = sqlite3_column_int(cst, 3);
 		oth = sqlite3_column_int(cst, 4);
 		subs = (char*)sqlite3_column_text(cst, 5);
@@ -733,8 +733,8 @@ struct EnumHead* fdbfs_enums_from_db(f)
 	}
 	
 	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
-		enumname = strdup(sqlite3_column_text(cst, 1));
-		tabledef = strdup(sqlite3_column_text(cst, 2));
+		enumname = strdup((const char*)sqlite3_column_text(cst, 1));
+		tabledef = strdup((const char*)sqlite3_column_text(cst, 2));
 		n = allocz(sizeof(*n));
 		n->name = enumname;
 		n->headelem = fdbfs_enumelems_from_dbtab(f, tabledef, n);
@@ -793,8 +793,8 @@ struct CatElem* fdbfs_catelems_from_dbtab(f, table, enumhead)
 	sqlite3_free(sql);
 	
 	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
-		ccname = strdup(sqlite3_column_text(cst, 1));
-		ccfmt = strdup(sqlite3_column_text(cst, 2));
+		ccname = strdup((const char*)sqlite3_column_text(cst, 1));
+		ccfmt = strdup((const char*)sqlite3_column_text(cst, 2));
 		cctype = sqlite3_column_int(cst, 3);
 		cenumname = (char*)sqlite3_column_text(cst, 4);
 		if(cenumname != NULL)
@@ -859,9 +859,9 @@ actcat_t* fdbfs_catalogues_from_db(f, cathead)
 
 	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
 		n = allocz(sizeof(*n));
-		n->name = strdup(sqlite3_column_text(cst, 0));
-		n->alias = strdup(sqlite3_column_text(cst, 1));
-		cn = sqlite3_column_text(cst, 2);
+		n->name = strdup((const char*)sqlite3_column_text(cst, 0));
+		n->alias = strdup((const char*)sqlite3_column_text(cst, 1));
+		cn = (const char*)sqlite3_column_text(cst, 2);
 		if(strlen(cn) < 5 /* cft_ */) {
 			ERR(die, "invalid field_desc_table '%s'", cn);
 cherr:
@@ -905,9 +905,9 @@ struct CatalogueHead* fdbfs_cats_from_db(f, enumhead)
 	}
 	
 	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
-		catname = strdup(sqlite3_column_text(cst, 1));
-		catalias = strdup(sqlite3_column_text(cst, 2));
-		tabledef = strdup(sqlite3_column_text(cst, 3));
+		catname = strdup((const char*)sqlite3_column_text(cst, 1));
+		catalias = strdup((const char*)sqlite3_column_text(cst, 2));
+		tabledef = strdup((const char*)sqlite3_column_text(cst, 3));
 		n = allocz(sizeof(*n));
 		n->name = catname;
 		n->fmtname = catalias; /* god only knows why I use such liberal naming of
@@ -1078,6 +1078,6 @@ actcat_t* fdbfs_find_catalogue(f, name)
 #if defined(MACOSX)
 int yylex(void)
 {
-	fdbfs_dslex();
+	return fdbfs_dslex();
 }
 #endif

@@ -34,7 +34,7 @@
  *
  * @sa query.h
  */
-/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.49 2007/04/21 01:58:14 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/query.c,v 1.50 2009/02/11 15:06:00 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -62,7 +62,7 @@
 #	include <sys/stat.h>
 #endif
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.49 2007/04/21 01:58:14 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/query.c,v 1.50 2009/02/11 15:06:00 dcp1990 Exp $")
 
 
 #define ParseTOKENTYPE Toke
@@ -283,13 +283,13 @@ void fdbfs_db_regex_func(ctx, i, sqval)
 	else
 		searching = OP_REGEXP;
 
-	regexp = sqlite3_value_text(sqval[0]);
+	regexp = (const char*)sqlite3_value_text(sqval[0]);
 	if(regexp == NULL) {
 		sqlite3_result_int(ctx, 0);
 		return;
 	}
 
-	string = sqlite3_value_text(sqval[1]);
+	string = (const char*)sqlite3_value_text(sqval[1]);
 	if(regexp == NULL) {
 		sqlite3_result_int(ctx, 0);
 		return;
@@ -585,7 +585,7 @@ int fdbfs_query_step(q) /* a pointer to the head of a fields_t list is pushed to
 				*(FLOATTYPE*)val = sqlite3_column_double(q->cst, i);
 				break;
 			case SQLITE_TEXT:
-				val = strdup(sqlite3_column_text(q->cst, i));
+				val = strdup((const char*)sqlite3_column_text(q->cst, i));
 				len = strlen((char*)val);
 				break;
 			case SQLITE_BLOB:

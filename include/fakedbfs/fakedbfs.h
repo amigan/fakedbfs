@@ -31,7 +31,7 @@
  * @file fakedbfs.h
  * @brief Main header file.
  */
-/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.79 2006/06/24 17:35:04 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/include/fakedbfs/fakedbfs.h,v 1.80 2009/02/11 15:06:00 dcp1990 Exp $ */
 #include <fakedbfs/types.h>
 
 #include <fakedbfs/fdbfsconfig.h>
@@ -84,8 +84,14 @@
 #endif
 
 #if !defined(ISLEX) && defined(FREEDEBUG) && !defined(DMALLOC)
+static void dbfree(x)
+	void *x;
+{
+	printf("fr %p (%s:%d)\n", x, __FILE__, __LINE__); free(x);
+}
+
 #undef free
-#define free(x)		printf("fr %p (%s:%d)\n", x, __FILE__, __LINE__); free(x)
+#define free(x)		dbfree(x)
 #endif
 
 

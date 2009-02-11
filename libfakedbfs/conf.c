@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.20 2006/04/19 19:58:22 dcp1990 Exp $ */
+/* $Amigan: fakedbfs/libfakedbfs/conf.c,v 1.21 2009/02/11 15:06:00 dcp1990 Exp $ */
 /* system includes */
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@
 #include <fakedbfs/db.h>
 #include <fakedbfs/debug.h>
 
-RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.20 2006/04/19 19:58:22 dcp1990 Exp $")
+RCSID("$Amigan: fakedbfs/libfakedbfs/conf.c,v 1.21 2009/02/11 15:06:00 dcp1990 Exp $")
 
 static void conf_node_link_parent(parent, n)
 	confnode_t *parent, *n;
@@ -314,7 +314,7 @@ int fdbfs_conf_read_from_db(f)
 
 	while((rc = sqlite3_step(cst)) == SQLITE_ROW) {
 		dynamic = 0;
-		mib = strdup(sqlite3_column_text(cst, 0));
+		mib = strdup((const char*)sqlite3_column_text(cst, 0));
 		type = sqlite3_column_int(cst, 1);
 		switch(type) {
 			case number:
@@ -329,7 +329,7 @@ int fdbfs_conf_read_from_db(f)
 				data.linteger = sqlite3_column_int64(cst, 2);
 				break;
 			case string:
-				data.string = strdup(sqlite3_column_text(cst, 2));
+				data.string = strdup((const char*)sqlite3_column_text(cst, 2));
 				dynamic = 2;
 				break;
 			case fp:
